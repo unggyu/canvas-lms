@@ -481,11 +481,13 @@ class FilesController < ApplicationController
       @attachment.ensure_media_object
 
       if params[:download]
+        user_agent = request.user_agent.downcase
+
         if (params[:verifier] && verifier_checker.valid_verifier_for_permission?(params[:verifier], :download, session)) ||
             (@attachment.grants_right?(@current_user, session, :download))
           disable_page_views if params[:preview]
           begin
-            send_attachment(@attachment)
+            send_attachment(@attachment, request.user_agent.downcase)
           rescue => e
             @headers = false if params[:ts] && params[:verifier]
             @not_found_message = t 'errors.not_found', "It looks like something went wrong when this file was uploaded, and we can't find the actual file.  You may want to notify the owner of the file and have them re-upload it."
@@ -620,29 +622,29 @@ class FilesController < ApplicationController
     end
   end
 
-  def send_attachment(attachment)
+  def send_attachment(attachment, user_agent)
     # check for download_frd param and, if it's present, force the user to download the
     # file and don't display it inline. we use download_frd instead of looking to the
     # download param because the download param is used all over the place to mean stuff
     # other than actually download the file. Long term we probably ought to audit the files
     # controller, make download mean download, and remove download_frd.
     if params[:inline] && !params[:download_frd] && attachment.content_type && (attachment.content_type.match(/\Atext/) || attachment.mime_class == 'text' || attachment.mime_class == 'html' || attachment.mime_class == 'code' || attachment.mime_class == 'image')
-      send_stored_file(attachment)
+      send_stored_file(attachment, user_agent)
     elsif attachment.inline_content? && !params[:download_frd] && !@context.is_a?(AssessmentQuestion)
       if params[:file_path] || !params[:wrap]
-        send_stored_file(attachment)
+        send_stored_file(attachment, user_agent)
       else
         # If the file is inlineable then redirect to the 'show' action
         # so we can wrap it in all the Canvas header/footer stuff
         redirect_to(named_context_url(@context, :context_file_url, attachment.id))
       end
     else
-      send_stored_file(attachment, false)
+      send_stored_file(attachment, false, user_agent)
     end
   end
   protected :send_attachment
 
-  def send_stored_file(attachment, inline=true)
+  def send_stored_file(attachment, inline=true, user_agent)
     user = @current_user
     user ||= api_find(User, params[:user_id]) if params[:user_id].present?
     attachment.context_module_action(user, :read) if user && !params[:preview]
@@ -650,7 +652,8 @@ class FilesController < ApplicationController
     render_or_redirect_to_stored_file(
       attachment: attachment,
       verifier: params[:verifier],
-      inline: inline
+      inline: inline,
+      user_agent: user_agent
     )
   end
   protected :send_stored_file

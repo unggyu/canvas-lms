@@ -16,6 +16,8 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'uri'
+
 module AttachmentHelper
   # returns a string of html attributes suitable for use with $.loadDocPreview
   def doc_preview_attributes(attachment, attrs={})
@@ -61,15 +63,17 @@ module AttachmentHelper
     }
   end
 
-  def render_or_redirect_to_stored_file(attachment:, verifier: nil, inline: false)
+  def render_or_redirect_to_stored_file(attachment:, verifier: nil, inline: false, user_agent:)
     set_cache_header(attachment, inline)
+    filename = (user_agent.include?('trident') || user_agent.include?('edge')) ? URI.escape(attachment.filename) : attachment.filename
+    display_name = (user_agent.include?('trident') || user_agent.include?('edge')) ? URI.escape(attachment.display_name) : attachment.display_name
     if safer_domain_available?
       redirect_to safe_domain_file_url(attachment, @safer_domain_host, verifier, !inline)
     elsif attachment.stored_locally?
       @headers = false if @files_domain
-      send_file(attachment.full_filename, :type => attachment.content_type_with_encoding, :disposition => (inline ? 'inline' : 'attachment'), :filename => attachment.display_name)
+      send_file(attachment.full_filename, :type => attachment.content_type_with_encoding, :disposition => (inline ? 'inline' : 'attachment'), :filename => display_name)
     elsif inline && attachment.can_be_proxied?
-      send_file_headers!( :length=> attachment.s3object.content_length, :filename=>attachment.filename, :disposition => 'inline', :type => attachment.content_type_with_encoding)
+      send_file_headers!( :length=> attachment.s3object.content_length, :filename=>filename, :disposition => 'inline', :type => attachment.content_type_with_encoding)
       render body: attachment.s3object.get.body.read
     elsif inline
       redirect_to authenticated_inline_url(attachment)
