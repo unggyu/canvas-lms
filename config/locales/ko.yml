@@ -1658,26 +1658,24 @@ ko:
   all_terms_cd27b0fb: "모든 학기"
   all_timezones_5e8afa7b: "모든 시간대"
   all_weights_must_be_greater_than_or_equal_to_0_cc2dcdf1: "모든 가중치는 0보다 크거나 같아야 합니다."
-  allow_a_moderator_to_review_multiple_independent_g_752c4b90: |-
-    복수의 채점자가 채점한 결과에 대하여 중재자가 리뷰하여 최종 점수를 결정할 수 있도록 합니다.
+  allow_a_moderator_to_review_multiple_independent_g_752c4b90: 복수의 채점자가 채점한 결과에 대하여 중재자가 리뷰하여 최종 점수를 결정할 수 있도록 합니다.
   allow_bulk_grade_export_to_sis_e11a6e66: "SIS로 대량 내보내기 허용"
   allow_course_content_to_be_downloaded_and_viewed_o_48a0d252: "과목 콘텐츠를 오프라인에서 다운로드하고 볼 수 있도록 허용"
-  allow_course_images_to_be_assigned_to_a_course_and_82fb7bdd: |-
-    과목 이미지를 과목에 할당하고 대시보드 카드에 사용하도록 허용합니다.
+  allow_course_images_to_be_assigned_to_a_course_and_82fb7bdd: 과목 이미지를 과목에 할당하고 대시보드 카드에 사용하도록 허용합니다.
   allow_dashboard_cards_to_be_reordered_for_each_use_81f989d7: "대시보드 카드를 각 사용자별로 재정렬 할 수 있습니다."
   allow_in_mastery_paths_5332c786: "숙달 경로에서 허용"
   allow_intra_group_peer_reviews_53f1e455: "그룹 내 피어 리뷰 허용"
   allow_lor_tools: "사용자가 LOR 용으로 구성된 외부 도구를 보고 사용할 수 있습니다."
+  allow_moderator_to_review_multiple_independent_gra_c59d64f6: "제출물에 대하여 복수의 채점자가 채점한 결과를 중재자가 리뷰하여 최종 점수를 결정할 수 있도록 합니다."
   allow_multiple_attempts_e67a0a37: "재시도 허용"
-  allow_opt_out_of_inbox: |-
-    사용자의 메시지함 미사용을 허용합니다. 이로써 모든 대화 메시지 및 알림이 사용자의 기본 전자 메일로 최대한 빨리 전송되며, 메시지함의 읽지 않음 표식이 더이상 표시되지 않고, 대화 알림 설정 메뉴가 비표시됩니다.
+  allow_opt_out_of_inbox: 사용자의 메시지함 미사용을 허용합니다. 이로써 모든 대화 메시지 및 알림이 사용자의 기본 전자 메일로 최대한 빨리 전송되며, 메시지함의 읽지 않음 표식이 더이상 표시되지 않고, 대화 알림 설정 메뉴가 비표시됩니다.
   allow_passive_acceptance_of_terms_of_service_63ef5994: "서비스 약관에 대한 수동 수용 허용"
   allow_reorder_dashboard_cards_78215947: "순서 대시보드 카드 허용"
   allow_students_to_download_course_content_and_view_810e66ec: "학생들이 과목 콘텐츠를 다운로드하고 오프라인으로 볼 수 있도록 허용"
   allow_students_to_see_who_has_signed_up_for_time_s_497f4a46: "학생들이 타임 슬롯에 누가 가입했는지 볼 수 있습니다."
   allow_students_to_see_who_was_signed_up_for_time_s_160ba252: "학생들이 타임 슬롯에 가입 한 사람을 볼 수있게합니다."
   allow_the_ability_to_send_notifications_through_ou_13cc8537: "디스패치 대기열을 통해 알림을 전송하는 기능 허용"
-  allowed_attempts_4e229caa: "재시도 허용"
+  allowed_attempts_4e229caa: "허용 횟수"
   allows_creating_announcements_for_a_specific_secti_14e0a63d: "특정 섹션에 대한 공지 사항 작성 가능"
   allows_teachers_to_mark_grade_data_to_be_exported__a6bf77cf: |-
     교수가 SIS 통합에 대량으로 내보낼 성적 데이터를 표시 할 수 있습니다.
@@ -1815,18 +1813,16 @@ ko:
   announcements_a4b8ed4a: 공지
   announcements_loaded_e9335d5f: "공지 사항이로드되었습니다!"
   announcements_tutorial_tray_994287d6: "공지 튜토리얼 트레이"
-  anonymize_all_annotations_made_by_instructors_on_s_4f2b70a5: |-
-    강사가 SpeedGrader에서 과제를 제출할 때 작성한 모든 주석을 익명화하십시오.
+  anonymize_all_annotations_made_by_instructors_on_s_4f2b70a5: SpeedGrader에서 제출물에 대한 교수자의 모든 주석을 익명 처리 합니다.
   anonymous_e1b8ad27: 익명
-  anonymous_grading_ccb5045c: "익명의 채점"
-  anonymous_grading_forces_student_names_to_be_hidde_8b46d7e7: "익명 성 등급으로 SpeedGrader ™에서 학생 이름을 숨길 수 있습니다."
+  anonymous_grading_ccb5045c: "익명 채점"
+  anonymous_grading_forces_student_names_to_be_hidde_8b46d7e7: "익명 채점으로 SpeedGrader에서 학생 이름을 숨길 수 있습니다."
   anonymous_instructor_annotations_2b6c822: "익명 강사 주석"
   anonymous_user: "익명 사용자"
   anonymous_user_d984b9ce: "익명 사용자"
-  anonymously_graded_59149570: "익명으로 채점 됨"
+  anonymously_graded_59149570: "익명으로 채점됨"
   another_assignment_name_369f8481: "다른 과제명"
-  another_configuration_is_currently_selected_select_95b394e: |-
-    다른 구성이 현재 선택되어 있습니다. 이 구성을 선택하면 다른 구성의 선택이 취소됩니다.
+  another_configuration_is_currently_selected_select_95b394e: 다른 구성이 현재 선택되어 있습니다. 이 구성을 선택하면 다른 구성의 선택이 취소됩니다.
   answer_address_book_queries_through_76842372: "주소록 쿼리를 통해 답변"
   answer_answerid_97fc4afc: "응답 %{answerId}"
   answer_correct_answer_c2c4a20c: "%{answer}, (정답)"
@@ -1834,13 +1830,13 @@ ko:
   answer_distribution_2a956e3f: "답변 배포"
   answer_incorrect_answer_80efe585: "%{answer}, (잘못된 답변)"
   answer_text_909894d6: "답변 텍스트"
-  answer_weight_43420dc5: "답변 무게"
-  answers_which_scored_in_the_bottom_27_74409483: "아래쪽에서 득점 한 답변 27 %"
-  answers_which_scored_in_the_middle_46_46466ffd: "중간에서 득점 한 답변 46 %"
-  answers_which_scored_in_the_top_27_a605232d: "상위 27 %에서 득점 한 답변"
+  answer_weight_43420dc5: "답변 비중"
+  answers_which_scored_in_the_bottom_27_74409483: "하위 27%의 답변"
+  answers_which_scored_in_the_middle_46_46466ffd: "중간 46%의 답변"
+  answers_which_scored_in_the_top_27_a605232d: "상위 27%의 답변"
   answers_will_be_shown_after_your_last_attempt_d9db6b1d: "마지막 시도 후에 답변이 표시됩니다."
   any_sub_account_ec7069f2: "모든 하위 계정"
-  any_term_d49af19f: "모든 기간"
+  any_term_d49af19f: "모든 학기"
   app_b157c2b3: "App"
   app_center_will_appear_in_the_apps_tab_on_the_sett_1b9eb936: |-
     App Center는 과목 또는 계정 설정 페이지의 'Apps'탭에 표시됩니다. 아래의 URL에는 유효한 App Center 엔드 포인트를 적어야 합니다. (예 : %{url} -- 마지막의 슬래시는 생략해야 합니다.)
@@ -1932,11 +1928,8 @@ ko:
     other: "이 대화의 사본을 보관 하시겠습니까?"
   are_you_sure_you_want_to_cancel_changes_you_made_m_c5210496: "정말 취소 하시겠습니까? 변경 한 내용은 저장되지 않을 수 있습니다."
   are_you_sure_you_want_to_cancel_your_appointment_w_dbbd27eb: "%{name} 님과 약속을 취소 하시겠습니까?"
-  are_you_sure_you_want_to_copy_to_the_final_mark_th_28a7e7b3: |-
-    최종 표시로 복사 하시겠습니까? 그러면 기존 표시를 덮어 씁니다.
-  are_you_sure_you_want_to_deactivate_this_user_they_3fdaab79: |-
-    Are you sure you want to deactivate this user? They will be unable to
-    participate in the course while inactive.
+  are_you_sure_you_want_to_copy_to_the_final_mark_th_28a7e7b3: 최종 표시로 복사 하시겠습니까? 그러면 기존 표시를 덮어 씁니다.
+  are_you_sure_you_want_to_deactivate_this_user_they_3fdaab79: 이 사용자를 비활성화 하시겠습니까? 비활성 상태에서는 과목 활동에 참여할 수 없습니다.
   are_you_sure_you_want_to_delete_these_count_items_148e98ba:
     one: "%{name}을(를) 삭제하시겠습니까?"
     other: "%{count} 개 항목을 삭제하시겠습니까?"
@@ -1949,11 +1942,8 @@ ko:
   are_you_sure_you_want_to_delete_this_grading_schem_df8b75f9: "이 평가 구성표를 삭제하시겠습니까?"
   are_you_sure_you_want_to_delete_this_to_do_item_497016ea: "이 작업 관리 항목을 삭제하시겠습니까?"
   are_you_sure_you_want_to_delete_your_copy_of_these_f04442ed:
-    one: |-
-      이 대화의 사본을 삭제하시겠습니까? 이 작업은 실행 취소 할 수 없습니다.
-    other: |-
-      Are you sure you want to delete your copy of these conversations? This
-      action cannot be undone.
+    one: 이 메시지를 삭제하시겠습니까? 이 작업은 실행 취소할 수 없습니다.
+    other: 선택한 메시지들을 삭제하시겠습니까? 이 작업은 실행 취소할 수 없습니다.
   are_you_sure_you_want_to_delete_your_reservation_t_5ae87209: "이 일정으로 예약을 삭제하시겠습니까?"
   are_you_sure_you_want_to_disable_sync_to_sisname_f_f24245c1: "모든 과제에 대해 %{sisName}과의 동기화를 사용 중지 하시겠습니까?"
   are_you_sure_you_want_to_do_this_it_cannot_be_undo_3379a544: |-
@@ -2069,7 +2059,7 @@ ko:
     buttons:
       save: 저장
     titles:
-      assignment_group_weights: "과제 그룹 배점 비중 관리"
+      assignment_group_weights: "과제 그룹 평가 비중 관리"
       total: 합계
     weight_final: "그룹을 바탕으로 최종 평가에 비중 적용"
   assignment_groups:
@@ -2083,7 +2073,7 @@ ko:
     errors:
       frozen_assignments_error: "잠긴 과제를 포함한 그룹을 삭제할 수 없습니다."
   assignment_groups_bc9cc3c9: "과제 그룹"
-  assignment_groups_weight_2f1a5a7c: "과제 그룹 배점 비중"
+  assignment_groups_weight_2f1a5a7c: "과제 그룹 평가 비중"
   assignment_id_b040cee0: "과제 ID"
   assignment_menu_91fe3716: "과제 메뉴"
   assignment_muted_4cb590a4: "과제 숨김"
@@ -4168,9 +4158,9 @@ ko:
         aria_new_label: "새 문제 은행 만들기"
         create_new_question: "-- 새 문제 은행 만들기 --"
         default_question_bank_label: "기본 문제 은행"
-        question_bank_placeholder: "\"문제 은행 이름\""
-        question_bank_placeholder_aria: "\"새 문제 은행 이름을 입력하십시오\""
-        question_bank_title: "새 문제 은행 이름"
+        question_bank_placeholder: "\"문제 은행 제목\""
+        question_bank_placeholder_aria: "\"새 문제 은행 제목을 입력하십시오\""
+        question_bank_title: "새 문제 은행 제목"
         select_question_bank: "문제 은행 선택"
       select_content_checkbox:
         select_all_content: "모든 콘텐츠"
@@ -5431,8 +5421,8 @@ ko:
         lock_all_announcements: "공지 사항에 대한 코멘트 기능 비활성화"
         open_enrollment: "과목 홈페이지에 \"이 과목에 참여\" 링크 추가"
         restrict_enrollments_to_course_dates: "과목 기간 중에만 등록 가능"
-        restrict_student_future_view: "시작일 이전에 학생들이 수업을 보는 것을 제한"
-        restrict_student_past_view: "종료일 이후에 학생들이 강의를 보는 것을 제한"
+        restrict_student_future_view: "시작일 이전에 학생들이 보는 것을 제한"
+        restrict_student_past_view: "종료일 이후에 학생들이 보는 것을 제한"
         root_account: "루트 계정"
         root_account_id: "루트 계정"
         show_announcements_on_home_page: "강좌 홈페이지에 최근 공지 사항 표시"
@@ -5704,6 +5694,7 @@ ko:
   create_a_new_user_for_address_7487e9c9: "%{address} 에 대한 새 사용자 만들기"
   create_account_263ec6: "계정 만들기"
   create_and_administer_online_quizzes_and_surveys_b_7d2fa85f: "평가 대상 및 평가 대상 외의 온라인 퀴즈 및 설문 조사를 작성하고 관리"
+  create_announcements_above_1c36202b: "공지사항을 작성하십시오."
   create_as_many_discussion_topics_as_needed_as_assi_45ec1df: |-
     채점을위한 과제 또는 공유 된 아이디어와 정보를위한 포럼으로서 필요한만큼의 토론 주제를 만듭니다.
   create_assignment_68532ceb: "과제 만들기"
@@ -7672,7 +7663,7 @@ ko:
     folder_filename: 폴더
   for: "for"
   for_974cbb84: "For"
-  for_all_devices_1f603968: "모든 장치 용"
+  for_all_devices_1f603968: "모든 장치"
   for_an_instant_answer_see_if_your_issue_is_address_48280e89: |-
     즉석 답변을 원하시면 문제가 * Canvas Guides *에서 다루어 졌는지 확인하십시오.
   for_best_results_crop_image_to_262px_wide_by_146px_af81a540: |-
@@ -7682,7 +7673,7 @@ ko:
   form_background_fb654518: "양식 배경"
   form_border_f61f12dc: "양식 테두리"
   formula_many_warning_title: |-
-    이 은행에는 %{count} 개의 수식 문제가 있으며 가능한 답을 재생성해야합니다.
+    이 문제 은행에는 %{count} 개의 수식 문제가 있으며 가능한 답을 재생성해야합니다.
   formula_warning_title: "수식 문제에 대해 가능한 대답을 다시 생성해야합니다."
   found_count_unresponsive_links_d1791380:
     one: "1 개의 응답하지 않는 링크를 찾았습니다."
@@ -8235,6 +8226,13 @@ ko:
   graded_quiz_7fabdf1f: "평가용 퀴즈"
   graded_survey_c0f0c395: "평가용 설문"
   grader_d1198a9c: "채점자"
+  grader_graderindex_45e04e57: "채점자 %{graderIndex}"
+  grader_gradernumber_fef5d5cf: "채점자 %{graderNumber}"
+  grader_is_required_62c88f67: "채점자가 필요압니다."
+  grader_that_determines_final_grade_cc55f20: "최종 성적을 결정하는 채점자"
+  graders_can_view_each_other_s_comments_d836b848: "채점자들 간의 코멘트 상호 참조를 허용합니다."
+  graders_cannot_view_each_other_s_names_b1fa7899: "채점자들 간에 서로의 이름을 숨깁니다."
+  graders_cannot_view_student_names_2e8d3ff9: "채점자들에게 학생의 이름을 숨깁니다."
   grades_a61eba0a: 성적
   grades_are_now_reverted_to_original_scores_e6deade1: "성적은 이제 원래 점수로 되돌아갑니다."
   grades_are_now_showing_what_if_scores_711a8be2: "성적에 따라 what-if 점수가 표시됩니다."
@@ -8250,11 +8248,8 @@ ko:
     grade_display_warning:
       cancel: 취소
       continue: 잇다
-      percent_text: |-
-        학생들은최종 성적을 백분율로 봅니다. 너 정말 계속하고 싶니?
-      points_text: |-
-        Students will also see their final grade as points. Are you sure you
-        want to continue?
+      percent_text: 학생들에게 최종 성적이 백분율로 표시됩니다. 계속 하시겠습니까?
+      points_text: 학생들에게 최종 성적이 점수로 표시됩니다. 계속 하시겠습니까?
     header_filter:
       course_average: "과목 평균"
       course_median: "과목 평균"
@@ -9492,8 +9487,8 @@ ko:
   list_view_430aecce: "목록 보기"
   live_events_subscriptions_service_is_not_configure_8c6024e2: "라이브 일정 구독 서비스가 구성되지 않았습니다."
   load_bank:
-    error_loading_banks: "은행에 오류가 있습니다."
-    loading_banks: "은행 로딩 중 ..."
+    error_loading_banks: "문제 은행에 오류가 있습니다."
+    loading_banks: "문제 은행 로딩 중 ..."
   loaded_more_collaborations_13f1d630: "더 많은 협업을 로드했습니다."
   loading_25990131: "로드하는 중..."
   loading_6ac402e1: "로드 중 ..."
@@ -11835,10 +11830,10 @@ ko:
   modules_tutorial_tray_d58ac3cb: "모듈 자습서 트레이"
   month_s_5c17590e: 개월
   moodle_dropdown_many_warning_title: |-
-    이 은행에는 잘못 가져올 수있는 %{count} 개의 여러 개의 드롭 다운 문제가 있습니다.
+    이 문제 은행에는 잘못 가져올 수있는 %{count} 개의 여러 개의 드롭 다운 문제가 있습니다.
   moodle_dropdown_warning_title: "다시 선다 문제를 올바르게 가져오지 못함"
   moodle_formula_many_warning_title: |-
-    이 은행에는 %{count} 개의 수식 문제가 있으며 가능한 답을 재생성해야합니다.
+    이 문제 은행에는 %{count} 개의 수식 문제가 있으며 가능한 답을 재생성해야합니다.
   moodle_formula_warning_title: "수식 문제에 대해 가능한 답변을 다시 생성해야합니다."
   more_cf9cc661: 더
   more_courses_5ebbe998: "다른 과목"
@@ -12037,6 +12032,7 @@ ko:
   next_steps_ce0f0d0c: "다음 단계"
   next_student_b62869f4: "다음 학생"
   nickname_1e6da3ad: 별명
+  no_announcements_280df147: "공지사항 없음"
   no_assignment_name_adbb215b: "과제 이름 없음"
   no_assignments_with_that_name_found_1d7be1: "해당 이름의 과제가 없습니다."
   no_associated_terms_13bacefc: "관련 용어 없음"
@@ -13884,9 +13880,9 @@ ko:
     update_outcomes_fail: "성과 업데이트 실패"
     updating_outcomes: "성과 업데이트 중..."
     default_name: "이름 없음"
-    error_loading_banks: "은행 로드 오류"
-    loading_banks: "은행 로드 중..."
-  question_bank_f6c44d62: "은행에 문제"
+    error_loading_banks: "문제 은행 로드 오류"
+    loading_banks: "문제 은행 로드 중..."
+  question_bank_f6c44d62: "문제 은행"
   question_banks:
     bank_fail: "문제 은행을 생성하는 데 실패했습니다."
     bank_success: "문제 은행을 생성하였습니다!"
@@ -13896,7 +13892,7 @@ ko:
       add_bank: "문제 은행 추가"
       course_question_banks: "과목 문제 은행"
       labels:
-        title: "은행 이름"
+        title: "문제 은행 제목"
       page_title: "문제 은행"
       see_bookmarked_banks: "북마크된 문제 은행 보기"
       user_question_banks: "사용자 문제 은행"
@@ -13916,7 +13912,7 @@ ko:
       links:
         delete_question: "이 문제 삭제"
         edit_question: "이 문제 편집"
-      move_bank: "다른 은행으로 문제 이동/복사"
+      move_bank: "다른 문제 은행으로 문제 이동/복사"
     show:
       button:
         cancel: 취소
@@ -13924,22 +13920,22 @@ ko:
       buttons:
         add_a_question: "문제 추가"
         already_bookmarked: "이미 북마크됨"
-        bookmark: "이 은행 북마크하기"
-        delete: "은행 삭제"
-        edit: "은행 세부정보 편집"
+        bookmark: "이 문제 은행 북마크하기"
+        delete: "문제 은행 삭제"
+        edit: "문제 은행 세부정보 편집"
         move_questions: "여러 문제 이동"
       edit_warning: "문제 템플릿을 변경하더라도 해당 문제를 사용한 퀴즈는 자동으로 업데이트되지 않는다는 것을 기억하십시오."
       headings:
         aligned_outcomes: "정렬된 성과"
       labels:
         keep_copy: "이 문제 은행에도 사본을 보관"
-        new_bank_name: "새 은행 이름"
+        new_bank_name: "새 문제 은행 제목"
         new_question_bank: "새 문제 은행"
-        title: "은행 이름"
+        title: "문제 은행 제목"
       links:
         align_outcome: "성과 정렬"
         more_questions: "더 많은 문제"
-      loading_banks: "은행 로드 중..."
+      loading_banks: "문제 은행 로드 중..."
       mastery_threshold: "%{threshold_percentage}에서 숙달"
       move_copy: "이동/복사"
       select_bank: "이 문제를 위한 대상 문제 은행을 선택하십시오:"
@@ -14180,7 +14176,7 @@ ko:
       quiz_score_too_long: "점수는 2,000,000,000보다 작아야 합니다."
       quiz_score_too_short: "점수는 0보다 커야 합니다."
       retrieving_filters_failed: "필터 검색 실패"
-    'false': 오답
+    'false': 거짓
     file_uploaded_or_removed:
       quizzes:
         file_successfully_uploaded: "파일을 업로드 하였습니다."
@@ -14337,7 +14333,7 @@ ko:
         invalid_submissions: "이 퀴즈 제출물의 소유자를 확인할 수 없습니다. 다시 시도하시기 바랍니다."
         late_quiz: "이 퀴즈를 늦게 제출했으므로 답변이 기록되지 않았을 수도 있습니다."
         protected_quiz: |-
-          이 퀴즈는 보호된 것으로 특정 위치에서만 사용할 수 있습니다. 현재 이용 중인 컴퓨터는 이 퀴즈를 치르기에 유효한 위치에 있지
+          이 퀴즈는 보호된 것으로 특정 위치에서만 사용할 수 있습니다. 현재 이용 중인 컴퓨터는 이 퀴즈 참여를 위한 유효한 위치에 있지
           않은 것으로 보입니다.
       show:
         score_out_of: "%{points_possible}점 중 %{score}점을 얻음"
@@ -14384,7 +14380,7 @@ ko:
         links:
           delete_question: "문제 삭제하기"
           edit_question: "문제 편집하기"
-          move_copy_question: "다른 은행으로 문제 이동/복사"
+          move_copy_question: "다른 문제 은행으로 문제 이동/복사"
         not_yet_graded: "평가 안 됨"
         original_score: "원래 점수:"
         points_possible: "%{points_possible}점"
@@ -14431,11 +14427,11 @@ ko:
         buttons:
           add_questions: "문제 추가"
           create_group: "그룹 만들기"
-          select_bank: "은행 선택"
+          select_bank: "문제 은행 선택"
         group_pick_count: "문제 %{pick_count}개"
         group_points: "문제 당 %{points}점"
         headers:
-          bank_name: "은행 이름"
+          bank_name: "문제 은행 제목"
         hints:
           group_pick_count: "현재까지 %{pick_count}개 선택함"
         labels:
@@ -14615,10 +14611,10 @@ ko:
         page_titles: 퀴즈
       invalid_ip:
         quiz_protected: |-
-          이 퀴즈는 보호된 것으로 특정 위치에서만 사용할 수 있습니다. 현재 이용 중인 컴퓨터는 이 퀴즈를 치르기에 유효한 위치에 있지
+          이 퀴즈는 보호된 것으로 특정 위치에서만 사용할 수 있습니다. 현재 이용 중인 컴퓨터는 이 퀴즈 참여를 위한 유효한 위치에 있지
           않은 것으로 보입니다.
         survey_protected: |-
-          이 설문은 보호된 것으로 특정 위치에서만 사용할 수 있습니다. 현재 이용 중인 컴퓨터는 이 퀴즈를 치르기에 유효한 위치에 있지
+          이 설문은 보호된 것으로 특정 위치에서만 사용할 수 있습니다. 현재 이용 중인 컴퓨터는 이 퀴즈 참여를 위한 유효한 위치에 있지
           않은 것으로 보입니다.
       lockdown_browser_required:
         headers:
@@ -14765,8 +14761,8 @@ ko:
         time_limit: "허용된 시간(분)은 얼마입니까?"
         warnings:
           has_student_submissions: |-
-            학생들이 이 퀴즈를 이미 치렀거나 치르기 시작했으므로 편집에 주의하시기 바랍니다. 퀴즈 문제에 중요한 변경이 있으면, 이전
-            버전의 퀴즈를 치른 학생을 다시 평가하도록 고려해 보시기 바랍니다.
+            학생들이 이 퀴즈를 이미 참여했거나 참여 중 이므로 편집에 주의하시기 바랍니다. 퀴즈 문제에 중요한 변경이 있으면, 이전
+            버전의 퀴즈에 참여한 학생을 다시 평가하는 것을 고려해 보시기 바랍니다.
       notices:
         cant_view_submission_while_muted: "퀴즈가 성적 비공개 상태인 동안에는 퀴즈 이력을 볼 수 없음"
         has_submissions_already: "어떤 학생이 이미 퀴즈를 치렀거나 시작했다는 점을 염두에 두십시오."
@@ -14789,7 +14785,7 @@ ko:
           group_name: "그룹 이름"
           number_of_questions: "문제 수"
           points_per_question: "문제 당 점수"
-          question_bank: "문제를 은행에서 꺼내옴"
+          question_bank: "문제를 문제 은행에서 꺼내옴"
         links:
           link_to_a_question_bank: "문제 은행으로 링크"
         show_questions_and_points: "*%{num_questions}*문제 선택, 문제 당 #%{num_points}#점"
@@ -15076,7 +15072,7 @@ ko:
         partial: 부분
         right: 정답
         unanswered: "답변 안 함"
-        you_answered: "여러분의 답변은"
+        you_answered: "제출된 답변"
       buttons:
         already_published: "공개되었습니다.!"
         publishing: "공개 중..."
@@ -15128,12 +15124,12 @@ ko:
         one: "%{count}개월"
         other: "%{count}개월"
       notices:
-        due_date_five_minutes_left: "퀴즈가 늦기 전에 5 분 남음"
-        due_date_one_minute_left: "퀴즈가 늦어지기 전에 1 분 남음"
-        due_date_thirty_minutes_left: "퀴즈가 늦어지기까지 남은 30 분"
-        submission_five_minutes_left: "이 퀴즈는 5 분 안에 제출됩니다."
-        submission_one_minute_left: "이 퀴즈는 1 분 안에 제출됩니다."
-        submission_thirty_minutes_left: "이 퀴즈는 30 분 안에 제출 될 것입니다."
+        due_date_five_minutes_left: "퀴즈 종료까지  5분 남음"
+        due_date_one_minute_left: "퀴즈 종료까지  1분 남음"
+        due_date_thirty_minutes_left: "퀴즈 종료까지 30분 남음"
+        submission_five_minutes_left: "이 퀴즈는 5분 후 자동 제출됩니다."
+        submission_one_minute_left: "이 퀴즈는 1분 후 자동 제출됩니다."
+        submission_thirty_minutes_left: "이 퀴즈는 30분 후 자동 제출됩니다."
         extra_time: "이 시도에 대해 추가 시간이 주어짐"
         less_time: "이 퀴즈에 대한 시간이 줄어들었습니다."
       question_answered: "답변함"
@@ -15939,10 +15935,13 @@ ko:
   select_conversation_subject_3f36074a: "대화 선택 %{subject}"
   select_country_d21cb85a: "국가 선택"
   select_course_5cf89177: "과목 선택"
-  select_course_a_selection_is_required_before_recip_f622d9df: |-
-    "과목을 선택하세요: 수신자 필드에 입력 가능해지려면 선택해야 합니다"
+  select_course_a_selection_is_required_before_recip_f622d9df: "과목을 선택하세요: 수신자 필드에 입력 가능해지려면 선택해야 합니다"
   select_course_color_cad8e62b: "과목 색상 선택"
   select_d70f31da: "선택"
+  select_embedded_content_type_966f048a: "삽입(Embeded) 콘텐츠 유형 선택"
+  select_final_grade_for_moderation_b76a0baf: "최종 성적 선택"
+  select_from_saved_comments_dd398cd4: "저장된 코멘트로부터 선택"
+  select_grader_782af48: "채점자 선택"
   select_image_e1696a4d: "이미지 선택"
   select_indentation_d056bab8: "들여쓰기 수준 선택"
   select_input_3dbd73c1: "입력 선택"
@@ -16140,7 +16139,7 @@ ko:
       buttons:
         accept: 수락
         decline: 거부
-      invitation_text: "[%{course}](%{link_to_course})에 %{enrollment_type_with_indefinite_article}(으)로 참여하도록 초대 받았습니다."
+      invitation_text: "[%{course}] (%{link_to_course})에 %{enrollment_type_with_indefinite_article}(으)로 참여하도록 초대 받았습니다."
     error_form:
       message_failed: "보고서가 전송되지 않았습니다. 다시 시도하십시오."
       message_sent: "감사합니다!"
@@ -17076,8 +17075,8 @@ ko:
   student_name_b446c661: "학생 이름"
   student_name_c45b2a7: "학생 이름"
   student_name_options_cb029725: "학생 이름 옵션"
-  student_names_must_be_hidden_because_anonymous_gra_d2ca7255: "익명의 채점이 필요하므로 학생 이름을 숨겨야합니다."
-  student_names_must_be_hidden_because_this_is_an_an_3c82287d: "학생 이름은 익명의 설문 조사이므로 숨겨져 있어야 합니다.."
+  student_names_must_be_hidden_because_anonymous_gra_d2ca7255: "익명 채점이므로 학생 이름은 표시되지 않아야 합니다."
+  student_names_must_be_hidden_because_this_is_an_an_3c82287d: "익명 설문 조사이므로 학생 이름은 표시되지 않아야 합니다."
   student_outcome_gradebook_description: |-
     성과 성적표를 이용하면 수업 성과에 대한 학생과 과목 상황을 빠르게 참조해 볼 수 있습니다.
     학습 성과는 성적표와 같은 스타일로 표시되고 학생의 진척 상황은 점수와 함께 달성/거의 달성/미흡 으로 표시됩니다.
@@ -17410,10 +17409,10 @@ ko:
     logout: "로그아웃"
     profile: "프로필"
   take_a_snapshot_now_5b622d85: "지금 스냅 샷 찍기"
-  take_the_quiz_87214d7e: "퀴즈 치르기"
-  take_the_quiz_again_8ea51a6c: "퀴즈 다시 치르기"
-  take_the_survey_ada59508: "설문 치르기"
-  take_the_survey_again_24ce22c2: "설문 다시 치르기"
+  take_the_quiz_87214d7e: "퀴즈 참여"
+  take_the_quiz_again_8ea51a6c: "퀴즈 다시 참여"
+  take_the_survey_ada59508: "설문 참여"
+  take_the_survey_again_24ce22c2: "설문 다시 참여"
   teacher_5a73b637: 선생
   teacher_s_fdefb2c: "교수 (들)"
   teachers_52e2423f: 교수
@@ -17573,7 +17572,7 @@ ko:
   the_specified_user_is_not_a_student_in_this_course_5a81d8a5: "지정된 사용자는이 과정의 학생이 아닙니다."
   the_state_parameter_is_required_ffadf213: "상태 매개 변수가 필요합니다."
   the_title_cannot_be_longer_than_length_characters_7a822943: "제목은 %{length} 자보다 길 수 없습니다."
-  the_title_of_the_following_question_bank_was_trunc_b6c86975: "다음 문제 은행의 제목이 잘 렸습니다 : \"%{title}\""
+  the_title_of_the_following_question_bank_was_trunc_b6c86975: "다음 문제 은행의 제목이 잘렸습니다 : \"%{title}\""
   the_unique_id_used_for_representing_the_specific_r_3bdf5870: |-
     이 오류 보고서가 발생한 특정 요청 / 응답주기를 나타내는 데 사용 된 고유 ID입니다.
   the_url_a_sufficiently_priviledged_user_could_use__e6b02c56: |-
@@ -18095,10 +18094,7 @@ ko:
   tree_browser:
     folder_tree_instructions: |-
       위쪽 및 아래쪽 화살표 키를 사용하여 트리를 탐색합니다. 폴더를 펼치려면 오른쪽을 누르고 축소하려면 왼쪽으로, 선택한 항목을 선택하려면 입력하십시오.
-  turning_off_this_tutorial_will_remove_the_tutorial_dfd81b3a: |-
-    Turning off this tutorial will remove the tutorial tray from your view for
-    all of your courses. It can be turned back on under Feature Options in your
-    User Settings.
+  turning_off_this_tutorial_will_remove_the_tutorial_dfd81b3a: 이 튜토리얼을 닫으면 귀하의 과목들에 대한 모든 튜토리얼이 더 이상 표시되지 않습니다. 사용자 설정의 기능 옵션에서 다시 표시되도록 설정할 수 있습니다.
   turnitin:
     error_1007: "업로드한 파일이 너무 큽니다."
     error_1009: |-
@@ -18849,7 +18845,7 @@ ko:
   week_s_cb1492ee: 주
   weight_9b308e5b: 비중
   weight_ff579a8e: "비중:"
-  weight_final_grade_based_on_assignment_groups_3124161: "과제 그룹별 최종 배점 비중"
+  weight_final_grade_based_on_assignment_groups_3124161: "과제 그룹별 평가 비중을 최종 성적에 반영"
   weight_of_final_abbbe82f: "최종의 %{weight}"
   weight_of_grade_dff535d9: "성적의 %{weight}"
   weighted_grading_periods_ae4edd70: "비중 적용 기간"
