@@ -3,7 +3,7 @@ ko:
   1_item_scores_5512cd03: "1- 항목 점수"
   1st_reviewer_3c1d0119: "1차 리뷰어"
   25th_75th_ile_406a67bf: "25th-75th %ile"
-  25th_75th_percentile_aa4c11f2: "25 ~ 75 백분위 수"
+  25th_75th_percentile_aa4c11f2: "25 ~ 75 백분위수"
   2_final_score_7b0fd15e: "2- 최종 점수"
   2nd_reviewer_94fdbcd: "2차 리뷰어"
   451_message:
@@ -1818,7 +1818,7 @@ ko:
   anonymous_e1b8ad27: 익명
   anonymous_grading_ccb5045c: "익명 채점"
   anonymous_grading_forces_student_names_to_be_hidde_8b46d7e7: "익명 채점으로 SpeedGrader에서 학생 이름을 숨길 수 있습니다."
-  anonymous_instructor_annotations_2b6c822: "익명 강사 주석"
+  anonymous_instructor_annotations_2b6c822: "익명 교수자 주석"
   anonymous_user: "익명 사용자"
   anonymous_user_d984b9ce: "익명 사용자"
   anonymously_graded_59149570: "익명으로 채점됨"
@@ -1873,7 +1873,7 @@ ko:
       submission_unauthorized: "이 제출물에 액세스 할 수 없습니다."
       unauthorized:
         not_started_yet: "액세스하려는 과목이 아직 시작되지 않았습니다.  해당 과목은 %{date}에 시작합니다."
-        unpublished: "아직 강사가 이 과목을 게시하지 않았습니다."
+        unpublished: "아직 교수자가 이 과목을 게시하지 않았습니다."
     notices:
       first_teacher: "이제 과목이 신청되었고 여러분은 첫 번째 교수로 등록되었습니다."
       first_teacher_with_email: "이제 과목이 신청되었고 여러분은 첫 번째 교수로 등록되었습니다. 곧 등록 과정을 마치기 위한 이메일을 받을 것입니다."
@@ -1967,7 +1967,7 @@ ko:
   arrange_columns_by_points_48da9ba3: "성적 순으로 정렬"
   as_you_type_in_this_field_the_list_of_groups_will__16688a5f: 이 필드에 입력 할 때 입력 한 이름과 일치하는 그룹 만 포함하도록 그룹 목록이 자동으로 필터링됩니다.
   as_you_type_in_this_field_the_list_of_results_will_c1a1a3e4: 이 필드에 입력하면 결과 리스트가 자동으로 업데이트 됩니다.
-  ask_your_instructor_a_question_a61ca5e9: "강사에게 질문 하십시오."
+  ask_your_instructor_a_question_a61ca5e9: "교수자에게 질문 하십시오."
   assess_and_survey_your_students_ce8172a9: "학생 평가 및 조사"
   assessment_by_name_7b879a2c: "%{name} 별 평가"
   assessment_not_yet_completed_e800a0a7: "아직 완료되지 않은 평가"
@@ -2531,7 +2531,7 @@ ko:
         media_recording_ready: "제출할 준비가 되었습니다! 완료하려면 '과제 제출' 버튼을 클릭하십시오."
         media_recordings_disabled: |-
           이 Canvas 사이트에서는 미디어 녹음/녹화를 사용하지 않으므로 이 유형의 과제를 제출할 수 없습니다. 이 과제에 대한
-          설정을 바꾸는 것에 관하여 강사에게 문의하거나 미디어 녹음/녹화를 사용하는 것에 관하여 시스템 관리자에게 문의하십시오.
+          설정을 바꾸는 것에 관하여 교수자에게 문의하거나 미디어 녹음/녹화를 사용하는 것에 관하여 시스템 관리자에게 문의하십시오.
         submitting: "제출 중..."
         uploading: "이 과제에 대해 제출하려는 Google Doc 사본을 찾아오는 중입니다. 파일 크기에 따라 다소 시간이 걸릴 수 있습니다."
         google_docs_auth_required: |-
@@ -2720,7 +2720,7 @@ ko:
     이 그룹의 과제는 가능한 점수가 없으며 성적 계산에 포함될 수 없습니다.
   assignments_list_fe3e54be: "과제 목록"
   assignments_settings_30613d0c: "과제 설정"
-  assignments_tutorial_tray_4cc844b: "과제 자습서 트레이"
+  assignments_tutorial_tray_4cc844b: "과제 튜토리얼 트레이"
   associated_74756cc4: "연결된"
   associated_account_course_id_d87a01c5: "관련 계정 / 과목 ID"
   associated_account_name_91854e37: "연결된 계정 이름"
@@ -2805,7 +2805,7 @@ ko:
   bb_display: "Blackboard 학습"
   bb_file_description: "Blackboard 6/7/8/9 내보내기 .zip 파일"
   bb_name: "Blackboard 변환기"
-  be_a_hero_and_ask_your_instructor_to_fix_this_link_4981930c: "영웅이되어 강사에게이 링크를 수정하도록 요청하십시오."
+  be_a_hero_and_ask_your_instructor_to_fix_this_link_4981930c: "교수자에게 이 링크에 대해 수정 요청하십시오."
   before_44c686b4: 다음 항목의 앞에
   before_cb32fc0: "다음 항목의 앞에"
   before_implementing_custom_css_or_javascript_pleas_128da8cd: |-
@@ -3752,10 +3752,10 @@ ko:
     공동 작업은 메모나 그룹화 된 논문을 취하는 것과 같은 작업에 공동으로 작업 할 수있는 웹 기반 도구입니다. '+ 공동 작업'버튼을 클릭하여 시작하십시오.
   collaborations_are_web_based_tools_to_work_collabo_8ae6dd38: |-
     협업은 메모 혹은 그룹 논문 과제 작성과 같은 공동 작업을 위한 웹 기반 도구입니다. 협업 앱을 추가하고 시작하세요.
-  collaborations_tutorial_tray_9219d9d: "공동 작업 자습서 트레이"
+  collaborations_tutorial_tray_9219d9d: "공동 작업 튜토리얼 트레이"
   collapse_list_of_group_members_for_groupname_d6c66fa0: "%{groupName}의 그룹 구성원 목록 축소"
   collapse_subdiscussion_89af1f5c: "Collapse Subdiscussion"
-  collapse_tutorial_tray_66ee7dc1: "자습서 트레이 접기"
+  collapse_tutorial_tray_66ee7dc1: "튜토리얼 트레이 접기"
   collapsed_510aa02a: "축소됨"
   colombia_57_c6c75620: "콜롬비아 (+57)"
   color_a363e1b0: 색깔
@@ -3924,7 +3924,7 @@ ko:
         join: "지금 참여"
     type_disabled_error: "이 Canvas 사이트에서 더 이상 이 유형의 회의를 사용하지 않음"
   conferences_a0a8984b: "컨퍼런스"
-  conferences_tutorial_tray_6f071ce2: "컨퍼런스 자습서 트레이"
+  conferences_tutorial_tray_6f071ce2: "컨퍼런스 튜토리얼 트레이"
   config_url_e96ceaf3: "구성 URL"
   configuration_location_ee0f6592: "구성 위치"
   configuration_type_25a084a4: "구성 유형"
@@ -4130,14 +4130,14 @@ ko:
         shift_dates: "날짜 이동"
         substitution: 대체
       day_substitution:
-        move_from: "다음 요일에서"
+        move_from: "다음에서"
         move_from_select_label: "다음 요일에서"
         move_from_select_title: "다음 요일에서"
         move_to_select_label: "다음 요일로"
         move_to_select_title: "다음 요일로"
         remove_day_substitution_link: "요일 대체 제거"
         remove_day_substitution_link_label: "요일 대체 제거"
-        to_happen_on: "다음 요일로"
+        to_happen_on: "->"
       external_tool_launch:
         course: 과목
         find_a_course: "과목 찾기"
@@ -5095,7 +5095,7 @@ ko:
   course_selection_245808bf: "과목 선택"
   course_set_up_tutorial_6ab7c2d1: "과목 설치 튜토리얼"
   course_set_up_tutorial_provides_tips_on_how_to_lev_3c098131: |-
-    과목 설정 자습서는 Canvas의 각 페이지에서 기능 기회를 활용하는 방법에 대한 팁을 제공합니다. 특히 Canvas를 처음 사용하거나 오랫동안 처음으로 새로운 과목을 개설 할 때 유용합니다.
+    과목 설정 튜토리얼은 Canvas의 각 페이지에서 기능 기회를 활용하는 방법에 대한 팁을 제공합니다. 특히 Canvas를 처음 사용하거나 오랫동안 처음으로 새로운 과목을 개설 할 때 유용합니다.
   course_settings:
     buttons:
       add_section: "섹션 추가"
@@ -5608,7 +5608,7 @@ ko:
       links:
         show_more: "%{count} 더보기..."
     unauthorized:
-      invalid_link: "사용한 등록 링크가 더 이상 유효하지 않은 것으로 보입니다. 과목 강사에게 문의하여 올바르게 등록되었는지 확인하시기 바랍니다."
+      invalid_link: "사용한 등록 링크가 더 이상 유효하지 않은 것으로 보입니다. 과목 교수자에게 문의하여 올바르게 등록되었는지 확인하시기 바랍니다."
     assignments_needing_grading:
       headings:
         grade: "%{assignment} 평가"
@@ -5635,7 +5635,7 @@ ko:
       enabled: 열림
       institution: 교육 기관
       institution_name: 이름
-      instructor_led: "강사 주도"
+      instructor_led: "교수자 주도"
       instructors: 교수
       labels:
         description: 설명
@@ -6138,7 +6138,7 @@ ko:
       gs_1_7: "GS 1-7"
       gs_8_10: "GS 8-10"
       higher_education: "고등 교육"
-      higher_education_for_profit: "높은 에드 - 이윤"
+      higher_education_for_profit: "고등 교육 - 이윤"
       incorrect: "올바르지 않습니다. 다시 시도하시기 바랍니다."
       instructional_designer: "교육 설계자"
       instructional_media_svcs_dir: "학습 미디어 Svcs 디렉토리"
@@ -6170,7 +6170,7 @@ ko:
       subscribe: "Instructure로부터 뉴스, 정보, 팁 받기"
       superintendent: 감독
       support: "사용자 지원"
-      teacher_instructor: "교수/강사"
+      teacher_instructor: "교수/교수자"
       technologist: "기술자"
       technology_computer_coord: "기술 / 컴퓨터 좌표"
       technology_education_director: "기술 교육 이사"
@@ -6558,7 +6558,7 @@ ko:
     unsubscribed: "구독 해제함"
     unsubscribed_hint: "구독하고 있지 않습니다. 구독하려면 클릭합니다."
   discussions_a5f96392: 토론
-  discussions_tutorial_tray_4ef79bcc: "토론 자습서 트레이"
+  discussions_tutorial_tray_4ef79bcc: "토론 튜토리얼 트레이"
   dismiss_dacdb625: "버리다"
   dismiss_this_5c74dddc: "이것을 닫으십시오."
   display_as_e2a5c383: "다음으로 표시 :"
@@ -6841,12 +6841,12 @@ ko:
   encourage_class_participation_4e069479: "수업 참여를 장려하십시오."
   encrypted_sourcedids_for_basic_outcomes_87fa11ea: "기본 성과를 위한 암호화 된 소스 코드"
   end_course_set_up_tutorial_dialog_5b812ec6: "과목 학습 끝내기 튜토리얼 대화 상자"
-  end_course_set_up_tutorial_f358b85d: "과목 설정 안내서 종료"
+  end_course_set_up_tutorial_f358b85d: "과목 설정 튜토리얼 종료"
   end_date_cannot_be_before_start_date_eb62ed6d: "종료일은 시작일 이전 일 수 없습니다."
   end_date_e0093ed7: "종료 날짜"
   end_dates_cannot_be_before_start_dates_d6018daf: "종료일은 시작일 이전 일 수 없습니다."
   end_time_250391e8: "종료 시간"
-  end_tutorial_7fb16b6f: "자습서 종료"
+  end_tutorial_7fb16b6f: "튜토리얼 종료"
   end_user_license_agreement_6d2c666b: "최종 사용자 사용권 계약."
   ending_date_e1ea13a4: "종료일"
   ends_4fcb632: "종료 :"
@@ -7481,11 +7481,11 @@ ko:
   failed_to_log_in_7ceec561: "로그인 실패"
   failed_to_save_please_try_again_later_bb7070fb: "저장하지 못했습니다. 나중에 다시 시도하십시오."
   failed_to_submit_draft_comment_1de83451: "초안 코멘트를 제출하지 못했습니다."
-  fair_38e62237: "공정한"
-  fair_score_554e2558: "공정한 점수"
-  fair_use_bee47d77: "공정한 사용"
-  fall_grading_period_current_score_d48c7f78: "그레이딩 기간 현재 점수"
-  fall_grading_period_final_score_56d96a8f: "낙상 기간 최종 점수"
+  fair_38e62237: "보통"
+  fair_score_554e2558: "보통"
+  fair_use_bee47d77: "보통 정도의 사용"
+  fall_grading_period_current_score_d48c7f78: "가을 학기 현재 점수"
+  fall_grading_period_final_score_56d96a8f: "가을 학기 최종 점수"
   fall_grading_period_id_74ef68e: "가을 학기 ID"
   favicon_6e658914: "파비콘"
   favorites_c7e0207c: "즐겨 찾기"
@@ -7607,7 +7607,7 @@ ko:
   files_c300e900: 파일
   files_quota_percentused_of_bytesavailable_used_7f62792c: "파일 할당량 : %{bytesAvailable}의 %{percentUsed}}"
   files_toolbar_2f2f0976: "파일 도구 모음"
-  files_tutorial_tray_3ad1eea6: "파일 자습서 트레이"
+  files_tutorial_tray_3ad1eea6: "파일 튜토리얼 트레이"
   files_uploaded_519844ed: "업로드 된 파일"
   fill_in_the_blank_read_surrounding_text_1a6c73c7: "공백을 채우고 주변 텍스트를 읽으십시오"
   filled_5d8c39e: "채우는"
@@ -7699,8 +7699,8 @@ ko:
   full_name_23fdfb6d: 성명
   full_name_83cf5453: 성명
   full_name_is_required_8efbdc84: "성명은 필수입니다."
-  future_5416ea92: 미래
-  future_terms_7fba2ae6: "미래 조건"
+  future_5416ea92: 예정
+  future_terms_7fba2ae6: "예정 학기"
   general_locked_objects_6a9adafb: "일반 잠금 설정"
   generate_activity_for_user_2b0af749: "%{user}의 활동 생성"
   generate_epub_80e89ea4: "ePub 생성"
@@ -7734,7 +7734,7 @@ ko:
   go_back_ed239e69: "이전으로 가기"
   go_to_name_s_profile_eaa1826b: "%{name}님의 프로필로 이동하기"
   good_284a7a8f: 좋은
-  good_score_b02f3587: "좋은 점수"
+  good_score_b02f3587: "고득점"
   google_apps_domain_eddc8dee: "Google Apps 도메인"
   google_docs_domain_restriction_description: |-
     Google Docs 도메인 제한을 이용하면 Google Docs 제출물과 협업을 단일 도메인으로 제한할 수 있습니다. 승인되지 않은
@@ -7772,7 +7772,7 @@ ko:
   grade_point_average_2976cc59: "평균 성적"
   grade_summary:
     graph_title: "평균 %{mean}, 높음 %{high}, 낮음 %{low} '"
-    grade_summary_255289f6: "성적 요약" 
+  grade_summary_255289f6: "성적 요약" 
   grade_syncing_e78475e8: "성적 동기화"
   gradebook:
     alerts:
@@ -7942,7 +7942,7 @@ ko:
   gradebook_history_b03f8524: "채점 이력 ..."
   gradebook_individual_view_8846598e: "성적표 : 개별 보기"
   gradebook_settings_b45c6df9: "성적표 설정"
-  gradebook_tutorial_tray_d835c750: "Gradebook 자습서 트레이"
+  gradebook_tutorial_tray_d835c750: "Gradebook 튜토리얼 트레이"
   gradebook_uploads:
     no_file_attached: |-
       업로드 할 CSV가 감지되지 않았습니다. 업로드하고 다시 제출할 CSV를 선택하십시오.
@@ -8890,14 +8890,14 @@ ko:
   hide_sidebar_2b5b3776: "사이드 바 숨기기"
   hide_student_names_3e59e862: "학생 이름 숨기기"
   hide_sub_accounts_for_account_name_a6de98bd: "%{account_name}의 하위 계정 숨기기"
-  high_b5cbd048: 높은
+  high_b5cbd048: 높음
   high_contrast_description: |-
     고대비 옵션은 UI(텍스트, 버튼 등)의 색상 대비를 강화하여 좀더 선명하게 표시되도록 합니다. 주의:교육 기관 특유의 디자인이 사라질 수 있습니다.
   high_score_47924c1a: "High: %{score}"
   highest_28ad71e6: 최고
   highest_score_e080551e: "최고 점수"
-  home_351838cd: 집
-  home_tutorial_tray_66826983: "홈 자습서 트레이"
+  home_351838cd: 홈
+  home_tutorial_tray_66826983: "홈 튜토리얼 트레이"
   homework_submission_172e8354: "숙제 제출"
   honduras_504_af7aa636: "온두라스 (+504)"
   hong_kong_852_98e3b3fe: "홍콩 (+852)"
@@ -8917,8 +8917,9 @@ ko:
   i_cannot_get_things_done_until_i_hear_back_from_yo_83ba46b7: "내가 너에게서 듣기 전 까진 일을 끝낼 수가 없어."
   i_cb2f5130: i
   i_have_obtained_permission_to_use_this_file_6386f087: "이 파일을 사용할 수있는 권한을 얻었습니다."
-  i_hold_the_copyright_71ee91b1: "나는 저작권을 가지고있다."
-  i_need_some_help_but_it_is_not_urgent_d967ea0a: "나는 도움이 필요하지만 긴급하지 않다."
+  i_hold_the_copyright_71ee91b1: "저작권을 소유하고 있습니다."
+  i_ll_write_free_form_comments_when_assessing_stude_5cf50d06: "학생을 평가할 때 자유 형식의 코멘트를 작성함"
+  i_need_some_help_but_it_is_not_urgent_d967ea0a: "도움이 필요하지만 긴급하지는 않습니다."
   iceland_354_1a03c558: "아이슬란드 (+354)"
   icon_215a1dc6: 상
   icons:
@@ -8944,9 +8945,8 @@ ko:
   if_enabled_sourcedids_used_by_canvas_for_basic_out_aa2ea4b1: "사용 설정하면 Canvas에서 기본 결과로 사용하는 Sourcedids가 암호화됩니다."
   if_none_are_selected_send_to_everyone_in_the_entir_16aa0bb0: "(선택하지 않은 경우 전체 계정의 모든 사람에게 보냄)"
   if_none_are_selected_send_to_everyone_in_the_entir_21119709: "(선택하지 않은 경우 전체 하위 계정의 모든 사용자에게 보냄)"
-  if_you_change_an_assignment_s_points_possible_you__25a0edad: |-
-    과제의 점수를 변경할 경우 과제를 다시해야합니다.
-  if_you_change_an_assignment_s_points_possible_you__dba531cb: 과제의 배점을 변경할 경우, 모든 제출물에 대해 다시 채점해야 합니다.
+  if_you_change_an_assignment_s_points_possible_you__25a0edad: 과제의 배점를 변경할 경우 과제를 다시 채점해야합니다.
+  if_you_change_an_assignment_s_points_possible_you__dba531cb: 과제의 배점을 변경할 경우, 모든 제출물을 다시 채점해야 합니다.
   if_you_do_not_select_usage_rights_now_this_file_wi_40c42125: |-
     사용 권한을 지금 선택하지 않으면 이 파일은 업로드 된 후에 게시가 취소됩니다.
   if_you_enable_this_feature_be_sure_that_your_sales_566967e6: |-
@@ -8987,7 +8987,7 @@ ko:
   import_1b31507: "가져오기"
   import_content_b2fd6620: "내용 가져오기"
   import_sis_data_428cc803: "SIS 데이터 가져 오기"
-  import_tutorial_tray_8b92e956: "자습서 트레이 가져 오기"
+  import_tutorial_tray_8b92e956: "튜토리얼 트레이 가져 오기"
   important_note_educational_institutions_have_an_ob_c9350304: |-
     *Important note: 교육 기관은
     content as accessible as possible. Instructure recommends at least a 3:1
@@ -9073,13 +9073,13 @@ ko:
       문서를 공동 작업하기 전에 Canvas에서 Google 드라이브 계정에 액세스 할 수 있도록 권한을 부여해야합니다.
     authorize_google_docs: "문서에 대해 협업하기 전에 Canvas가 Google Docs 계정을 접근할 수 있도록 권한을 부여해야 합니다."
   instructions_2f88ee72: 교수
-  instructor_id_ed9c0d8b: "강사 이드"
-  instructor_is_working_on_grades_135388d2: "강사가 성적을 받고 있습니다."
-  instructor_messages_a4c28674: "강사 메시지"
-  instructor_name_36bc0f39: "강사 이름"
-  instructor_sis_id_899dd697: "이드 강사"
-  instructors_4b491a07: 강사
-  instructors_cdd595d0: 강사
+  instructor_id_ed9c0d8b: "교수자 ID"
+  instructor_is_working_on_grades_135388d2: "교수자가 성적을 받고 있습니다."
+  instructor_messages_a4c28674: "교수자 메시지"
+  instructor_name_36bc0f39: "교수자 이름"
+  instructor_sis_id_899dd697: "교수자 SIS ID"
+  instructors_4b491a07: 교수자
+  instructors_cdd595d0: 교수자
   instructure:
     alerts:
       file_previews_disabled: "이 Canvas 사이트에는 파일 미리 보기 사용 안 함"
@@ -10586,7 +10586,7 @@ ko:
           좋은 소식이 있습니다! Canvas Network에 등록하신 %{course} 과목이 곧 시작합니다.
 
 
-          과목에서 최대한 많은 것을 얻을 수 있도록 강사가 나열한 특별한 지침이나 과목 자료를 꼭 확인하십시오. Canvas
+          과목에서 최대한 많은 것을 얻을 수 있도록 교수자가 나열한 특별한 지침이나 과목 자료를 꼭 확인하십시오. Canvas
           Network의 과목 세부정보 페이지에서 찾아 보거나 아래 링크를 클릭하면 됩니다.
 
 
@@ -11854,7 +11854,7 @@ ko:
         prerequisites: "필수 조건"
         published: "공개"
   modules_c4325335: 모듈
-  modules_tutorial_tray_d58ac3cb: "모듈 자습서 트레이"
+  modules_tutorial_tray_d58ac3cb: "모듈 튜토리얼 트레이"
   month_s_5c17590e: 개월
   moodle_dropdown_many_warning_title: 이 문제 은행에는 잘못 가져올 수있는 %{count} 개의 드롭 다운 문제가 있습니다.
   moodle_dropdown_warning_title: "문제 가져오기가 올바르게 실행되지 않았을 가능성이 있습니다."
@@ -12041,7 +12041,7 @@ ko:
     설정되며 기본적으로 사용하도록 설정됩니다.
   new_topic_for_course_3d98222a: "%{course}에 대한 새로운 주제"
   new_user_s_name_909b6267: "새 사용자 이름"
-  new_user_tutorial_cdd3a446: "새 사용자 자습서"
+  new_user_tutorial_cdd3a446: "새 사용자 튜토리얼"
   new_zealand_64_f126cf2e: "뉴질랜드 (+64)"
   newest_oldest_d768cf1a: "최신 순으로 정렬"
   next_40e12421: 다음
@@ -12775,7 +12775,7 @@ ko:
       unsaved_changes: "저장하지 않은 변경 사항이 있습니다. 해당 변경 사항을 저장하지 않고 계속 진행하시겠습니까?"
   pages_e5414c2c: "페이지"
   pages_front_page_9ce5188: "페이지의 프론트 페이지"
-  pages_tutorial_tray_169464a9: "페이지 자습서 트레이"
+  pages_tutorial_tray_169464a9: "페이지 튜토리얼 트레이"
   paginated_collection:
     no_items: "항목이 없습니다."
   paginated_list:
@@ -12811,7 +12811,7 @@ ko:
   pending_message_2d9a8796: "보류 중 : %{message}"
   people_b4ebb13c: "사용자"
   people_options_cfb419a6: "사용자 옵션"
-  people_tutorial_tray_a87a6c48: "사람들 자습서 트레이"
+  people_tutorial_tray_a87a6c48: "사람들 튜토리얼 트레이"
   people_will_see_this_name_in_discussions_messages__fca9ebb2: "사람들은 토론, 메시지 및 의견에서이 이름을 볼 것입니다."
   percent_448ea947: "퍼센트"
   percent_complete_3a7edc20: "%{percent} complete"
@@ -13370,7 +13370,7 @@ ko:
         validations:
           user_and_poll_session_uniqueness: "설문 조사 세션 당 하나의 선택 만 제출할 수 있습니다."
   poor_1150a0f8: "가난한"
-  poor_score_715306e2: "나쁨 점수"
+  poor_score_715306e2: "저득점"
   port_75f69d1: 포트
   position_f9c9b93c: 위치
   position_select_c2dd3980: "위치 선택"
@@ -13782,7 +13782,7 @@ ko:
     Federation, specify urn:mace : incommon 또는 http://ukfederation.org.uk,
     respectively, for the metadata URI, and also provide your school's entity
     ID.
-  provide_tutorial_information_for_new_users_in_a_fl_c23462ac: "플라이 아웃 트레이에서 새 사용자를위한 자습서 정보를 제공하십시오."
+  provide_tutorial_information_for_new_users_in_a_fl_c23462ac: "플라이 아웃 트레이에서 새 사용자를위한 튜토리얼 정보를 제공하십시오."
   provider_attribute_b1cad655: "공급자 속성"
   provider_icon_5064fa6e: "공급자 아이콘"
   provides_users_with_a_to_do_list_dashboard_option_9334f9fa: "사용자에게 할 일 목록 대시보드 옵션을 제공합니다."
@@ -13929,7 +13929,7 @@ ko:
       question_count:
         one: "문제 %{count}개"
         other: "문제 %{count}개"
-      bookmark_bank: "이 문제 은행 북마크하기"
+      bookmark_bank: "북마크 하기"
       delete_bank: "이 문제 은행 삭제"
       edit_bank: "이 문제 은행 편집"
       unbookmark_bank: "이 문제 은행 북마크 해제하기"
@@ -13948,7 +13948,7 @@ ko:
         already_bookmarked: "이미 북마크됨"
         bookmark: "이 문제 은행 북마크하기"
         delete: "문제 은행 삭제"
-        edit: "문제 은행 세부정보 편집"
+        edit: "제목 수정"
         move_questions: "문제 이동"
       edit_warning: "문제 템플릿을 변경하더라도 해당 문제를 사용한 퀴즈는 자동으로 업데이트되지 않는다는 것을 기억하십시오."
       headings:
@@ -14116,7 +14116,7 @@ ko:
       audible_chart_description: |-
         %{above_average} 명 이상 또는 평균 이하, %{below_average} 미만입니다.
       avg_time: "평균 시간"
-      chart_title: "점수 백분위 수 차트"
+      chart_title: "점수 백분위수 차트"
       high_score: "최고 점수"
       low_score: "최저 점수"
       mean: "평균 점수"
@@ -14525,7 +14525,7 @@ ko:
             여러 줄에 같은 답이 있을 수 있고, 오른쪽에 정답 이외의 항목을 더 추가할 수 있습니다.
           missing_word: "드롭다운 이전과 이후에 들어갈 텍스트를 정의하십시오. 가능한 답변의 집합을 만들고 정답 하나를 고르십시오."
           multi_answer_sets: "아래 상자 안에서 답변 상자를 표시하려는 모든 곳에 대괄호로 둘러 싼 참조 단어(공백 없음)를 입력하십시오."
-          multiple_answers: "이 문제는 체크 상자를 나란히 표시하게 되는데 학생들은정답으로 지정된 모든 답변을 선택해야 합니다."
+          multiple_answers: "이 문제는 체크 상자를 나란히 표시하게 되는데 학생들은 정답으로 지정된 모든 답변을 선택해야 합니다."
           multiple_choice: "문제와 함께 여러 개의 답변을 입력하고 나서 하나의 정답을 선택하십시오."
           multiple_dropdowns: |-
             문제를 입력하고 각 드롭다운이 어디로 가야 하는지 지정하십시오. 그리고 각 드롭다운마다 하나의 정답과 함께 가능한 답변을
@@ -14791,8 +14791,8 @@ ko:
             버전의 퀴즈에 참여한 학생을 다시 평가하는 것을 고려해 보시기 바랍니다.
       notices:
         cant_view_submission_while_muted: "퀴즈가 성적 비공개 상태인 동안에는 퀴즈 이력을 볼 수 없음"
-        has_submissions_already: "어떤 학생이 이미 퀴즈를 치렀거나 시작했다는 점을 염두에 두십시오."
-        less_than_allotted_time: "기한에 가까울 때 퀴즈를 시작했으므로 퀴즈를 치를 충분한 시간을 가지지 못합니다."
+        has_submissions_already: "주의! 일부 학생이 이미 퀴즈에 참여하였습니다."
+        less_than_allotted_time: "기한에 가까울 때 퀴즈를 시작했으므로 퀴즈를 치를 시간이 충분하지 않습니다."
         no_submission_for_user: "사용자에 대한 제출물이 없음"
         quizzes_published:
           one: "1 개의 퀴즈가 공개되었습니다."
@@ -15210,7 +15210,7 @@ ko:
   quizzes/quiz:
     submission_action_take_quiz: "%{title} 가져 가라."
   quizzes_7e598f57: 퀴즈
-  quizzes_tutorial_tray_6f87cdd3: "퀴즈 자습서 트레이"
+  quizzes_tutorial_tray_6f87cdd3: "퀴즈 튜토리얼 트레이"
   radio_button_option_1_a8ec51f9: "라디오 버튼 옵션 1"
   radio_button_option_2_31e50043: "라디오 버튼 옵션 2"
   range_56b2f310: 범위
@@ -15429,8 +15429,8 @@ ko:
   resubmit_to_tool_name_1cf02a31: "%{tool_name}에 다시 제출하십시오" 
   resubmitted_2080646f: "다시 제출 됨"
   resubmitted_since_last_graded_8484d285: "마지막 평가 이후 다시 제출 함"
-  resume_quiz_afeceb87: "퀴즈 다시 시작"
-  resume_survey_58dce775: "설문 다시 시작"
+  resume_quiz_afeceb87: "퀴즈 참여 재개"
+  resume_survey_58dce775: "설문 참여 재개"
   resync_grades_to_sis_d4dcfe12: "SIS로 성적 재실행"
   retrieve_timeout: "구성을 찾아올 수 없음 - 서버 응답 시간 만료"
   retry_ebd5f8ba: "다시 해 보다"
@@ -16114,7 +16114,7 @@ ko:
   settings_for_tab_label_3bff4468: "%{tab_label}의 설정"
   settings_for_title_d3ca495: "%{title}에 대한 설정"
   settings_for_title_label_e103bdd6: "%{title_label}의 설정"
-  settings_tutorial_tray_6f37761b: "설정 자습서 트레이"
+  settings_tutorial_tray_6f37761b: "설정 튜토리얼 트레이"
   setup_checklist_eb8b00b8: "설치 점검 목록"
   share_important_information_with_all_users_in_your_bc49ee7f: |-
     귀하의 과목에있는 모든 사용자와 중요한 정보를 공유하십시오.
@@ -16160,7 +16160,7 @@ ko:
       published_course_tooltip: "이 과정이 공개되었습니다.."
       unpublished_course: "비공개"
       unpublished_course_tooltip: |-
-        이 과정은 게시되지 않았습니다. 학생들은과목 강사에게 연락하여 접근 할 수 있도록해야합니다.
+        이 과정은 게시되지 않았습니다. 학생들은과목 교수자에게 연락하여 접근 할 수 있도록해야합니다.
     dashboard_invitation:
       buttons:
         accept: 수락
@@ -16916,7 +16916,7 @@ ko:
   site_admin:
     domain_not_found:
       body_description: |-
-        CANVAS URL을 확인하고 다시 시도하십시오. CANVAS URL을 모르는 경우 교육 기관 또는 과목 강사에게 문의하십시오.
+        CANVAS URL을 확인하고 다시 시도하십시오. CANVAS URL을 모르는 경우 교육 기관 또는 과목 교수자에게 문의하십시오.
       body_reference: |-
         If you're interested in a free Canvas account not tied to a specific
         institution you can sign up at
@@ -17351,7 +17351,7 @@ ko:
     help_menu:
       cisco_netacad_facebook: "지원 커뮤니티"
       cisco_netacad_facebook_description: |-
-        커뮤니티 지원에 대해서는 Networking Academy Facebook 페이지를 방문하거나 강사에게 문의하십시오.
+        커뮤니티 지원에 대해서는 Networking Academy Facebook 페이지를 방문하거나 교수자에게 문의하십시오.
       community_support_description: "동료와 교류하고 도움을 받을 수 있습니다."
       community_support_forums: "커뮤니티 사용자 지원 포럼"
       contact_support: "지원팀에 문의"
@@ -17436,7 +17436,7 @@ ko:
     profile: "프로필"
   take_a_snapshot_now_5b622d85: "지금 스냅 샷 찍기"
   take_the_quiz_87214d7e: "퀴즈 참여"
-  take_the_quiz_again_8ea51a6c: "퀴즈 다시 참여"
+  take_the_quiz_again_8ea51a6c: "퀴즈 재시도"
   take_the_survey_ada59508: "설문 참여"
   take_the_survey_again_24ce22c2: "설문 다시 참여"
   teacher_5a73b637: 선생
@@ -17732,10 +17732,10 @@ ko:
   this_is_a_what_if_score_cbdc04f9: "이것은 What-If 점수입니다."
   this_is_the_currently_chosen_grade_for_this_studen_86118eb6: "이 학생에 대해 현재 선택된 성적입니다."
   this_is_the_default_email_address_f3c421fb: "기본 이메일 주소입니다."
-  this_is_your_course_landing_page_33d445ec: "귀하의 과목 방문 페이지입니다."
-  this_is_your_current_theme_4331709b: "이것이 당신의 현재 테마입니다."
-  this_item_will_reappear_when_a_new_submission_is_m_fcccfc76: "새 제출이 이루어지면이 항목이 다시 나타납니다."
-  this_item_will_reappear_when_there_are_new_grades__8f9e5383: "이 항목은 새로운 성적이 검토 될 때 다시 나타납니다."
+  this_is_your_course_landing_page_33d445ec: "과목 홈페이지입니다."
+  this_is_your_current_theme_4331709b: "현재의 테마입니다."
+  this_item_will_reappear_when_a_new_submission_is_m_fcccfc76: "새 제출이 발생하면 이 항목이 다시 나타납니다."
+  this_item_will_reappear_when_there_are_new_grades__8f9e5383: "이 항목은 새롭게 성적이 업데이트될 때 다시 나타납니다."
   this_login_is_for_provider_6f17462: "이 로그인은 %{provider}입니다."
   this_may_take_a_bit_48fe4235: "잠시만 기다려 주십시오 ..."
   this_may_take_a_bit_c061d0f6: "잠시만 기다려 주십시오 ..."
@@ -18006,7 +18006,7 @@ ko:
     yerevan: "예 레반"
     zagreb: "자그레브"
     zurich: "취리히"
-  timeline_of_messages_between_the_student_and_instr_6dbd9ad3: "학생과 강사 간의 메시지 타임 라인"
+  timeline_of_messages_between_the_student_and_instr_6dbd9ad3: "학생과 교수자 간의 메시지 타임 라인"
   timeline_showing_when_assignments_were_turned_in_bb44c8a1: "제출물 제출 시간 표시"
   timeout_when_searching_5c24ff9d: "검색시 제한 시간"
   tinymce:
@@ -18057,8 +18057,8 @@ ko:
   to_51406be9: "받는 사용자"
   to_activate_sms_enter_the_four_character_confirmat_3982a3ec: |-
     SMS를 활성화하려면 %{sms_number}에게 전송된 4 자리 확인 코드를 입력하십시오.
-  to_be_added_2959cc72: "첨가되는"
-  to_be_removed_d4b48586: "제거 될 것이다"
+  to_be_added_2959cc72: "추가됨"
+  to_be_removed_d4b48586: "제거됨"
   to_c4c44f4b: "->"
   to_change_sis_account_id_the_user_must_have_manage_4b8a37a8: "sis_account_id를 변경하려면 사용자에게 manage_sis 권한이 있어야 합니다.."
   to_configure_an_openid_connect_provider_you_need_t_5c937249: |-
@@ -18240,8 +18240,7 @@ ko:
   unused_courses_title: "사용되지 않는 과목"
   up_c553575d: Up
   update_4d8ee62: "업데이트"
-  update_and_view_sections_course_details_navigation_de248be8: |-
-    섹션, 세부정보, 네비게이션, 기능 옵션 및 외부 앱 통합을 모두 업데이트하고 봅니다. 모두 강사에게만 표시됩니다.
+  update_and_view_sections_course_details_navigation_de248be8: 섹션, 세부정보, 네비게이션, 기능 옵션 및 외부 앱 통합을 모두 업데이트하거나 확인합니다. 교수자에게만 표시됩니다.
   update_comment_8cedb4f0: "댓글 업데이트"
   update_comments_21991be0: "댓글 업데이트"
   update_criterion_edcbd330: "업데이트"
@@ -19106,8 +19105,7 @@ ko:
   you_can_leave_the_page_and_you_will_get_a_notifica_fefe11e8: |-
     페이지를 닫을 수 있으며 동기화 프로세스가 완료되면 알림을 받게됩니다.
   you_can_log_in_directly_with_this_provider_by_goin_467d7f66: "%{url}(으)로 이동하여 제공 업체에 직접 로그인 할 수 있습니다."
-  you_can_publish_your_course_from_the_home_page_whe_a36d49d6: |-
-    학생들과 공유 할 준비가되면 언제든지 홈페이지에서 강좌를 공개 할 수 있습니다. 강좌가 출판 될 때까지 강사 만이 강좌에 액세스 할 수 있습니다.
+  you_can_publish_your_course_from_the_home_page_whe_a36d49d6: 학생들과 공유 할 준비가되면 언제든지 홈페이지에서 강좌를 공개 할 수 있습니다. 강좌가 출판될 때까지 교수자만이 강좌에 액세스 할 수 있습니다.
   you_can_reply_to_this_comment_by_responding_to_thi_4fd1379e: |-
     You can reply to this comment by responding to this message, or review the
     submission details using this link: %{link}. 허용되는 경우, 필요한 경우
@@ -19272,10 +19270,9 @@ ko:
     Consumer Secret, and enter them here.
   you_will_need_to_register_an_application_on_twitte_95e7b621: |-
     [Twitter에 애플리케이션 등록] (%{twitter_url})이 필요합니다.
-
     %{callback_url}을 콜백 URL로 구성하고 액세스 수준을로 설정해야합니다.
     직접 메시지 읽기, 쓰기 및 액세스
-    응용 프로그램을 만든 후 소비자 키와 소비자 보안을 적어두고 여기에 입력하십시오.
+    응용 프로그램을 만든 후 Customer kye와 Customer Secret을 적어두고 여기에 입력하십시오.
   you_will_not_be_able_to_preview_your_changes_f7b868fb: "변경 사항을 미리 볼 수 없습니다."
   your_answer_8dad6ea4: "귀하의 답변:"
   your_browser_does_not_meet_the_minimum_requirement_2fa7c11f: 브라우저가 Canvas의 최소 요구 사항을 충족하지 않습니다. 지원되는 브라우저의 전체 목록을 보려면 * Canvas Community *를 방문하십시오.
