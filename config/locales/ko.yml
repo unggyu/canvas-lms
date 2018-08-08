@@ -2543,26 +2543,26 @@ ko:
       upload_or_choose_file: "파일을 업로드하거나 기존에 업로드한 파일을 선택하세요."
       titles:
         media_recordings_disabled: "이 Canvas 사이트에서 미디어 녹음/녹화를 사용 안 함"
-    submit_online_text_entry: 
+    submit_online_text_entry:
       additional_comments: "추가 코멘트"
-      buttons: 
+      buttons:
         submit_assignment: "제출하기"
       comments_placeholder: 코멘트...
-      instructions: 
+      instructions:
         online_text_entry: "여기에 제출 내용을 복사해서 붙여넣기하거나 직접 입력하세요."
-    submit_online_upload: 
+    submit_online_upload:
       additional_comments: "추가 코멘트"
-      buttons: 
+      buttons:
         submit_assignment: "제출하기"
       comments_placeholder: 코멘트...
-      errors: 
+      errors:
         unacceptable_file_type: "지원되지 않는 파일 형식입니다. 지원 파일 형식: %{allowed_extensions_list}"
-      labels: 
+      labels:
         uploaded_data: 파일
-      links: 
+      links:
         add_another_file: "다른 파일 추가"
         find_file: "이미 업로드한 파일을 검색하려면 여기를 클릭하세요."
-      messages: 
+      messages:
         submitting: Submitting...
       no_files: "No Files"
       upload_or_choose_file: "파일을 업로드하거나 이미 업로드한 파일을 선택하십시오."
@@ -7096,7 +7096,7 @@ ko:
         feed: "e-포트폴리오 Atom 피드"
         view_submission: "제출물 보기"
       welcome: |-
-        처음 사용하는 경우에는 마법사를 이용하여 손쉽게 사용법을 익힐 수 있습니다.  
+        처음 사용하는 경우에는 마법사를 이용하여 손쉽게 사용법을 익힐 수 있습니다.
         또는 최근 제출물을 바로 추가하거나 e-포트폴리오로 바로가기 하십시오.
       write_only_comments: "이 페이지의 설명은 비공개입니다. 설명을 추가할 수 있으나 포트폴리오 소유자만 볼 수 있게 됩니다."
     show_me: "표시하기"
@@ -7185,7 +7185,7 @@ ko:
           추가하려면 "%{manage_sections}" 링크를 클릭하십시오(%{showme2}).
         body2: |-
           %{edit_icon} 아이콘을 클릭하면 페이지 이름을 바꿀 수 있고 클릭해서 끌어다 놓으면 페이지 순서를 바꿀 수 있으며
-          %{delete_icon} 아이콘을 클릭하면 페이지를 삭제할 수 있습니다. 
+          %{delete_icon} 아이콘을 클릭하면 페이지를 삭제할 수 있습니다.
       settings:
         body: |-
           여러분의 e-포트폴리오 설정을 바꾸려면 "e-포트폴리오 설정" 링크를 클릭하십시오(%{showme}). 포트폴리오
@@ -7772,7 +7772,7 @@ ko:
   grade_point_average_2976cc59: "평균 성적"
   grade_summary:
     graph_title: "평균 %{mean}, 높음 %{high}, 낮음 %{low} '"
-   grade_summary_255289f6: "성적 요약" 
+   grade_summary_255289f6: "성적 요약"
   grade_syncing_e78475e8: "성적 동기화"
   gradebook:
     alerts:
@@ -12335,12 +12335,12 @@ ko:
     no_subject: "제목 없음"
     other_description: |-
         *교수자 및 관리자 전용 :*
-      
-        * 과목 등록 
-        * 보고서 생성 
-        * 콘텐츠 내보내기 
-        * 이전 보고서 
-        * 신규 계정 사용자 
+
+        * 과목 등록
+        * 보고서 생성
+        * 콘텐츠 내보내기
+        * 이전 보고서
+        * 신규 계정 사용자
         * 신규 학생 그룹
     other_display: "관리 알림"
     recording_ready_display: "녹음 준비"
@@ -12897,7 +12897,7 @@ ko:
     big_blue_button_settings:
       description: "[BigBlueButton](%{url}) 인스턴스에 대한 액세스가 필요합니다."
       domain_description: |-
-        설치된 BigBlueButton의 **hostname** 또는 **ip address** 
+        설치된 BigBlueButton의 **hostname** 또는 **ip address**
         (e.g. bigbluebutton.mycompany.com)
       labels:
         domain: "도메인"
@@ -13026,7 +13026,7 @@ ko:
 
         예를 들어, Instructure 형식의 CSV는 mime 유형 'text / csv'가 있는 csv 파일을 지정된 끝점에 POST하고 다음 컬럼을 포함합니다
 
-        
+
 
         "publisher_id", "publisher_sis_id", "course_id", "course_sis_id",
         "section_id", "section_sis_id", "student_id", "student_sis_id",
@@ -15426,7 +15426,7 @@ ko:
   restrict_students_from_accessing_courses_before_st_f7c22c00: "시작일 전에 강좌에 액세스하지 못하도록 제한"
   restricted_access_d3e99a39: "제한된 공개"
   resubmit_to_the_associated_tool_for_plagiarism_ana_8d84d913: "표절 분석을 위해 관련 도구에 다시 제출하십시오."
-  resubmit_to_tool_name_1cf02a31: "%{tool_name}에 다시 제출하십시오" 
+  resubmit_to_tool_name_1cf02a31: "%{tool_name}에 다시 제출하십시오"
   resubmitted_2080646f: "다시 제출 됨"
   resubmitted_since_last_graded_8484d285: "마지막 평가 이후 다시 제출 함"
   resume_quiz_afeceb87: "퀴즈 다시 시작"
@@ -17534,7 +17534,7 @@ ko:
     CANVAS SAML 엔터티 ID는 %{metadata_url}이며 서비스 공급자 메타 데이터
     해당 URL에서 사용할 수 있습니다.
   the_course_link_validator_searches_through_course__76f0bc63: |-
-    콘텐츠 링크 검사 도구는 과목 내 전 콘텐츠를 검사하여 무효하거나 응답이 없는 링크를 찾아냅니다. 
+    콘텐츠 링크 검사 도구는 과목 내 전 콘텐츠를 검사하여 무효하거나 응답이 없는 링크를 찾아냅니다.
     응답 없음으로 표시되는 링크들 중 일부는 본 서버로부터는 접근이 불가하지만 여전히 학생들은 사용할 수 있는 상태일 수도 있습니다.
   the_download_process_has_started_this_can_take_awh_7e616db1: |-
     다운로드 프로세스가 시작되었습니다. 대규모 과정의 경우에는 시간이 좀 걸릴 수 있습니다. 페이지를 나갈 수 있으며 다운로드가 완료되면 알림을 받게됩니다.
@@ -17573,7 +17573,7 @@ ko:
     communication channel in your Canvas profile. Please visit your profile and
     resend the confirmation email for this email address.
     [See https://community.canvaslms.com/docs/DOC-2281].
-    person via the Canvas Inbox 
+    person via the Canvas Inbox
     [See https://community.canvaslms.com/docs/DOC-2670].
 
     Thank you,
@@ -18172,7 +18172,7 @@ ko:
   undelivered_message_459916a9: "배달되지 않은 메시지"
   underline_all_links_description: |-
     밑줄 링크는 네비게이션 메뉴, 대시보드 및 페이지 사이드 바에 * 밑줄 친 텍스트 *의 형태로 하이퍼 링크를 표시합니다.
-    이 옵션은, 옵션과 상관없이 항상 밑줄이 표시되는 Rich Content Editor 내에서 사용자가 작성한 콘텐츠 링크에는 적용되지 않습니다. 
+    이 옵션은, 옵션과 상관없이 항상 밑줄이 표시되는 Rich Content Editor 내에서 사용자가 작성한 콘텐츠 링크에는 적용되지 않습니다.
   underline_links_e7cf9b4f: "밑줄 링크"
   undo_a7be8fef: "실행 취소"
   undo_remove_course_association_name_68eb4037: "경로 조합 제거 실행 취소 %{name}"
