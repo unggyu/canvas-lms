@@ -1508,6 +1508,8 @@ ko:
   add_custom_link_22059c0: "맞춤 링크 추가"
   add_email_address_aef3b61: "이메일 주소 추가"
   add_existing_content_7e36da66: "기존 콘텐츠 추가"
+  add_external_feed_6d437a28: "외부 피드 추가"
+  add_feed_49ed1cb2: "피드 추가"
   add_files_to_the_course_da6ffd32: "과목에 파일 추가"
   add_folder_ba50d107: "폴더 추가"
   add_grading_period_6f774dc3: "채점 기간 추가"
@@ -2138,7 +2140,7 @@ ko:
       no_submission: "제출물 없음"
       no_submission_for_assignment_screenreader: "이 과제에 대한 제출물이 없습니다. %{pointsPossible}점이 가능합니다."
       not_yet_graded: "*평가 안 됨*"
-      score_with_points_possible: "*%{score}*/%{pointsPossible} pts"
+      score_with_points_possible: "*%{score}*/%{pointsPossible} 점"
       score_with_points_possible_screenreader: "점수: %{pointsPossible}점 중 %{score}"
     assignments_list_right_side:
       links:
@@ -4809,7 +4811,7 @@ ko:
   count_minutes_a6eeeacb:
     one: 1분
     other: "%{count}분"
-    zero: "1분 이내"
+    zero: "1분"
   count_of_max_maximum_characters_fcb6ddf8: "%{count} 개 중 %{max} 최대 문자 수"
   count_options_190d6373:
     one: "1 옵션"
@@ -5093,9 +5095,8 @@ ko:
   course_section_7a988066: "과목 섹션"
   course_section_name_ea880ed1: "%{name} 과목 섹션"
   course_selection_245808bf: "과목 선택"
-  course_set_up_tutorial_6ab7c2d1: "과목 설치 튜토리얼"
-  course_set_up_tutorial_provides_tips_on_how_to_lev_3c098131: |-
-    과목 설정 튜토리얼은 Canvas의 각 페이지에서 기능 기회를 활용하는 방법에 대한 팁을 제공합니다. 특히 Canvas를 처음 사용하거나 오랫동안 처음으로 새로운 과목을 개설 할 때 유용합니다.
+  course_set_up_tutorial_6ab7c2d1: "과목 설정 튜토리얼"
+  course_set_up_tutorial_provides_tips_on_how_to_lev_3c098131: 과목 설정 튜토리얼은 각 페이지의 활용 방법에 대한 팁을 제공합니다. 특히 Canvas를 처음 사용하거나 처음으로 새로운 과목을 개설 할 때 유용합니다.
   course_settings:
     buttons:
       add_section: "섹션 추가"
@@ -5140,7 +5141,7 @@ ko:
       reset_course_content_dialog_help: "과목 콘텐츠 다시 설정"
       section_enrollments: "섹션 등록"
   course_settings_sub_navigation_b95deae: "과목 설정 Sub Navigation"
-  course_setup_wizard_is_showing_a7c087c1: "과목 설치 마법사가 표시됩니다."
+  course_setup_wizard_is_showing_a7c087c1: "과목 설정 마법사가 표시됩니다."
   course_sis_7ae8f649: "과목 sis"
   course_sis_df8b379: "과목 시스"
   course_sis_id_sis_id_or_canvas_id_4d323f5c: "과목 SIS ID (SIS_ID : ####) 또는 CANVAS ID : (###)"
@@ -6651,7 +6652,7 @@ ko:
   duplicate_module_module_name_be40ad50: "모듈 복제 %{module_name}"
   duplicate_modules_8ea35557: "모듈 복제"
   duplicate_provider_provider_d9842134: "공급자 복제 %{provider}"
-  duplicating_calendar_events_9932cd37: "캘린더 이벤트 복제"
+  duplicating_calendar_events_9932cd37: "캘린더 일정 복제"
   duplicating_module_9727f5e4: "모듈 복제 중..."
   duplicating_module_ae6670b0: "모듈 복제"
   duplicating_module_this_may_take_some_time_eef73720: "모듈 복제 중입니다.  시간이 걸릴 수 있습니다."
@@ -7345,9 +7346,7 @@ ko:
         add_feed: "피드 추가"
         adding_feed: "피드 추가 중..."
       descriptions:
-        add_new_feed: |-
-          RSS나 Atom 피드의 게시물을 이 과목의 공지로 자동으로 추가할 수 있습니다. 아래에 피드 URL을 붙여넣기 하면 새
-          항목이 추가됩니다.
+        add_new_feed: RSS나 Atom 피드의 게시물을 이 과목의 공지로 자동으로 추가할 수 있습니다. 아래에 피드 URL을 붙여넣기 하면 새 항목이 추가됩니다.
       feed_url_label: "피드 URL"
       keyword: "키워드:"
       labels:
@@ -7515,8 +7514,8 @@ ko:
     student_outcome_gradebook: "학생 학습 Mastery Gradebook"
   features_2581da: 풍모
   federated_attributes_5cbe6441: "연합 속성"
-  federated_attributes_are_information_sent_from_you_2116fb61: |-
-    페더레이션 속성은 인증 공급자가 보낸 정보로, 로그인 할 때마다 Canvas에있는 사용자의 해당 정보를 자동으로 업데이트하는 데 사용할 수 있습니다.
+  federated_attributes_are_information_sent_from_you_2116fb61: 페더레이션 속성은 인증 공급자가 보낸 정보로, 로그인 할 때마다 Canvas에있는 사용자의 해당 정보를 자동으로 업데이트하는 데 사용할 수 있습니다.
+  feed_url_8a433438: "피드 url"
   feed_url_is_required_253fda4e: "피드 URL이 필요합니다."
   field_name_31fff38e: "분야 명"
   file_a_ticket_for_a_personal_response_from_our_sup_1e1ffaff: "지원 팀의 개인 응답 티켓을 제출하십시오."
@@ -7695,6 +7694,7 @@ ko:
   from_fdd4956d: 시작
   from_from_to_to_e31f6422: "%{from}부터 %{to}까지"
   front_page_must_be_set_first_4dbbfdbe: "프론트페이지를 먼저 설정해야합니다."
+  full_article_9296bb6f: "전체 내용"
   full_name_14c958f7: "성명 :"
   full_name_23fdfb6d: 성명
   full_name_83cf5453: 성명
@@ -9492,6 +9492,7 @@ ko:
   link_number_1_9f169e48: "링크 번호 1"
   link_number_2_61fcff2: "링크 번호 2"
   link_number_3_7118ff64: "링크 번호 3"
+  link_only_995966e: "링크만"
   link_selection_1486c5d0: "링크 선택"
   link_title_189888b7: "링크 제목"
   link_url_a213671c: "링크 URL"
@@ -9711,7 +9712,7 @@ ko:
       lock_avatar: "이 사진을 잠그면 그것을 승인하고 사용자가 업데이트하는 것을 방지합니다. 계속 진행하시겠습니까?"
   manage_b88f7150: "꾸리다"
   manage_discussion_title_a2ecb3fb: "토론 관리 %{title}"
-  manage_enrollment_status_create_groups_and_add_use_3c91de1b: "등록 상태 관리, 그룹 생성 및이 페이지에서 사용자 추가."
+  manage_enrollment_status_create_groups_and_add_use_3c91de1b: "등록 상태 관리, 그룹 생성 및 사용자 추가"
   manage_grading_schemes_in_context_name_e3678273: "%{context_name}의 채점 방식 관리"
   manage_group_group_name_ac8578c6: "그룹 %{group_name} 관리"
   manage_item_name_6118d4b0: "%{item_name} 관리"
@@ -12450,7 +12451,7 @@ ko:
       format:
         delimiter: ""
   number_between_1_and_16_inclusive_31f5468d: "1부터 16까지의 숫자"
-  number_of_allowed_attempts_3d10b740: "허용된 시도 횟수"
+  number_of_allowed_attempts_3d10b740: "허용 횟수"
   number_of_graders_cde8dd54: "채점자 수"
   number_of_respondents_e1e7e8b: "응답자 수"
   number_of_scores_to_ignore_for_each_student_fb94e818: "각 학생에 대해 무시할 점수의 수"
@@ -12517,6 +12518,7 @@ ko:
   online_upload_59969592: "온라인 업로드"
   online_url_37830a72: "온라인 URL"
   only_a_maximum_of_limit_events_can_be_created_b81c405e: "최대 %{limit} 일정 만 만들 수 있습니다"
+  only_add_posts_with_a_specific_phrase_in_the_title_b8b7b04e: "제목에 특정 어구가 있는 게시물만 추가"
   only_after_their_last_attempt_3593d101: "마지막 시도 후에 만"
   only_available_to_students_with_link_not_visible_i_b21ec391: "링크가 있는 학생들만 이용 가능합니다. 학생들의 파일 목록에는 보이지 않습니다."
   only_once_after_each_attempt_cc842738: "각 시도마다 한번씩"
@@ -13833,7 +13835,7 @@ ko:
       email_sent: "확인 이메일을 %{email}로 전송했습니다. 스팸 상자를 확인하는 것을 잊지 마십시오."
       link_invalid: "사용한 링크가 더 이상 유효하지 않습니다. 로그인할 수 없는 경우에는 \"암호를 모릅니다\"를 클릭해서 암호를 다시 설정하십시오."
       password_changed: "암호 변경됨"
-  pts_699bd9aa: "pts"
+  pts_699bd9aa: "점"
   public_a749f507: 공개
   public_course_index_59270e80: "공개 과목 ​​색인"
   public_courses_title: "공개 강좌"
@@ -14739,7 +14741,7 @@ ko:
           click_to_select_filter: "이 필터를 선택하려면 클릭"
           delete: 삭제
           find_ip_address_filter: "IP 주소 필터 찾기"
-        allowed_attempts: "허용된 시도 횟수"
+        allowed_attempts: "허용 횟수"
         anonymous_submissions: "제출물을 익명으로 유지"
         buttons:
           not_published: "비공개"
@@ -14763,7 +14765,7 @@ ko:
           require_access_code: "접근 코드 요구"
           restrict_quiz: "퀴즈 제한"
           show_question_details: "퀴즈 세부정보 표시"
-        limited_attempts: "허용된 시도"
+        limited_attempts: "허용 횟수"
         links:
           cancel: 취소
           find_questions: "문제 찾기"
@@ -14830,7 +14832,7 @@ ko:
           delete_this_question: "문제 삭제하기"
           edit_this_question: "문제 편집하기"
       quiz_details:
-        allowed_attempts: "허용된 시도"
+        allowed_attempts: "허용 횟수"
         headers:
           due: 마감
           points: 배점
@@ -14867,7 +14869,7 @@ ko:
         no_more_attempts: "남아 있는 시도가 없음"
         questions_not_graded: "어떤 문제는 아직 평가 안 됨"
         score_set_manually: "교수가 이 점수를 설정함"
-        unlimited_attempts: "무제한 시도"
+        unlimited_attempts: "무제한 허용"
         view_previous_attempts: "이전 시도 보기"
       quiz_show_teacher:
         anonymous_submissions: "익명 제출물"
@@ -15045,7 +15047,7 @@ ko:
         percent_of_responses: "%{total} 중 %{percent}% 번의 시도가 이 답변을 선택함"
       quiz_summary:
         labels:
-          allowed_attempts: "허용된 시도"
+          allowed_attempts: "허용 횟수"
           attempts_left: "남은 시도"
           attempts_so_far: "현재까지의 시도"
           latest_submission: "마지막 제출"
@@ -15058,7 +15060,7 @@ ko:
         quiz_multiple_due_dates: "여러 날짜"
         quiz_no_points: "점수 없음"
         student_mute_notification: "교수가 평가 작업 중임"
-        unlimited_attempts: "무제한 시도"
+        unlimited_attempts: "무제한 허용"
       statistics:
         class_too_large: "이 과목은 통계를 표시하기에 너무 큽니다. 하지만 오른쪽 사이드바에서 다운로드하는 것은 가능합니다."
         headers:
@@ -15593,6 +15595,10 @@ ko:
     unknown_error: "검색에 오류가 발생했습니다. 다시 시도하시기 바랍니다."
     updating: "업데이트 중..."
     delete_confirm: "이 사용자를 제거하시겠습니까?"
+  row_row_message_e369e49e: "행 %{row}: %{message}"
+  rsa_sha1_c457d751: RSA-SHA1
+  rsa_sha256_3d41d605: RSA-SHA256
+  rss_feed_cf6286b3: "RSS 피드"
   rubric:
     context_name_rubric: "%{course_name} 루브릭"
     no_description: "내용 없음"
@@ -17834,7 +17840,7 @@ ko:
       short: "%b %d일 %H:%M"
       tiny: "%P %l:%M"
       tiny_on_the_hour: "%P %l:%M"
-    less_than_a_minute_ago: "1분 전 이내"
+    less_than_a_minute_ago: "1분전 미만"
     pm: 오후
     ranges:
       different_days: "%{start_date_and_time}부터 %{end_date_and_time}까지"
@@ -18119,14 +18125,14 @@ ko:
   track_individual_student_and_class_progress_c13cf2d1: "개별 학생 및 학급 진행 상황을 추적합니다."
   treat_ungraded_as_0_d38c2b41: "미채점을 0점으로 처리"
   tree_browser:
-    folder_tree_instructions: |-
-      위쪽 및 아래쪽 화살표 키를 사용하여 트리를 탐색합니다. 폴더를 펼치려면 오른쪽을 누르고 축소하려면 왼쪽으로, 선택한 항목을 선택하려면 입력하십시오.
+    folder_tree_instructions: 위쪽 및 아래쪽 화살표 키를 사용하여 트리를 탐색합니다. 폴더를 펼치려면 오른쪽을 누르고 축소하려면 왼쪽으로, 선택한 항목을 선택하려면 입력하십시오.
+  trinidad_and_tobago_1_fc2d8d1c: "트리니다드 토바고 (+1)"
+  truncated_56b1a661: 개요
+  turn_on_rtl_even_for_non_rtl_languages_8a1a8bc2: "Turn on RTL Even For Non-RTL Languages"
   turning_off_this_tutorial_will_remove_the_tutorial_dfd81b3a: 이 튜토리얼을 닫으면 귀하의 과목들에 대한 모든 튜토리얼이 더 이상 표시되지 않습니다. 사용자 설정의 기능 옵션에서 다시 표시되도록 설정할 수 있습니다.
   turnitin:
     error_1007: "업로드한 파일이 너무 큽니다."
-    error_1009: |-
-      유효하지 않은 파일 유형입니다. (유효한 파일 유형은 MS Word, Acrobat PDF, Postscript, Text,
-      HTML, WordPerfect, RTF 입니다.)
+    error_1009: 유효하지 않은 파일 유형입니다. (유효한 파일 유형은 MS Word, Acrobat PDF, Postscript, Text, HTML, WordPerfect, RTF 입니다.)
     error_1013: "Turnitin으로 평가하려면 학생의 제출물은 20단어 이상의 텍스트가 되어야 합니다."
     error_1023: "PDF 파일을 읽을 수 없습니다. 파일이 암호로 보호된 것이 아닌지 확인하시기 바랍니다."
     error_216: "이 계정의 학생 제한에 도달했습니다. 계정 관리자에게 문의하시기 바랍니다."
@@ -19167,9 +19173,7 @@ ko:
     technical expert to help
   you_may_not_reproduce_or_communicate_any_of_the_co_7636b552: |-
     해당 교육 기관의 사전 서면 동의없이이 과정에서 내보낸 파일을 포함하여이 과정의 모든 콘텐츠를 재생산하거나 전달해서는 안됩니다. 특정 온라인 사용자 계약 가이드 라인은 해당 교육 기관에 문의하십시오.
-  you_may_not_see_all_comments_right_now_because_the_96cf2051: |-
-    You may not see all comments right now because the assignment is currently
-    being graded.
+  you_may_not_see_all_comments_right_now_because_the_96cf2051: 과제 평가 중이므로 지금은 모든 코멘트가 표시되지 않을 수 있습니다.
   you_may_want_to_assign_some_tas_to_help_you_with_t_702244aa: |-
     과정에 도움이되는 TA를 할당 할 수 있습니다. TA는 학생 제출물을 평가하고, 토론을 조절하고, 마감일 및 과제 세부정보를 업데이트 할 수 있습니다.
   you_must_agree_to_the_terms_99723f97: "당신은 약관에 동의해야합니다"
