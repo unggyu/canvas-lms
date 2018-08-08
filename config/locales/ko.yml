@@ -1680,7 +1680,8 @@ ko:
   allows_teachers_to_mark_grade_data_to_be_exported__a6bf77cf: |-
     교수가 SIS 통합에 대량으로 내보낼 성적 데이터를 표시 할 수 있습니다.
   allows_the_duplicating_of_modules_in_canvas_2e15b444: "Canvas에서 모듈을 복제 할 수 있습니다."
-  allows_the_scheduling_of_recurring_calendar_events_aac71007: "되풀이 일정 관리 일정 수립"
+  allows_the_duplication_of_calendar_events_7bb0d6c5: "캘린더 일정 복제를 허용합니다."
+  allows_the_scheduling_of_recurring_calendar_events_aac71007: "반복 일정을 설정할 수 있습니다."
   allows_users_with_international_phone_numbers_to_r_f90f8522: |-
     국제 전화 번호를 사용하는 사용자는 Canvas에서 문자 메시지를받을 수 있습니다.
   always_3a59e701: 항상
@@ -1946,8 +1947,8 @@ ko:
     other: 선택한 메시지들을 삭제하시겠습니까? 이 작업은 실행 취소할 수 없습니다.
   are_you_sure_you_want_to_delete_your_reservation_t_5ae87209: "이 일정으로 예약을 삭제하시겠습니까?"
   are_you_sure_you_want_to_disable_sync_to_sisname_f_f24245c1: "모든 과제에 대해 %{sisName}과의 동기화를 사용 중지 하시겠습니까?"
-  are_you_sure_you_want_to_do_this_it_cannot_be_undo_3379a544: |-
-    이 작업을 수행 하시겠습니까? 실행 취소 할 수 없으며 성적표의 기존 성적보다 우선 적용됩니다.
+  are_you_sure_you_want_to_display_grades_for_this_a_c1c618c6: "이 과제의 성적을 학생들에게 공개하시겠습니까?"
+  are_you_sure_you_want_to_do_this_it_cannot_be_undo_3379a544: 이 작업을 수행 하시겠습니까? 실행 취소 할 수 없으며 성적표의 기존 성적보다 우선 적용됩니다.
   are_you_sure_you_want_to_remove_this_tool_7363f90b: "이 도구를 제거하시겠습니까?"
   are_you_sure_you_want_to_remove_this_user_8d1a8295: "이 사용자를 삭제하시겠습니까?"
   are_you_sure_you_want_to_report_this_profile_pictu_e22c2210: "이 프로필 사진을보고 하시겠습니까?"
@@ -2147,7 +2148,7 @@ ko:
         upcoming_assignments: "예정된 과제"
         show_only_assignments_from: "다음에서 온 과제만 표시 - "
     available_date_description:
-      available_until: "열람 죵료일"
+      available_until: "열람 종료일"
       closed: 닫힘
       not_available_until: "시작일"
     buttons:
@@ -2274,7 +2275,7 @@ ko:
       gpa_scale_explainer: |-
         GPA 채점은 모든 과제에 4.0 (또는 5.0 / 6.0) 만점제 를 사용하는 학교를 위해 설계되었습니다. 이 성적 분류 체계는 문자 방식과 비슷하지만 몇 가지 중요한 차이점이 있습니다.
       gpa_scale_input_explainer: |-
-        학점은 4.0 만점 기준으로 입력됩니다. 예를 들어, 과제의 배점이 100점인 경우, 4.0을 입력하면 100%가 되고 3.0은 87%가 됩니다.
+        성적은 4.0 만점 기준으로 입력됩니다. 예를 들어, 과제의 배점이 100점인 경우, 4.0을 입력하면 100%가 되고 3.0은 87%가 됩니다.
       gpa_scale_letters_explainer: "숫자 성적 뿐만 아니라 문자  형식의 성적을 사용할 수 있습니다."
       gpa_scale_percentage_explainer: |-
         점수를 그대로 입력하지 않고 백분율로 입력합니다. 예를 들어, 어떤 과제가 50점 만점의 경우 '40'이 아니라 '80%'로 입력합니다.
@@ -3354,11 +3355,9 @@ ko:
     event:
       due: 마감
       event_title: "마감: %{event_title}"
-    show2:
+    show:
       calendar_feed: "캘린더 피드"
-      calendar_feed_instructions: |-
-        아래 링크를 복사하여 iCal 피드를 사용할 수 있는 캘린더 앱(Google Calendar, iCal, Outlook 등)에
-        붙여넣습니다.
+      calendar_feed_instructions: 아래 링크를 복사하여 iCal 피드를 사용할 수 있는 캘린더 앱(Google Calendar, iCal, Outlook 등)에 붙여넣습니다.
       calendars: 캘린더
       feed_dialog_title: "캘린더 피드"
       feed_title: "과목 캘린더 Atom 피드"
@@ -3421,7 +3420,7 @@ ko:
   cannot_be_associated_with_a_different_account_ac863be2: "다른 계정과 연결할 수 없습니다."
   cannot_be_blank_for_any_assignees_when_post_to_sis_2edd9b2a: "Post to Sis가 선택되어있는 경우 할당된 사용자는 비워 둘 수 없습니다."
   cannot_be_changed_at_this_time_grading_error_88f5a96b: "은 (는) 현재 변경할 수 없습니다 : %{grading_error}"
-  cannot_be_changed_because_this_assignment_is_due_i_a529873f: "이 과제는 마감된 학점 기간으로 인해 변경 될 수 없습니다."
+  cannot_be_changed_because_this_assignment_is_due_i_a529873f: "이 과제는 마감된 성적 기간으로 인해 변경 될 수 없습니다."
   cannot_be_edited_for_assignments_in_closed_grading_792ef6c1: "종료 된 채점 기간의 과제에 대해 수정할 수 없습니다."
   cannot_be_nil_when_account_id_is_nil_be6d1d60: "account_id가 nil 일 때 nil이 될 수 없다."
   cannot_be_nil_when_course_id_is_nil_f539388: "course_id가 nil 일 때 nil이 될 수 없다."
@@ -5607,7 +5606,7 @@ ko:
       headings:
         to_do: "할 일"
       links:
-        show_more: "%{count} more..."
+        show_more: "%{count} 더보기..."
     unauthorized:
       invalid_link: "사용한 등록 링크가 더 이상 유효하지 않은 것으로 보입니다. 과목 강사에게 문의하여 올바르게 등록되었는지 확인하시기 바랍니다."
     assignments_needing_grading:
@@ -5837,7 +5836,7 @@ ko:
       assign_blanks: "과제를 제출하지 않은 학생에게 0점 할당"
     this_is_permanent: "상대 평가는 실행 취소할 수 없습니다. 상대 평가 이전의 성적 이력은 조회할 수 있으나 상대 평가 실행을 되돌릴 수는 없습니다."
     out_of_points_possible: "/ %{assignment.points_possible}"
-  custom_6979cd81: 커스텀
+  custom_6979cd81: 별도 지정
   custom_css_and_javascript_may_cause_accessibility__93d2a823: |-
     커스텀 CSS 나 Javascript 는 접근성 이슈를 야기하거나,
     이후 Canvas 업데이트와 충돌이 있을 수 있습니다!
@@ -6569,6 +6568,7 @@ ko:
     "이 과목을 공개 과목 색인에 포함하십시오"플래그가 활성화 된이 루트 계정에 검색 가능한 과목 목록을 표시하십시오.
   display_name_6c2cfc58: "표시 이름 :"
   display_name_b80c243e: "표시 이름"
+  display_to_students_e1301f99: "학생에게 공개"
   display_totals_for_all_grading_periods_option_4a72586: "모든 채점 기간에 대한 합계 표시"
   district_id_6f408184: "지구 ID"
   divide_into_equal_slots_of_input_value_minutes_fca83452: "%{input_value} 분의 균등 슬롯으로 나눕니다. "
@@ -6645,12 +6645,21 @@ ko:
   due_on_date_5ffb2182: "마감"
   due_time_9acd6b69: "마감 %{time}"
   duplicate_31cec192: 복제
-  duplicate_assignment_name_3ca7d753: "중복 과제 %{name}"
-  duplicate_discussion_title_43b39959: "중복 토론 %{title}"
-  duplicate_item_339f54bb: "중복 상품"
-  duplicate_module_module_name_be40ad50: "중복 모듈 %{module_name}"
-  duplicate_modules_8ea35557: "중복 모듈"
-  duplicate_provider_provider_d9842134: "중복 공급자 %{provider}"
+  duplicate_assignment_name_3ca7d753: "과제 복제 %{name}"
+  duplicate_discussion_title_43b39959: "토론 복제 %{title}"
+  duplicate_item_339f54bb: "항목 복제"
+  duplicate_module_module_name_be40ad50: "모듈 복제 %{module_name}"
+  duplicate_modules_8ea35557: "모듈 복제"
+  duplicate_provider_provider_d9842134: "공급자 복제 %{provider}"
+  duplicating_calendar_events_9932cd37: "캘린더 이벤트 복제"
+  duplicating_module_9727f5e4: "모듈 복제 중..."
+  duplicating_module_ae6670b0: "모듈 복제"
+  duplicating_module_this_may_take_some_time_eef73720: "모듈 복제 중입니다.  시간이 걸릴 수 있습니다."
+  duplication_failed_3351ffb1: "복제 실패"
+  duplication_of_title_succeeded_2e0bd645: "%{title} 복제가 완료되었습니다."
+  duration_1_minute_29c7d5ab: "기간: 1 분"
+  duration_hours_hours_and_minutes_minutes_d5da8c3: "기간: %{hours} 시간  %{minutes} 분"
+  duration_minutes_minutes_d7b9182b: "기간: %{minutes} 분"
   e_c2991d1b: e
   e_g_doe_jon_fe1d9298: "예, Doe, Jon"
   e_g_http_university_edu_helpdesk_acab04d6: "예 : http://university.edu/helpdesk"
@@ -6709,8 +6718,7 @@ ko:
     prompts:
       confirm_delete: "이 루브릭을 삭제하시겠습니까?"
       read_only_rubric: |-
-        권한이 없거나 한 곳 이상의 장소에서 사용하고 있으므로 이 루브릭을 편집할 수 없습니다. 변경한 내용은 기존 루브릭을 바탕으로 한
-        새 루브릭이 됩니다. 계속 진행하시겠습니까?
+        권한이 없거나 한 곳 이상의 장소에서 사용하고 있으므로 이 루브릭을 편집할 수 없습니다. 변경한 내용은 새 루브릭으로 저장됩니다. 계속 진행하시겠습니까?
     titles:
       edit_rubric_rating: "등급 편집"
       find_existing_rubric: "기존 루브릭 검색"
@@ -6813,12 +6821,14 @@ ko:
   email_the_user_about_this_account_creation_e63f8759: "이 계정 생성에 대해 사용자에게 이메일을 보내십시오."
   empty_stub_for_testing_only_37aad38: "빈 스텁 (테스트 용)"
   enable_6f5d1328: 사용
+  enable_anonymous_grading_of_assignments_e18f75be: "과제의 익명 채점  기능 사용"
   enable_course_as_a_blueprint_course_8515ffd5: "블루프린트 코스로 사용"
   enable_dashboard_images_for_courses_5af458b0: "과목 대시보드 이미지 사용"
   enable_feature_title_987d8e9a: "기능 활성화 : %{title}"
   enable_gradebook_list_students_by_sortable_name: |-
     Gradebook에 정렬 가능한 이름으로 학생을 나열하십시오. Sortable name의 기본값은 '성, 이름'이며 설정에서 변경할 수 있습니다.
   enable_gravatar_8a865b41: "Gravatar 사용"
+  enable_moderated_grading_bacd20d8: "채점 중재 기능 사용"
   enable_new_sis_integration_settings_ab6780a4: "새 SIS 통합 설정 사용"
   enable_reregistration_for_lti_2_b2a10444: "LTI 2에 등록 재 활성화"
   enable_student_context_card_links_eba2f2c5: "학생 컨텍스트 카드 링크 사용"
@@ -7352,6 +7362,7 @@ ko:
       phrase_to_look_for: "검색할 어구"
       posts_added: "게시물 추가됨"
       remove_feed: "%{display_name} 제거"
+  external_feeds_77f57c7d: "외부 피드"
   external_integration_keys_8b4f4548: "외부 통합 키"
   external_tool_c5a6410a: "외부 도구"
   external_tool_url_cannot_be_left_blank_a34b6bb2: "외부 도구 URL은 비워 둘 수 없습니다."
@@ -7611,11 +7622,12 @@ ko:
   filter_ip_addresses_2f296bd2: "IP 주소 필터링"
   filter_replies_by_unread_342e8e90: "답글을 읽지 않음으로 필터링"
   filters_92f2776f: 필터
-  final_grade_4d7f6545: "최종 학점"
-  final_grade_6938dca8: "최종 학점:"
-  final_grade_6e94d99e: "최종 학점:"
-  final_grade_info_2aa35d25: "최종 학점 정보"
-  final_letter_grade_80dccec1: "최종 알파벳 학점"
+  final_grade_4d7f6545: "최종 성적"
+  final_grade_6938dca8: "최종 성적:"
+  final_grade_6e94d99e: "최종 성적:"
+  final_grade_info_2aa35d25: "최종 성적 정보"
+  final_grader_can_view_other_grader_names_67736530: "최종 채점자가 다른 채점자들의 이름을 볼 수 있습니다."
+  final_letter_grade_80dccec1: "최종 알파벳 성적"
   final_score_26bcfc20: "최종 점수"
   final_score_61e15cf3: "최종 점수"
   find_8d605019: 검색
@@ -7755,10 +7767,13 @@ ko:
   grade_low_to_high_1678b713: "성적 - 낮음 - 높음"
   grade_out_of_percentage_1972bf52: "%{percentage}의 성적"
   grade_out_of_points_d401b79d: "성적 (만점 : %{points}점)"
+  grade_saved_ab539b53: "성적이 저장되었습니다."
+  grade_selection_table_dcf9d1ea: "성적 선택 테이블"
   grade_point_average_2976cc59: "평균 성적"
   grade_summary:
     graph_title: "평균 %{mean}, 높음 %{high}, 낮음 %{low} '"
-  grade_syncing_e78475e8: "성적별 동기화"
+   grade_summary_255289f6: "성적 요약" 
+  grade_syncing_e78475e8: "성적 동기화"
   gradebook:
     alerts:
       no_active_students: "죄송합니다. 과목에 활동 중인 학생이 없거나 평가할 수 있는 학생이 없습니다."
@@ -8236,7 +8251,16 @@ ko:
   grades_a61eba0a: 성적
   grades_are_now_reverted_to_original_scores_e6deade1: "성적은 이제 원래 점수로 되돌아갑니다."
   grades_are_now_showing_what_if_scores_711a8be2: "성적에 따라 what-if 점수가 표시됩니다."
+  grades_cannot_be_modified_from_this_page_as_they_h_af66cd9f: "이미 게시된 성적은 이 페이지에서 수정할 수 없습니다. (성적표에서만 수정 가능)"
+  grades_edit_773dfc24: "성적 - 편집"
   grades_for_student_aff00ba: "%{student}의 성적"
+  grades_for_this_assignment_are_now_visible_to_stud_623efda0: "이제 이 과제의 성적이 학생에게 공개되었습니다."
+  grades_moderate_317fce84: "성적 - 중재"
+  grades_posted_c274d9f8: "성적 게시됨"
+  grades_posting_bc7cfc1a: "성적 게시 중"
+  grades_view_all_grades_8bf9f8d3: "성적 - 모든 성적 보기"
+  grades_visible_to_students_1584fa83: "학생에게 성적 공개"
+  grades_were_successfully_published_to_the_gradeboo_79203993: "성적이 성적표에 성공적으로 공개되었습니다."
   gradezilla:
     alerts:
       scores_updated:
@@ -8860,6 +8884,7 @@ ko:
   hide_courses_navigation_menu_6f7c4cfd: "과목 네비게이션 메뉴 숨기기"
   hide_courses_without_enrollments_6df4dfad: "등록하지 않은 과목 숨기기"
   hide_courses_without_students_fc6fc7a0: "수강생 없는 과목 숨기기"
+  hide_details_df9ef4a2: "상세 보기 숨김"
   hide_groups_navigation_menu_62e8b3d0: "그룹 네비게이션 메뉴 숨기기"
   hide_navigation_menu_f0b3e90: "네비게이션 메뉴 숨기기"
   hide_sidebar_2b5b3776: "사이드 바 숨기기"
@@ -8880,8 +8905,9 @@ ko:
   host_is_unreachable_or_not_pointing_to_catalog_fb3fc082: "호스트에 연결할 수 없거나 카탈로그를 가리키고 있지 않습니다."
   hour_34d02553: 시간
   hour_s_b6e8d238: "시간)"
-  hours_late_989e9081: "늦은 시간"
-  hover_over_me_496521b9: "나를 가져 가라."
+  hours_late_989e9081: "지각 시간"
+  hover_over_me_496521b9: "커서 이동"
+  how_is_the_grade_determined_bb75bf53: "최종 성적을 선택하거나 별도로 지정하십시오."
   how_is_this_affecting_you_b3b6a639: "이것이 당신에게 어떤 영향을 미칩니 까?"
   how_many_minutes_ecca5ee7: "몇 분?"
   html_editor_fb2ab713: "HTML 편집기"
@@ -8920,11 +8946,9 @@ ko:
   if_none_are_selected_send_to_everyone_in_the_entir_21119709: "(선택하지 않은 경우 전체 하위 계정의 모든 사용자에게 보냄)"
   if_you_change_an_assignment_s_points_possible_you__25a0edad: |-
     과제의 점수를 변경할 경우 과제를 다시해야합니다.
-  if_you_change_an_assignment_s_points_possible_you__dba531cb: |-
-    If you change an assignment's points possible, you must regrade any
-    submissions.
+  if_you_change_an_assignment_s_points_possible_you__dba531cb: 과제의 배점을 변경할 경우, 모든 제출물에 대해 다시 채점해야 합니다.
   if_you_do_not_select_usage_rights_now_this_file_wi_40c42125: |-
-    사용 권한을 지금 선택하지 않으면이 파일은 업로드 된 후에 게시가 취소됩니다.
+    사용 권한을 지금 선택하지 않으면 이 파일은 업로드 된 후에 게시가 취소됩니다.
   if_you_enable_this_feature_be_sure_that_your_sales_566967e6: |-
     If you enable this feature, be sure that your salesforce account has these
     custom fields added exactly with the names in the left column of the table
@@ -10473,7 +10497,7 @@ ko:
         subject: "과목 내보내기 실패: %{course}"
     content_export_finished:
       email:
-        body: "'%{course}'에 대한 귀하의 콘텐츠 내보내기가 완료되었습니다."
+        body: "'%{course}'에 대한 콘텐츠 내보내기가 완료되었습니다."
         html:
           body2: "*%{course}* 과목 내보내기를 마쳤습니다."
           link: "내보내기를 보려면 클릭"
@@ -11704,6 +11728,7 @@ ko:
   moderate_assignment_name_cf59e0a7: "%{assignment} 중재"
   moderate_d0c85e92: "중재"
   moderate_grades_4f43f85d: "채점 중재"
+  moderated_assignment_12873e87: "중재 채점 과제"
   moderated_grading_cannot_be_enabled_for_group_assi_7e947ab7: "그룹 과제에 대해서는 채점 중재를 사용하도록 설정할 수 없습니다."
   moderated_grading_cannot_be_enabled_for_peer_revie_6b7eedc1: "피어 리뷰 과제에 대해서는 채점 중재를 사용하도록 설정할 수 없습니다."
   moderated_grading_e6127f72: "채점 중재"
@@ -11711,6 +11736,8 @@ ko:
   moderated_grading_setting_cannot_be_enabled_for_gr_d81fb43b: "그룹 과제에 대해서는 채정 중재 설정을 활성화 할 수 없습니다."
   moderated_grading_setting_cannot_be_enabled_for_pe_fc7b5b8b: "피어 리뷰 과제에 대해서는 채정 중재 설정을 활성화 할 수 없습니다."
   moderated_grading_setting_cannot_be_enabled_for_un_e40e6cd4: "평가 대상 외의 과제에 대해서는 채정 중재 설정을 활성화 할 수 없습니다."
+  moderation_is_unable_to_occur_at_this_time_due_to__fc2d90c9: "진행된 채점이 없으므로 현재는 채점 중개 기능을 사용할 수 없습니다."
+  moderation_page_4061aa2b: "중재 페이지"
   moderator_49b9f2e1: "중재자"
   moderator_sortorder_18063692: "중재자 %{sortOrder}"
   module_90d9fd32: "모듈"
@@ -11829,11 +11856,9 @@ ko:
   modules_c4325335: 모듈
   modules_tutorial_tray_d58ac3cb: "모듈 자습서 트레이"
   month_s_5c17590e: 개월
-  moodle_dropdown_many_warning_title: |-
-    이 문제 은행에는 잘못 가져올 수있는 %{count} 개의 여러 개의 드롭 다운 문제가 있습니다.
-  moodle_dropdown_warning_title: "다시 선다 문제를 올바르게 가져오지 못함"
-  moodle_formula_many_warning_title: |-
-    이 문제 은행에는 %{count} 개의 수식 문제가 있으며 가능한 답을 재생성해야합니다.
+  moodle_dropdown_many_warning_title: 이 문제 은행에는 잘못 가져올 수있는 %{count} 개의 드롭 다운 문제가 있습니다.
+  moodle_dropdown_warning_title: "문제 가져오기가 올바르게 실행되지 않았을 가능성이 있습니다."
+  moodle_formula_many_warning_title:  이 문제 은행에는 %{count} 개의 수식 문제가 있으며 가능한 답을 재생성 해야 합니다.
   moodle_formula_warning_title: "수식 문제에 대해 가능한 답변을 다시 생성해야합니다."
   more_cf9cc661: 더
   more_courses_5ebbe998: "다른 과목"
@@ -12426,6 +12451,7 @@ ko:
         delimiter: ""
   number_between_1_and_16_inclusive_31f5468d: "1부터 16까지의 숫자"
   number_of_allowed_attempts_3d10b740: "허용된 시도 횟수"
+  number_of_graders_cde8dd54: "채점자 수"
   number_of_respondents_e1e7e8b: "응답자 수"
   number_of_scores_to_ignore_for_each_student_fb94e818: "각 학생에 대해 무시할 점수의 수"
   numpoints_points_b1f0666a: "%{numPoints} 점"
@@ -12536,8 +12562,8 @@ ko:
   out_of_formattedoutof_e08e90d5: " / %{formattedOutOf}"
   out_of_n_assignment_points_possible_3b026ea9: "/ %{n_assignment.points_possible}"
   out_of_points_37a749d7: "( / %{points})"
-  out_of_points_possible_8ab14f7: "배점 %{points_possible}"
-  out_of_pointspossible_3fb5ee20: "배점 %{pointsPossible}"
+  out_of_points_possible_8ab14f7: "%{points_possible}"
+  out_of_pointspossible_3fb5ee20: "%{pointsPossible}"
   outcome_da397d20: 성과
   outcome_group_39fae76f: "성과 그룹"
   outcome_groups:
@@ -13872,7 +13898,7 @@ ko:
     load_questions: "문제 로드 중..."
     loading_more_fail: "더 많은 문제를 로드하는 데 실패했습니다. 다시 시도하시기 바랍니다."
     move_questions: "문제 이동"
-    multiple_questions: "여러 문제"
+    multiple_questions: "(복수개의 문제)"
     question_bank: "문제 은행"
     remove_outcome_from_bank: "이 성과를 은행에서 제거하시겠습니까?"
     title:
@@ -13923,7 +13949,7 @@ ko:
         bookmark: "이 문제 은행 북마크하기"
         delete: "문제 은행 삭제"
         edit: "문제 은행 세부정보 편집"
-        move_questions: "여러 문제 이동"
+        move_questions: "문제 이동"
       edit_warning: "문제 템플릿을 변경하더라도 해당 문제를 사용한 퀴즈는 자동으로 업데이트되지 않는다는 것을 기억하십시오."
       headings:
         aligned_outcomes: "정렬된 성과"
@@ -13938,7 +13964,7 @@ ko:
       loading_banks: "문제 은행 로드 중..."
       mastery_threshold: "%{threshold_percentage}에서 숙달"
       move_copy: "이동/복사"
-      select_bank: "이 문제를 위한 대상 문제 은행을 선택하십시오:"
+      select_bank: "이동할 대상 문제 은행을 선택하십시오:"
       show_details: "문제 세부정보 표시"
   question_f06476d1: 문제
   question_group_837b8014: "문제 그룹"
@@ -14260,7 +14286,7 @@ ko:
       finished_in_duration: "%{duration} 안에 마침"
       time_up: "시간 종료!"
       titles:
-        autosubmit_dialog: "탁월한 퀴즈 제출"
+        autosubmit_dialog: "퀴즈 제출"
         extend_quiz_time: "퀴즈 시간 연장"
         student_extensions: "학생 연장"
     more_questions: "더 많은 문제"
@@ -14657,9 +14683,9 @@ ko:
         in_progress: "진행 중"
         labels:
           ending: 종료
-          extra_attempts: "추가 시도"
-          manually_unlock: "다음 시도에 대해 수동으로 퀴즈 잠금 해제"
-          reset_has_seen_results: "한 번 더 결과를 보게하십시오."
+          extra_attempts: "추가 시도 횟수"
+          manually_unlock: "다음 시도에 대비해, 이 퀴즈를 수동으로 퀴즈 잠금 해제"
+          reset_has_seen_results: "한 번 더 결과를  보게 하십시오."
           started: "시작됨"
         maximum_of_1440_minutes: "최대 1440 분 (24 시간)"
         minutes: 분
@@ -14677,7 +14703,7 @@ ko:
         submitting: "제출 중..."
         titles:
           change_user_extensions: "사용자 연장 바꾸기"
-          extra_attempts: "추가 추가 시도"
+          extra_attempts: "추가 시도 횟수"
           extra_quiz_minutes: "각 시도마다 추가 분"
           manually_unlocked: "수동으로 잠금 해제함"
           minutes_to_add: "추가할 시간(분)"
@@ -14725,7 +14751,7 @@ ko:
         hide_correct_answers_at: "정답 숨김 시간"
         hints:
           question_detail_disabled: "참고: %{question_count} 이상일 때는 문제 세부정보를 이용할 수 없습니다."
-          quiz_score: "학생이 설문을 치르면 자동으로 학점을 받게 됨"
+          quiz_score: "학생이 설문을 치르면 자동으로 성적을 받게 됨"
         label:
           time_limit: "시간 제한"
         labels:
@@ -14923,7 +14949,7 @@ ko:
           unlock_survey: "지금 학생이 이 설문을 치르도록 함"
         course_concluded_notice: "이 퀴즈는 과목이 끝나면 더 이상 사용할 수 없습니다."
         labels:
-          available_until: "열람 죵료일"
+          available_until: "열람 종료일"
           no_time_limit: "시간 제한 없음"
           warning_icon: 경고
         links:
@@ -15196,8 +15222,8 @@ ko:
   rating_score_22cfc724: 성적
   rating_title_3b60881e: "평가 제목"
   rating_updated_7aff90ea: "성적 업데이트"
-  ratio_answered_correctly_b0c1e7d: "%{ratio}% 올바르게 대답했습니다"
-  ratio_responded_correctly_6d890107: "%{ratio}% 올바르게 응답했습니다"
+  ratio_answered_correctly_b0c1e7d: "%{ratio}% 정답율"
+  ratio_responded_correctly_6d890107: "%{ratio}% 정답율"
   re_activate_user_f7d77c9a: "사용자 재활성화"
   re_reported_b9671073: "다시 신고 됨"
   re_submit_assignment_b3e2bd28: "과제 다시 제출"
@@ -16409,12 +16435,10 @@ ko:
         locked: "일단 사용하기 시작하면 루브릭을 바꿀 수 없습니다."
         rubric_in_use:
           one: |-
-            이 루브릭을 사용해서 학생 %{count}명을 이미 평가했다는 것을 염두에 두십시오. 이를 변경하면 평가에 영향을
-            미칩니다.
+            이 루브릭으로 학생 %{count}명을 이미 평가했습니다. 변경 내용은 평가에 영향을 줄 수 있습니다.
           other: |-
-            이 루브릭을 사용해서 학생 %{count}명을 이미 평가했다는 것을 염두에 두십시오. 이를 변경하면 평가에 영향을
-            미칩니다.
-        rubric_in_use2: "이미 이 루브릭을 가지고 학생을 평가했습니다. 주요 변경은 평가 결과에 영향을 미칠 수도 있습니다."
+            이 루브릭으로 학생 %{count}명을 이미 평가했습니다. 변경 내용은 평가에 영향을 줄 수 있습니다.
+        rubric_in_use2: "이미 이 루브릭으로 학생을 평가했습니다. 변경을 하면 평가 결과에 영향을 미칠 수도 있습니다."
       out_of: "%{points} */ %{total}*"
       rubric: "루브릭"
       rubric_title: 제목
@@ -16811,6 +16835,7 @@ ko:
   show_courses_from_8a087f63: "출처 :"
   show_courses_navigation_menu_7ad1a8d4: "과목 네비게이션 메뉴 표시"
   show_deleted_replies_a2e0a36f: "삭제된 답글 표시"
+  show_details_194cf390: "상세 보기 표시"
   show_exceptions_270ea1c5: "예외 표시"
   show_groups_navigation_menu_1521d38d: "그룹 네비게이션 메뉴 표시"
   show_inactive_enrollments_8f4c4824: "비활성 등록 건 표시"
@@ -17077,6 +17102,7 @@ ko:
   student_name_options_cb029725: "학생 이름 옵션"
   student_names_must_be_hidden_because_anonymous_gra_d2ca7255: "익명 채점이므로 학생 이름은 표시되지 않아야 합니다."
   student_names_must_be_hidden_because_this_is_an_an_3c82287d: "익명 설문 조사이므로 학생 이름은 표시되지 않아야 합니다."
+  student_number_db6f06c1: "학생 %{number}"
   student_outcome_gradebook_description: |-
     성과 성적표를 이용하면 수업 성과에 대한 학생과 과목 상황을 빠르게 참조해 볼 수 있습니다.
     학습 성과는 성적표와 같은 스타일로 표시되고 학생의 진척 상황은 점수와 함께 달성/거의 달성/미흡 으로 표시됩니다.
@@ -17116,7 +17142,7 @@ ko:
     one: "이 설문을 치르지 않은 학생 (%{count})"
     other: "이 설문을 치르지 않은 학생 (%{count})"
     zero: "이 설문을 치르지 않은 학생"
-  students_will_automatically_receive_full_credit_on_cc61df39: "설문에 응한 학생은 자동으로 전액 학점을 받게됩니다."
+  students_will_automatically_receive_full_credit_on_cc61df39: "설문에 응한 학생은 자동으로 만점을 받게됩니다."
   students_with_no_submissions_title: "미제출 학생"
   sub_account_daeadd0: "하위 계정"
   sub_accounts:
@@ -17614,6 +17640,7 @@ ko:
   there_was_a_problem_showing_the_teacher_notes_colu_a6e4a2bc: "교수 메모 열을 표시하는 중에 문제가 발생했습니다."
   there_was_a_problem_submitting_your_set_27ca2ed0: "설정을 제출하는 중에 문제가 발생했습니다."
   there_was_a_problem_toggling_the_content_lock_2a5d678b: "콘텐츠 잠금을 해제하는 중에 문제가 발생했습니다."
+  there_was_a_problem_updating_the_assignment_61b9b98b: "과제를 업데이트하는 중에 문제가 발생했습니다."
   there_was_a_problem_updating_the_comment_5f3595b9: "댓글을 업데이트하는 중에 문제가 발생했습니다."
   there_was_a_problem_updating_the_submission_6e5280a1: "제출을 업데이트하는 중에 문제가 발생했습니다."
   there_was_an_error_fetching_submission_comments_ce153077: "제출 의견을 가져 오는 중 오류가 발생했습니다."
@@ -17657,7 +17684,7 @@ ko:
   this_assignment_is_excused_and_will_not_be_conside_5892de1f: |-
     This assignment is excused and will not be considered in the total
     calculation
-  this_assignment_is_in_a_closed_grading_period_for__a22bb4ed: "이 과제는 이 학생의 학점 마감 기간입니다."
+  this_assignment_is_in_a_closed_grading_period_for__a22bb4ed: "이 과제는 이 학생의 성적 마감 기간입니다."
   this_assignment_is_muted_915e2dab: "이 과제는 숨김 상태입니다."
   this_assignment_is_not_applicable_to_this_student_c149a5ad: "이 과제는이 학생에게는 적용되지 않습니다."
   this_assignment_is_not_graded_576f1244: "이 과제는 점수가 매겨지지 않습니다."
@@ -18032,7 +18059,7 @@ ko:
     SMS를 활성화하려면 %{sms_number}에게 전송된 4 자리 확인 코드를 입력하십시오.
   to_be_added_2959cc72: "첨가되는"
   to_be_removed_d4b48586: "제거 될 것이다"
-  to_c4c44f4b: "다음 요일로"
+  to_c4c44f4b: "->"
   to_change_sis_account_id_the_user_must_have_manage_4b8a37a8: "sis_account_id를 변경하려면 사용자에게 manage_sis 권한이 있어야 합니다.."
   to_configure_an_openid_connect_provider_you_need_t_5c937249: |-
     OpenID Connect 공급자를 구성하려면 권한 부여 및 토큰 URL이 필요합니다.
@@ -19250,11 +19277,10 @@ ko:
     직접 메시지 읽기, 쓰기 및 액세스
     응용 프로그램을 만든 후 소비자 키와 소비자 보안을 적어두고 여기에 입력하십시오.
   you_will_not_be_able_to_preview_your_changes_f7b868fb: "변경 사항을 미리 볼 수 없습니다."
-  your_answer_8dad6ea4: "너의 답:"
-  your_browser_does_not_meet_the_minimum_requirement_2fa7c11f: |-
-    브라우저가 Canvas의 최소 요구 사항을 충족하지 않습니다. 지원되는 브라우저의 전체 목록을 보려면 * Canvas Community *를 방문하십시오.
+  your_answer_8dad6ea4: "귀하의 답변:"
+  your_browser_does_not_meet_the_minimum_requirement_2fa7c11f: 브라우저가 Canvas의 최소 요구 사항을 충족하지 않습니다. 지원되는 브라우저의 전체 목록을 보려면 * Canvas Community *를 방문하십시오.
   your_comment_was_auto_saved_as_a_draft_c49d3510: "코멘트가 임시 저장되었습니다."
-  your_content_has_been_exported_bbb57764: "콘텐츠가 내보내기되었습니다."
+  your_content_has_been_exported_bbb57764: "콘텐츠가 내보내기 되었습니다."
   your_course_db806851: "귀하의 과목"
   your_custom_theme_has_been_successfully_applied_eaa0fc82: "사용자 정의 테마가 적용되었습니다."
   your_email_address_f881e583: "귀하의 이메일 주소"
