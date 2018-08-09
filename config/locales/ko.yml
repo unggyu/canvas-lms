@@ -4139,7 +4139,7 @@ ko:
         move_to_select_title: "다음 요일로"
         remove_day_substitution_link: "요일 대체 제거"
         remove_day_substitution_link_label: "요일 대체 제거"
-        to_happen_on: "->"
+        to_happen_on: ""
       external_tool_launch:
         course: 과목
         find_a_course: "과목 찾기"
@@ -12564,8 +12564,9 @@ ko:
   out_of_formattedoutof_e08e90d5: " / %{formattedOutOf}"
   out_of_n_assignment_points_possible_3b026ea9: "/ %{n_assignment.points_possible}"
   out_of_points_37a749d7: "( / %{points})"
-  out_of_points_possible_8ab14f7: "%{points_possible}"
-  out_of_pointspossible_3fb5ee20: "%{pointsPossible}"
+  out_of_points_possible_8ab14f7: "점 / 배점 %{points_possible}점"
+  out_of_pointspossible_3fb5ee20: "점 / 배점 %{pointsPossible}점"
+  out_of_pointspossible_c163105a: "점 / 배점 %{pointsPossible}점"
   outcome_da397d20: 성과
   outcome_group_39fae76f: "성과 그룹"
   outcome_groups:
@@ -18065,7 +18066,7 @@ ko:
     SMS를 활성화하려면 %{sms_number}에게 전송된 4 자리 확인 코드를 입력하십시오.
   to_be_added_2959cc72: "추가됨"
   to_be_removed_d4b48586: "제거됨"
-  to_c4c44f4b: "->"
+  to_c4c44f4b: ""
   to_change_sis_account_id_the_user_must_have_manage_4b8a37a8: "sis_account_id를 변경하려면 사용자에게 manage_sis 권한이 있어야 합니다.."
   to_configure_an_openid_connect_provider_you_need_t_5c937249: |-
     OpenID Connect 공급자를 구성하려면 권한 부여 및 토큰 URL이 필요합니다.
