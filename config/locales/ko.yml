@@ -7991,7 +7991,7 @@ ko:
       click_to_change: "다른 점수를 테스트하려면 클릭"
       close_comments: 닫기
       close_comments_label: "의견 받지 않기"
-      close_rubric: "루브릭 마감"
+      close_rubric: "루브릭 닫기"
       close_score: 닫기
       close_score_screenreader: "점수 세부정보 마감"
       collapse: "모든 학습 습득 성과 그룹을 접습니다."
@@ -15826,7 +15826,7 @@ ko:
   search_by_user_dd3ad189: "사용자 검색"
   search_courses_591bc900: "과목 검색 ..."
   search_courses_7b5c4ab3: "과목 검색"
-  search_courses_by_teacher_e9760a48: "교수 별 과목 검색 ..."
+  search_courses_by_teacher_e9760a48: "교수별 과목 검색 ..."
   search_entries_or_author_63fb0a86: "항목이나 작성자 검색"
   search_flickr_6f28b02e: "플리커 검색"
   search_for_a_deleted_course_by_id_f553398d: "ID로 삭제 된 과목 검색"
@@ -17452,8 +17452,8 @@ ko:
   take_the_quiz_again_8ea51a6c: "퀴즈 재시도"
   take_the_survey_ada59508: "설문 참여"
   take_the_survey_again_24ce22c2: "설문 다시 참여"
-  teacher_5a73b637: 선생
-  teacher_s_fdefb2c: "교수 (들)"
+  teacher_5a73b637: 교수
+  teacher_s_fdefb2c: "교수"
   teachers_52e2423f: 교수
   teal_f729a294: "물오리"
   tell_us_how_and_when_you_would_like_to_be_notified_de3ed2bc: "일정 알림 방법 및 시기를 설정할 수 있습니다."
@@ -18900,7 +18900,7 @@ ko:
   when_people_visit_your_course_this_is_the_first_pa_5093ec45: |-
     사용자가 방문하였을때 이 페이지가 제일 먼저 보이게 됩니다.
     모듈 페이지를 홈페이지로 설정하였습니다만, 변경 할 수 있습니다.
-  whenever_b943b119: "할때는 언제나"
+  whenever_b943b119: "항상"
   where_would_you_like_to_move_title_fabd6e8f: "%{title}을(를) 어디로 옮기시겠습니까?"
   which_course_is_this_question_about_f819a158: "어떤 과목가이 문제입니까?"
   who_can_create_new_courses_7a6c1338: "누가 새로운 과목을 만들 수 있습니까?"
