@@ -8888,6 +8888,7 @@ ko:
   hide_details_df9ef4a2: "상세 보기 숨김"
   hide_groups_navigation_menu_62e8b3d0: "그룹 네비게이션 메뉴 숨기기"
   hide_navigation_menu_f0b3e90: "네비게이션 메뉴 숨기기"
+  hide_score_total_for_assessment_results_d0ef117f: "평가 결과에서 총점 숨기기"
   hide_sidebar_2b5b3776: "사이드 바 숨기기"
   hide_student_names_3e59e862: "학생 이름 숨기기"
   hide_sub_accounts_for_account_name_a6de98bd: "%{account_name}의 하위 계정 숨기기"
