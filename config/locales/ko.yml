@@ -19097,7 +19097,8 @@ ko:
   you_are_currently_acting_as_user_name_8d2be0ee: "현재 %{user_name} (으)로 활동 중입니다."
   you_are_currently_logged_into_student_view_3e8a1da: "현재 학생 보기로 로그인되어 있습니다."
   you_are_here_54075d8c: "현재 위치 :"
-  you_are_logged_in_at_institution1_using_your_crede_3f5bb205: %{institution2}의 자격 증명을 사용하여 %{institution1}에 로그인했습니다.
+  you_are_logged_in_at_institution1_using_your_crede_3f5bb205: |-
+    %{institution2}의 자격 증명을 사용하여 %{institution1}에 로그인했습니다.
   you_are_logged_out_of_canvas_8b5fc59a: "Canvas에서 로그 아웃되었습니다."
   you_are_not_authorized_to_disable_the_sync_to_name_d283c3e0: "%{name}에 대한 동기화를 비활성화 할 권한이 없습니다."
   you_are_not_authorized_to_disable_the_sync_to_sisn_54aebeb0: "%{sisName}에 대한 동기화를 비활성화 할 권한이 없습니다."
