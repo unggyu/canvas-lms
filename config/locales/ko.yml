@@ -3936,6 +3936,7 @@ ko:
   configure_tool_app_3b1bb50b: "%{tool} 앱을 구성 하시겠습니까?"
   configure_toolname_app_651371be: "%{toolName} 앱 구성"
   confirm_contact_method_29d6fe4b: "연락처 확인"
+  confirm_delete_6febeafb: "삭제 확인"
   confirm_deletion_b2efe7d4: "삭제 확인"
   confirm_removal_a9bb889: "제거 확인"
   confirm_reservation_removal_e6350e7c: "예약 제거 확인"
@@ -9072,7 +9073,7 @@ ko:
     authorize_google_drive: |-
       문서를 공동 작업하기 전에 Canvas에서 Google 드라이브 계정에 액세스 할 수 있도록 권한을 부여해야합니다.
     authorize_google_docs: "문서에 대해 협업하기 전에 Canvas가 Google Docs 계정을 접근할 수 있도록 권한을 부여해야 합니다."
-  instructions_2f88ee72: 교수
+  instructions_2f88ee72: 지침
   instructor_id_ed9c0d8b: "교수자 ID"
   instructor_is_working_on_grades_135388d2: "교수자가 성적을 받고 있습니다."
   instructor_messages_a4c28674: "교수자 메시지"
@@ -19082,16 +19083,20 @@ ko:
   xml_configuration_5ea1b942: "XML 구성"
   yellow_4cf93785: 노랑
   yes_dde87d5: "예"
-  yo_e4ee15a4: Yo
-  you_are_about_to_lose_any_unsaved_changes_would_yo_e255f393: |-
-    저장되지 않은 변경 사항을 잃게됩니다.
-
-    계속 진행 하시겠습니까?
+  yo_e4ee15a4: 예
+  yes_install_tool_f51b3278: "네, 설치합니다."
+  yes_remove_86a61759: "네, 제거합니다."
+  you_are_about_to_delete_count_announcements_are_yo_96a2b383: 
+    one: "1개의 공지를 삭제합니다. 계속 진행하시겠습니까?"
+    other: "%{count}개의 공지를 삭제합니다. 계속 진행하시겠습니까?"
+  you_are_about_to_delete_count_discussions_are_you__7ff455aa: 
+    one: "1개의 토론을 삭제합니다. 계속 진행하시겠습니까?"
+    other: "%{count}개의 토론을 삭제합니다. 계속 진행하시겠습니까?"
+  you_are_about_to_lose_any_unsaved_changes_would_yo_e255f393: 저장되지 않은 변경 사항을 잃게됩니다. 진행하시겠습니까?
   you_are_currently_acting_as_user_name_8d2be0ee: "현재 %{user_name} (으)로 활동 중입니다."
-  you_are_currently_logged_into_student_view_3e8a1da: "현재 학생 보기에 로그인되어 있습니다."
-  you_are_here_54075d8c: "당신은 여기에 있습니다 :"
-  you_are_logged_in_at_institution1_using_your_crede_3f5bb205: |-
-    %{institution2}의 자격증명을 사용하여 %{institution1}에 로그인했습니다.
+  you_are_currently_logged_into_student_view_3e8a1da: "현재 학생 보기로 로그인되어 있습니다."
+  you_are_here_54075d8c: "현재 위치 :"
+  you_are_logged_in_at_institution1_using_your_crede_3f5bb205: %{institution2}의 자격 증명을 사용하여 %{institution1}에 로그인했습니다.
   you_are_logged_out_of_canvas_8b5fc59a: "Canvas에서 로그 아웃되었습니다."
   you_are_not_authorized_to_disable_the_sync_to_name_d283c3e0: "%{name}에 대한 동기화를 비활성화 할 권한이 없습니다."
   you_are_not_authorized_to_disable_the_sync_to_sisn_54aebeb0: "%{sisName}에 대한 동기화를 비활성화 할 권한이 없습니다."
