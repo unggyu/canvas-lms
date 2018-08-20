@@ -16178,7 +16178,7 @@ ko:
       buttons:
         accept: 수락
         decline: 거부
-      invitation_text: "[%{course}] (%{link_to_course})에 %{enrollment_type_with_indefinite_article}(으)로 참여하도록 초대 받았습니다."
+      invitation_text: "[%{course}](%{link_to_course})에 %{enrollment_type_with_indefinite_article}(으)로 참여하도록 초대 받았습니다."
     error_form:
       message_failed: "보고서가 전송되지 않았습니다. 다시 시도하십시오."
       message_sent: "감사합니다!"
