@@ -97,7 +97,7 @@ ko:
   locales:
     ko: 한국말
   bigeasy_locale: ko_KR
-  crowdsourced: true
+  crowdsourced: false
 mi:
   locales:
     mi: Reo Māori (Aotearoa)
