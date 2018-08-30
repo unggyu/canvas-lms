@@ -973,7 +973,7 @@ ja:
   proper_noun_singular_genitive: "%{noun}"
 ko:
   bigeasy_locale: ko_KR
-  crowdsourced: true
+  crowdsourced: false
   date:
     datepicker:
       column_headings:
