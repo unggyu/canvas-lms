@@ -14586,10 +14586,10 @@ ko:
           fill_in_multiple_blanks: "복수 빈칸 채우기"
           matching: "짝짓기"
           missing_word: "빠진 단어"
-          multiple_answers: "복수 해답"
-          multiple_choice: "복수 선택"
+          multiple_answers: "객관식(정답 다수)"
+          multiple_choice: "객관식(정답 하나)"
           multiple_dropdowns: "목록에서 선택"
-          numerical: "숫자로 된 답변"
+          numerical: "숫자 답변"
           short_answer: "빈칸 채우기"
           text_only: "텍스트(문제 아님)"
           true_false: "참/거짓"
@@ -16369,7 +16369,7 @@ ko:
       no_recent_messages: "최근 메시지 없음"
     pending_enrollment:
       designer: "%{course} 디자이너입니다."
-      designer_title: "다지이너로 초대됨 - 과목을 보려면 클릭"
+      designer_title: "디자이너로 초대됨 - 과목을 보려면 클릭"
       observer: "%{course} 관찰자입니다."
       observer_title: "관찰자로 초대됨 - 과목을 보려면 클릭"
       student: "%{course} 학생입니다."
@@ -16765,7 +16765,7 @@ ko:
       status:
         loading: "로드 중"
     enrollment:
-      enrolled_as_designer: "다지이너로 등록"
+      enrolled_as_designer: "디자이너로 등록"
       enrolled_as_limited_designer: "섹션만 액세스하는 디자이너로 등록"
       enrolled_as_limited_observer: "섹션만 액세스하는 관찰자로 등록"
       enrolled_as_limited_student: "섹션만 액세스하는 학생으로 등록"
