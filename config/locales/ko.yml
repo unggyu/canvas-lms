@@ -1662,6 +1662,7 @@ ko:
   all_weights_must_be_greater_than_or_equal_to_0_cc2dcdf1: "모든 가중치는 0보다 크거나 같아야 합니다."
   allow_a_moderator_to_review_multiple_independent_g_752c4b90: 복수의 채점자가 채점한 결과에 대하여 중재자가 리뷰하여 최종 점수를 결정할 수 있도록 합니다.
   allow_bulk_grade_export_to_sis_e11a6e66: "SIS로 대량 내보내기 허용"
+  allow_comments_a1f45d8: "댓글 허용"
   allow_course_content_to_be_downloaded_and_viewed_o_48a0d252: "과목 콘텐츠를 오프라인에서 다운로드하고 볼 수 있도록 허용"
   allow_course_images_to_be_assigned_to_a_course_and_82fb7bdd: 과목 이미지를 과목에 할당하고 대시보드 카드에 사용하도록 허용합니다.
   allow_dashboard_cards_to_be_reordered_for_each_use_81f989d7: "대시보드 카드를 각 사용자별로 재정렬 할 수 있습니다."
@@ -1814,8 +1815,10 @@ ko:
           one: "게시글 %{count}개 추가됨"
           other: "게시글 %{count}개 추가됨"
   announcements_a4b8ed4a: 공지
-  announcements_loaded_e9335d5f: "공지 사항이로드되었습니다!"
+  announcements_locked_successfully_43d58107: "공지에 대해 댓글 금지 설정 되었습니다."
+  announcements_loaded_e9335d5f: "공지 사항이 로드 되었습니다!"
   announcements_tutorial_tray_994287d6: "공지 튜토리얼 트레이"
+  announcements_unlocked_successfully_1432da9d: "공지에 대해 댓글 허용 설정 되었습니다."
   anonymize_all_annotations_made_by_instructors_on_s_4f2b70a5: SpeedGrader에서 제출물에 대한 교수자의 모든 주석을 익명 처리 합니다.
   anonymous_e1b8ad27: 익명
   anonymous_grading_ccb5045c: "익명 채점"
@@ -3775,10 +3778,10 @@ ko:
     "만약 첨부파일 업로드가 필요하다면, Canvas 에 로그인하여 이 메시지에 회신하세요."
   comments_e07bcbe3: "코멘트"
   common_cartridge_description: "Common Cartridge 패키지를 가져올 중재 JSON 형식으로 변환"
-  common_cartridge_display: "공통 카트리지"
-  common_cartridge_file_description: "공통 카트리지 1.x 패키지"
+  common_cartridge_display: "Common Cartridge"
+  common_cartridge_file_description: "Common Cartridge 1.x 패키지"
   common_cartridge_name: "Common Cartridge 가져오기"
-  common_timezones_2b00baba: "일반적인 시간대"
+  common_timezones_2b00baba: "일반 시간대"
   communicate_to_your_students_exactly_what_will_be__7312d45d: |-
     과목 전반에 걸쳐 학생들에게 필요한 것을 정확히 연대순으로 학생들에게 알려줍니다. 생성 한 과제 및 일정을 기반으로 내장 된 강의 계획서를 작성하십시오.
   communication_5255723c: 커뮤니케이션
@@ -3946,7 +3949,7 @@ ko:
   content_1440204b: "콘텐츠"
   content_changed_exceptions_e8bff81e: "내용이 변경된 예외 :"
   content_choice_51f4ca0f: "콘텐츠 선택"
-  content_export_files_cannot_be_downloaded_after_da_2872b0e4: "내보내기 한 파일은 %{days} 일 후에는 다운로드 할 수 없습니다."
+  content_export_files_cannot_be_downloaded_after_da_2872b0e4: "내보내기 한 파일은 %{days}일 후에는 다운로드 할 수 없습니다."
   content_exports:
     buttons:
       process: "자료 처리"
@@ -3957,7 +3960,7 @@ ko:
     index:
       buttons:
         create: "내보내기 만들기"
-      content_exports: "내용 내보내기"
+      content_exports: "과목 콘텐츠 내보내기"
       export_type: "내보내기 유형"
       labels:
         course: 과목
@@ -3988,7 +3991,7 @@ ko:
   content_for_section_2_e7c6e2a3: "섹션 2 내용"
   content_for_section_3_90c1d235: "섹션 3 내용"
   content_import_files_cannot_be_downloaded_after_en_7e3a2099: |-
-    콘텐츠 가져 오기 파일은 %{ENV.CONTENT_MIGRATIONS_EXPIRE_DA}일이 경과한 후에는 다운로드 할 수 없습니다.
+    가져오기한 콘텐츠 파일은 %{ENV.CONTENT_MIGRATIONS_EXPIRE_DA}일이 경과한 후에는 다운로드 할 수 없습니다.
   content_imports:
     errors:
       import_failed: "마이그레이션 가져오기 중 오류가 발생했습니다.  시스템 관리자에게 알리고 다음 코드를 제공하십시오: \"%{code}\""
@@ -4082,9 +4085,9 @@ ko:
     loading: "로드하는 중..."
     migration_converter:
       cancel_migration: 취소
-      default_option: "하나 선택"
-      header: "내용 가져오기"
-      import_from_label: "내용 유형"
+      default_option: "유형 선택 ..."
+      header: "과목 콘텐츠 가져오기"
+      import_from_label: "콘텐츠 유형"
       import_migration: "가져오기"
     moodle_zip:
       content: 내용
@@ -4125,7 +4128,7 @@ ko:
         add_day_sub_title: "요일 대체 추가"
         beginning_change_to: "다음으로 변경"
         beginning_date: "시작 날짜"
-        checkbox_label: "행사와 기한 조정"
+        checkbox_label: "일정 및 기한 조정"
         date_adjustment: "날짜 조정"
         ending_change_to: "다음으로 변경"
         ending_date: "종료 날짜"
@@ -6238,6 +6241,7 @@ ko:
   disabling_f594bda: "사용 중지 중 ..."
   disabling_post_to_sis_is_not_available_for_non_pub_ee031373: "게시되지 않은 과목에서는 SIS에 게시하지 않는 기능을 사용할 수 없습니다."
   disabling_sync_to_name_failed_e7521ebb: "%{name}에 동기화하지 못했습니다"
+  disallow_comments_6d04b47a: "댓글 금지"
   discovery_url_3dce06d9: "Discovery URL"
   discussion_6719c51d: 토론
   discussion_entries:
@@ -7052,7 +7056,7 @@ ko:
         page_comments: "페이지 내용"
       labels:
         add_comment: "새 설명 추가"
-        allow_comments: "이 페이지에 댓글 허용"
+        allow_comments: "댓글 허용"
         choose_submission: "이 페이지에 포함할 과제 제출물 선택"
         eportfolio_name: "e-포트폴리오 이름"
         file_select: "이 페이지에 포함할 파일 선택"
@@ -14389,7 +14393,7 @@ ko:
       default_title: "새 퀴즈"
       display_answer:
         labels:
-          answer_with_margin: "(오차 허용)"
+          answer_with_margin: "오차 허용"
           answer_with_precision: "정밀도가있는"
           your_answer: 답변
         margin_of_error: "허용되는 오차"
@@ -14487,15 +14491,15 @@ ko:
         titles:
           add_new_question_group: "새 문제 그룹 추가"
       form_answer:
-        answer_in_range_accessible: "*범위 시작*과 #범위 종료# 사이"
-        answer_with_precision_accessible: "정밀도가있는 정확한 답 # 정밀도"
-        exact_answer_with_error_margin_accessible: "오차 범위가 #error margin#인 *정답*"
+        answer_in_range_accessible: "*range start*과 #range end#"사이
+        answer_with_precision_accessible: "*exact answer* 정확도:#precision#"
+        exact_answer_with_error_margin_accessible: "정답:*exact answer* 오차 범위: #error margin# "
         labels:
           answer_comments: "이 답변을 선택한 경우의 의견"
           answer_in_range: "범위 내의 답변"
           answer_with_precision: "정밀도로 응답"
           exact_answer: "정확한 답변"
-        numerical_answer: "숫자로 된 답변"
+        numerical_answer: "숫자 답변"
         possible_answer: "가능한 답변"
         answer_text: "답변 내용"
         answer_weight: "답변 비중"
@@ -14533,11 +14537,11 @@ ko:
             일치하는 값의 쌍을 만듭니다. 학생들은왼쪽에 있는 값을 보고 오른쪽에 있는 드롭다운에서 일치하는 값을 골라야 합니다.
             여러 줄에 같은 답이 있을 수 있고, 오른쪽에 정답 이외의 항목을 더 추가할 수 있습니다.
           missing_word: "드롭다운 이전과 이후에 들어갈 텍스트를 정의하십시오. 가능한 답변의 집합을 만들고 정답 하나를 고르십시오."
-          multi_answer_sets: "아래 상자 안에서 답변 상자를 표시하려는 모든 곳에 대괄호로 둘러 싼 참조 단어(공백 없음)를 입력하십시오."
-          multiple_answers: "이 문제는 체크 상자를 나란히 표시하게 되는데 학생들은 정답으로 지정된 모든 답변을 선택해야 합니다."
+          multi_answer_sets: "드롭다운 박스의 항목으로 추가하려는 모든 곳에 대괄호로 둘러싼 단어(공백 없음)를 입력하십시오."
+          multiple_answers: "이 문제는 체크 상자가 나란히 표시되며 학생들은 정답으로 지정된 모든 답변을 선택해야 합니다."
           multiple_choice: "문제와 함께 여러 개의 답변을 입력하고 나서 하나의 정답을 선택하십시오."
           multiple_dropdowns: |-
-            문제를 입력하고 각 드롭다운이 어디로 가야 하는지 지정하십시오. 그리고 각 드롭다운마다 하나의 정답과 함께 가능한 답변을
+            문제를 입력하고 드롭다운 항목을 지정하십시오. 그리고 각 드롭다운 항목마다 하나의 정답과 함께 가능한 답변을
             정의하십시오.
           numerical: |-
             범위 내의 모든 값이나 숫자 더하기/빼기 오차 범위로 정답을 정의하십시오. 학생들은빈 텍스트 상자에 숫자로 된 답변을
