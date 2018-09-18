@@ -14491,7 +14491,7 @@ ko:
         titles:
           add_new_question_group: "새 문제 그룹 추가"
       form_answer:
-        answer_in_range_accessible: "*range start*과 #range end#"사이
+        answer_in_range_accessible: "*range start*과 #range end#사이"
         answer_with_precision_accessible: "*exact answer* 정확도:#precision#"
         exact_answer_with_error_margin_accessible: "정답:*exact answer* 오차 범위: #error margin# "
         labels:
