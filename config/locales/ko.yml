@@ -1815,11 +1815,11 @@ ko:
           one: "게시글 %{count}개 추가됨"
           other: "게시글 %{count}개 추가됨"
   announcements_a4b8ed4a: 공지
-  announcements_locked_successfully_43d58107: "공지에 대해 댓글 금지 설정 되었습니다."
+  announcements_locked_successfully_43d58107: "공지에 대해 댓글이 금지되었습니다."
   announcements_loaded_e9335d5f: "공지 사항이 로드 되었습니다!"
   announcements_tutorial_tray_994287d6: "공지 튜토리얼 트레이"
-  announcements_unlocked_successfully_1432da9d: "공지에 대해 댓글 허용 설정 되었습니다."
-  anonymize_all_annotations_made_by_instructors_on_s_4f2b70a5: SpeedGrader에서 제출물에 대한 교수자의 모든 주석을 익명 처리 합니다.
+  announcements_unlocked_successfully_1432da9d: "공지에 대해 댓글이 허용되었습니다."
+  anonymize_all_annotations_made_by_instructors_on_s_4f2b70a5: SpeedGrader에서 제출물에 대한 교수자의 모든 주석을 익명 처리합니다.
   anonymous_e1b8ad27: 익명
   anonymous_grading_ccb5045c: "익명 채점"
   anonymous_grading_forces_student_names_to_be_hidde_8b46d7e7: "익명 채점으로 SpeedGrader에서 학생 이름을 숨길 수 있습니다."
@@ -2973,7 +2973,7 @@ ko:
     send_message: "메시지 보내기"
     sending: "보내는 중..."
     sent: "전송했습니다!"
-    show_all_artifacts: "모든 아티팩트 표시"
+    show_all_artifacts: "모든 성과물 표시"
     submit: 제출
     unpublish: "비공개"
     unpublished: "비공개"
@@ -9700,7 +9700,7 @@ ko:
   lti_add_and_edit_a359d8da: "LTI 추가 및 편집"
   lti_report_2b6193ab: "LTI 보고서"
   luxembourg_352_85f4124d: "룩셈부르크 (+352)"
-  m2c_file_description: "무들 1.9 / 2.x"
+  m2c_file_description: "Moodle 1.9 / 2.x"
   m2c_name: "Moodle 가져오기"
   main_text_color_7d65ab1b: "주요 텍스트 색상"
   malaysia_60_7d357b28: "말레이시아 (+60)"
@@ -12691,7 +12691,7 @@ ko:
       scoring: "%{points} / %{possible_points}"
     show:
       no_aligned_items: "정렬된 항목 없음"
-      no_artifacts: "아티팩트 없음"
+      no_artifacts: "성과물 없음"
     state_standards: "전국 표준"
     state_standards_description: |-
       왼쪽에서 업데이트된 시/도 표준과 함께 각 시/도에 대한 폴더를 볼 수 있습니다. 이를 이용하면 과목에서 평가를 하는 데 시/도
@@ -12705,14 +12705,14 @@ ko:
     top_level: "%{context} 최고 수준"
     user_outcome_results:
       artifacts:
-        one: "아티팩트 %{count}개"
-        other: "아티팩트 %{count}개"
+        one: "성과물 1개"
+        other: "성과물 %{count}개"
       attempts:
-        one: "시도 %{count}번"
+        one: "시도 1번"
         other: "시도 %{count}번"
       attempts_from_artifacts: "*%{artifacts}*에서 %{attempts} "
       labels:
-        see_results: "다음에 대한 %{user_name}의 결과 보기"
+        see_results: "%{user_name}의 결과 보기"
       mastery: "숙달 달성"
       no_mastery: "숙달 미달성"
       outcomes_for: "%{user_name}의 성과"
@@ -13989,15 +13989,11 @@ ko:
     regrade:
       give_everyone_full_credit: "이 문제에 대해 모두에게 만점 주기"
       no_scores_reduced: "수정된 정답과 이전 정답에 모두 점수 주기 (*낮아지는 점수가 없음*)"
-      regrade_disabled: |-
-        학생이 제출을 완료 한 후에 응답이 제거되었거나 문제 유형이 변경 되었기 때문에이 문제에 대한 재평가는 허용되지 않습니다.
-      regrade_options: |-
-        Choose a regrade option for students who have already taken the quiz.
-        Canvas will regrade all your submissions after you save the quiz
-        (students' scores MAY be affected).
+      regrade_disabled: "학생이 제출을 완료 한 후에 응답이 제거되었거나 문제 유형이 변경 되었기 때문에이 문제에 대한 재평가는 허용되지 않습니다."
+      regrade_options: "이미 퀴즈를 푼 학생에 대한 재채점 방식을 선택하십시오. 변경 내용을 저장하면 해당 퀴즈에 대한 모든 점수를 재산정합니다. (학생들의 점수에 변경이 발생할 수 있습니다.)."
       some_scores_reduced: "정답에만 점수 주기 (*일부 학생*의 점수가 낮아질 수도 있음)"
       update_question_without_regrading: "다시 평가하지 않고 문제를 업데이트"
-  quiz_40ee61b1: "놀리다"
+  quiz_40ee61b1: "퀴즈"
   quiz_e0dcce8f: 퀴즈
   quiz_failed_to_update_2b66fa4d: "퀴즈를 업데이트하지 못했습니다."
   quiz_ip_address_filters_49a75ec8: "퀴즈 IP 주소 필터"
@@ -14497,7 +14493,7 @@ ko:
         labels:
           answer_comments: "이 답변을 선택한 경우의 의견"
           answer_in_range: "범위 내의 답변"
-          answer_with_precision: "정밀도로 응답"
+          answer_with_precision: "정확도로 답변"
           exact_answer: "정확한 답변"
         numerical_answer: "숫자 답변"
         possible_answer: "가능한 답변"
@@ -14543,12 +14539,10 @@ ko:
           multiple_dropdowns: |-
             문제를 입력하고 드롭다운 항목을 지정하십시오. 그리고 각 드롭다운 항목마다 하나의 정답과 함께 가능한 답변을
             정의하십시오.
-          numerical: |-
-            범위 내의 모든 값이나 숫자 더하기/빼기 오차 범위로 정답을 정의하십시오. 학생들은빈 텍스트 상자에 숫자로 된 답변을
-            입력해야 합니다.
+          numerical: "값이나 오차의 범위로 정답을 정의하십시오. 학생들은 숫자로 된 답변을 입력해야 합니다."
           short_answer: |-
             문제 내용을 입력하고 공란에 대한 가능한 정답을 모두 정의하십시오.
-            학생들에게 문제 다음에 답변을 입력할 수 있는 작은 상자가 표시됩니다.
+            학생들에게는 문제 다음에 답변을 입력할 수 있는 입력 상자가 표시됩니다.
           text_only: "이 \"문제\"는 점수를 매기지는 않지만 관련된 문제를 소개하는 데 유용합니다."
           true_false: "문제 내용을 입력하고 참이나 거짓을 정답으로 선택합니다."
           variable_definitions: |-
@@ -14682,9 +14676,9 @@ ko:
         end_quiz_reference_time_now: 지금
         end_the_quiz: "퀴즈 끝내기"
         extended_quiz_time_explanation: "학생에게 현재 퀴즈 시도에 추가 시간을 줄 수 있습니다. 시간을 얼마나 주시겠습니까?"
-        extra_time_on_every_attempt: "모든 시도에서 여분의 시간 :"
+        extra_time_on_every_attempt: "모든 시도에 대한 시간 연장 :"
         finished_in: "%{duration} 안에 마침"
-        global_extra_attempt_time: "모든 학습자가 %{count} 분을 받습니다."
+        global_extra_attempt_time: "모두가 %{count} 분을 연장 받은 상태입니다."
         global_extra_attempts: "모두가 이미 %{n}을 받았습니다."
         headers:
           attempt: 시도
@@ -14707,11 +14701,11 @@ ko:
         outstanding_autosubmission_description: |-
           이 퀴즈 제출물은 뛰어난 것으로 나타났습니다. 학생이 제출하기 전에 퀴즈 페이지를 나갔기 때문일 수 있습니다. 성적을 채점하려면 아래의 '제출'을 누르십시오.
         outstanding_quiz_submissions_found: "뛰어난 퀴즈 제출이 있습니다."
-        page_title: "퀴즈 살펴보기"
+        page_title: "퀴즈 관리"
         reload_student_table: "학생 테이블 재로드"
         student_gets_extra_time:
-          one: "* %{student_name} * ** 시도 할 때마다 1 분 추가 **"
-          other: "* %{student_name} * ** 시도 할 때마다 %{count} 여분의 시간이 ** **"
+          one: "* %{student_name} * ** 각 시도 당 1 분 연장됨 **"
+          other: "* %{student_name} * ** 각 시도 당 %{count} 분 연장됨 ** **"
         student_n: "학생 %{n}"
         submitting: "제출 중..."
         titles:
@@ -14970,8 +14964,8 @@ ko:
           keep_editing_this_quiz: "이 퀴즈 계속 편집"
           keep_editing_this_survey: "이 설문 계속 편집"
           message_students_who: "다음 상태의 학생에게 메시지 보내기"
-          moderate_this_quiz: "이 퀴즈 살펴보기"
-          moderate_this_survey: "이 설문 살펴보기"
+          moderate_this_quiz: "퀴즈 관리"
+          moderate_this_survey: "설문 관리"
           preview: "미리 보기"
           quiz_statistics: "퀴즈 통계"
           see_full_quiz: "전체 퀴즈 보기"
@@ -15664,7 +15658,7 @@ ko:
       prompts:
         are_you_sure_delete: "이 루브릭을 삭제하시겠습니까? 현재 이 루브릭과 연결된 과목에서는 계속 액세스할 수 있지만 새 과목은 사용할 수 없게 됩니다."
         are_you_sure_remove: "목록에서 이 루브릭을 제거하시겠습니까?"
-  running_c5a4998d: "달리는"
+  running_c5a4998d: "실행중"
   russia_7_87bc99d5: "러시아 (+7)"
   salesforce_account_id_eb5c78ad: "Salesforce 계정 ID"
   salesforce_has_a_different_login_host_for_sanbox_a_2d878ae9: |-
@@ -17104,7 +17098,7 @@ ko:
   student_assignment_outcome_map_title: "학생 역량"
   student_context_card_ad59967e: "학생 컨텍스트 카드"
   student_details_49901ceb: "학생 세부 사항"
-  student_extensions_d35a907: "학생 확장"
+  student_extensions_d35a907: "학생 연장"
   student_grades_4cbc59a1: "학생 성적"
   student_id: "학생 아이디"
   student_id_236970d8: "학생 아이디"
@@ -18066,7 +18060,7 @@ ko:
     error_reports: "오류 보고서"
     learning_outcomes: "학습 성과"
     messages: "메시지"
-    outcome_artifacts: "성과 아티팩트"
+    outcome_artifacts: "성과물"
     view_in_separate_window: "별도 창에 보기"
     people: "사용자"
   tls_7a2eaba5: "TLS"
@@ -18568,7 +18562,7 @@ ko:
         one: "학생 %{count}명의 평균"
         other: "학생 %{count}명의 평균"
       course: 과목
-      current_teacher_courses: "내가 가르치고 있는 과목"
+      current_teacher_courses: "담당 과목 리스트"
       linked_student_accounts: "링크된 학생 계정"
       links:
         teacher_activity: "학생 상호 작용 보고서"
@@ -18578,7 +18572,7 @@ ko:
       percent: "퍼센트"
       send_teacher_message: "교수에게 메시지 보내기"
       titles:
-        current_student_courses: "내가 배우는 과목"
+        current_student_courses: "수강 과목 리스트"
         previous_courses: "이전 과목"
       show_previous_courses: "이전 과목 표시"
     group:
