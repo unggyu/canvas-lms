@@ -70,7 +70,7 @@ class Quizzes::QuizStatistics < ActiveRecord::Base
             quiz_type: quiz.readable_type,
             report_type: readable_type
           }) + ".csv")
-      Attachments::Storage.store_for_attachment(attachment, StringIO.new(report.to_csv))
+      Attachments::Storage.store_for_attachment(attachment, StringIO.new(report.to_csv.prepend("\xEF\xBB\xBF")))
       attachment.save!
       attachment
     end
