@@ -27,6 +27,12 @@ class Login::CanvasController < ApplicationController
   protect_from_forgery except: :create, with: :exception
 
   def new
+    if @current_user &&
+        params[:check_login]
+      redirect_to dashboard_url
+      return
+    end
+
     @pseudonym_session = PseudonymSession.new
     @headers = false
     flash.now[:error] = params[:message] if params[:message]
