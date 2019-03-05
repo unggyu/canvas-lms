@@ -2034,7 +2034,7 @@ ko:
   assignment_assignment_submission_paper_view_8a4c9776: "과제 %{assignment} 보기"
   assignment_assignment_submission_plain_text_view_b217d372: "과제 %{assignment}를 일반 텍스트로 보기"
   assignment_comments_e43ed898: "과제 코멘트"
-  assignment_created_assignment_name_course_name_324a5639: "과제가 생성되었습니다 - %{assignment_name}, %{course_name}"
+  assignment_created_assignment_name_course_name_324a5639: "새로운 알림이 있습니다 - %{assignment_name}, %{course_name}"
   assignment_d8387b78: 과제
   assignment_details_collapsed_55b67150: "과제 세부정보가 축소되었습니다."
   assignment_details_dialog:
