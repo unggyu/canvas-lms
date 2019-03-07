@@ -1948,7 +1948,7 @@ en-CA:
   assignment_assignment_submission_paper_view_8a4c9776: "Assignment %{assignment} submission Paper View"
   assignment_assignment_submission_plain_text_view_b217d372: "Assignment %{assignment} submission Plain Text View"
   assignment_comments_e43ed898: "Assignment Comments"
-  assignment_created_assignment_name_course_name_324a5639: "Assignment Created - %{assignment_name}, %{course_name}"
+  assignment_created_assignment_name_course_name_324a5639: "New notice - %{assignment_name}, %{course_name}"
   assignment_d8387b78: assignment
   assignment_details_collapsed_55b67150: "assignment details collapsed"
   assignment_details_dialog: 
