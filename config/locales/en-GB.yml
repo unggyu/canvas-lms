@@ -2944,7 +2944,7 @@ en-GB:
   assignment_comments_e43ed898: "Assignment comments"
   assignment_configuration_4153cb88: "Assignment Configuration"
   assignment_context_has_been_graded_for_name_af51759a: "%{assignment}, %{context} has been graded for %{name}."
-  assignment_created_assignment_name_course_name_324a5639: "Assignment created - %{assignment_name}, %{course_name}"
+  assignment_created_assignment_name_course_name_324a5639: "New notice - %{assignment_name}, %{course_name}"
   assignment_created_b3ee04d7: "Assignment created"
   assignment_d8387b78: assignment
   assignment_dates_dccc98de: "Assignment Dates"

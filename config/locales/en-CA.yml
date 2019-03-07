@@ -2769,7 +2769,7 @@ en-CA:
   assignment_bulk_editing_phase_2_fde6f7d3: "Assignment Bulk Editing phase 2"
   assignment_comments_e43ed898: "Assignment Comments"
   assignment_context_has_been_graded_for_name_af51759a: "%{assignment}, %{context} has been graded for %{name}."
-  assignment_created_assignment_name_course_name_324a5639: "Assignment Created - %{assignment_name}, %{course_name}"
+  assignment_created_assignment_name_course_name_324a5639: "New notice - %{assignment_name}, %{course_name}"
   assignment_created_b3ee04d7: "Assignment created"
   assignment_d8387b78: assignment
   assignment_dates_dccc98de: "Assignment Dates"
