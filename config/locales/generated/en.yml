@@ -11398,7 +11398,7 @@ en:
   join_the_conversation_using_the_link_below_54ab1f0e: Join the conversation using the link below.
   new_comment_on_announcement_discussion_topic_cours_7905b782: New Comment on Announcement %{discussion_topic}, %{course}
   signup_type_8b4506f3: Signup Type
-  assignment_created_assignment_name_course_name_324a5639: Assignment Created - %{assignment_name}, %{course_name}
+  assignment_created_assignment_name_course_name_324a5639: New notice - %{assignment_name}, %{course_name}
   a_new_assignment_has_been_created_for_your_course__12b72639: A new assignment has been created for your course, %{course_name}
   due_multiple_dates_ea8a95e1: 'due: Multiple Dates'
   due_no_due_date_3c1d1651: 'due: No Due Date'
