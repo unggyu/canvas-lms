@@ -2572,7 +2572,7 @@ ko:
       no_files: "No Files"
       upload_or_choose_file: "파일을 업로드하거나 이미 업로드한 파일을 선택하십시오."
     syllabus:
-      page_title: "%{course}에 대한 강의계획서"
+      page_title: "%{course}에 대한 수업계획서"
     syllabus_content:
       buttons:
         update_syllabus: "업데이트"
@@ -2581,7 +2581,7 @@ ko:
         details: "세부정보"
       instructions:
         syllabus: |-
-          강의 계획서 페이지에는 강의 일정에 대한 테이블 중심의 보기와
+          수업 계획서 페이지에는 강의 일정에 대한 테이블 중심의 보기와
           과목 채점. 과목에 대한 다른 의견, 메모 또는 생각을 추가 할 수 있습니다.
           구조, 과목 정책 또는 다른 것.
 
@@ -2589,12 +2589,12 @@ ko:
           댓글을 추가하려면 상단에서 '수정'링크를 클릭하십시오.
       labels:
         assignments_summary: "과제 요약"
-        syllabus_body: "강의계획서 설명"
+        syllabus_body: "수업계획서 설명"
       links:
         edit_syllabus_description: "편집"
         jump_to_today: "오늘"
       titles:
-        course_syllabus: "강의 계획서"
+        course_syllabus: "수업 계획서"
     titles:
       add_assignment_group: "과제 그룹 추가"
       uploading: "제출물 업로드"
@@ -2712,7 +2712,7 @@ ko:
       deleting_group: "그룹 삭제 중..."
     syllabus_right_side:
       links:
-        edit_syllabus_description: "강의계획서 설명 편집"
+        edit_syllabus_description: "수업계획서 설명 편집"
     toggle_show_by:
       date: 날짜
       show_by: "표시 기준:"
@@ -3783,7 +3783,7 @@ ko:
   common_cartridge_name: "Common Cartridge 가져오기"
   common_timezones_2b00baba: "일반 시간대"
   communicate_to_your_students_exactly_what_will_be__7312d45d: |-
-    과목 전반에 걸쳐 학생들에게 필요한 것을 정확히 연대순으로 학생들에게 알려줍니다. 생성 한 과제 및 일정을 기반으로 내장 된 강의 계획서를 작성하십시오.
+    과목 전반에 걸쳐 학생들에게 필요한 것을 정확히 연대순으로 학생들에게 알려줍니다. 생성 한 과제 및 일정을 기반으로 내장 된 수업 계획서를 작성하십시오.
   communication_5255723c: 커뮤니케이션
   communication_channel:
     body: "Canvas 확인 코드 %{verification_code}"
@@ -4889,7 +4889,7 @@ ko:
     student_summary:
       not_sorted: "학생 요약표"
     student_view_student_name: "테스트 학생"
-    syllabus: "강의 계획서"
+    syllabus: "수업 계획서"
     wiki_permissions:
       all: 전체
       only_teachers: "교수자"
@@ -5055,7 +5055,7 @@ ko:
       name: 이름
       open_enrollment: "등록 절차 공개"
       public_description: "설명 공개"
-      public_syllabus: "강의계획서 공개"
+      public_syllabus: "수업계획서 공개"
       replacement_course_id: "대체 과목 ID"
       restrict_enrollments_to_course_dates: "과목 날짜에 등록 제한"
       root_account_id: "루트 계정 ID"
@@ -5067,7 +5067,7 @@ ko:
       sis_source_id: "SIS 소스 ID"
       start_at: 시작
       storage_quota: "저장소 할당량"
-      syllabus_body: "강의계획서 _ 바디"
+      syllabus_body: "수업계획서 _ 바디"
       tab_configuration: "탭 구성"
       template_course_id: "템플릿 과목 ID"
       turnitin_comments: "Turnitin 설명"
@@ -5153,7 +5153,7 @@ ko:
   course_statistics:
     unknown: "알 수 없음"
   course_storage_391e1bd: "과목 스토리지"
-  course_syllabus_5de1b0af: "강의계획서"
+  course_syllabus_5de1b0af: "수업계획서"
   course_users:
     greater_than_three: "3자 이상으로 된 검색어를 입력하시기 바랍니다."
     unknown_error: "검색에 오류가 발생했습니다. 다시 시도하시기 바랍니다."
@@ -5436,7 +5436,7 @@ ko:
         time_zone: "표준 시간대"
         turnitin_comments: "Turnitin 설명"
         course_lock_all_announcements: "공지 사항에 의견 사용 안 함"
-        public_syllabus: "이 과목의 강의계획서를 공개함"
+        public_syllabus: "이 과목의 수업계획서를 공개함"
       language_overrides_preferences: "이 설정은 모든 사용자/시스템 언어 설정보다 우선시됩니다. 외국어 과목에 대해서만 권장합니다."
       links:
         more_options: "추가 옵션"
@@ -5542,7 +5542,7 @@ ko:
         options:
           assignments: "과제 목록"
           modules: "과목 모듈"
-          syllabus: 강의계획서
+          syllabus: 수업계획서
       importing: "과목 복사/마이그레이션을 진행 중입니다. 따라서 일부 내용을 잠시 사용하지 못할 수도 있습니다."
       teachers_only: "*공개*되기 전까지 교수자만 이 과목을 볼 수 있음"
     sidebar_weighting:
@@ -5763,7 +5763,7 @@ ko:
     settings: 설정
     site_admin: "사이트 관리자"
     stats: 통계
-    syllabus: "강의계획서"
+    syllabus: "수업계획서"
     users: "사용자"
     wiki_pages: "페이지"
   css_file_709e6a83: "CSS 파일"
@@ -9421,7 +9421,7 @@ ko:
         learning_outcomes: "학습 성과"
         quizzes: 퀴즈
         rubrics: "루브릭"
-        syllabus_body: "강의계획서 내용"
+        syllabus_body: "수업계획서 내용"
         tool_profiles: "도구 프로필"
         wikis: "위키 페이지"
     cc:
@@ -16673,7 +16673,7 @@ ko:
         modules: "이 모듈을 가리키는 링크를 삽입하려면 클릭"
         modules_page: "모듈 페이지를 가리키는 링크를 삽입하려면 클릭"
         quizzes: "이 퀴즈를 가리키는 링크를 삽입하려면 클릭"
-        syllabus_page: "강의계획서 페이지를 가리키는 링크를 삽입하려면 클릭"
+        syllabus_page: "수업계획서 페이지를 가리키는 링크를 삽입하려면 클릭"
         users_page: "사용자 및 그룹  페이지를 가리키는 링크를 삽입하려면 클릭"
         wiki_pages: "이 페이지를 가리키는 링크를 삽입하려면 클릭"
         wiki_pages_index: "위키를 가리키는 링크를 삽입하려면 클릭"
@@ -16694,7 +16694,7 @@ ko:
         modules_page: 모듈
         new_page: "새 페이지"
         quizzes: "퀴즈 목록"
-        syllabus: "강의계획서"
+        syllabus: "수업계획서"
         upload_file: "새 파일 업로드"
         upload_image: "새 이미지 업로드"
         users_page: 사용자
@@ -17382,10 +17382,10 @@ ko:
   switch_to_ea940b5b: "전환:"
   switch_to_group_group_name_786b913b: "그룹 %{group_name} (으)로 전환하십시오"
   switzerland_41_f861e414: "스위스 (+41)"
-  syllabus: "강의계획서"
-  syllabus_f191f65b: "강의계획서"
-  syllabus_tutorial_tray_97e8ef82: "강의계획서 튜토리얼 트레이"
-  syllabus_visibility_options_a81ef419: "강의계획서 공개 옵션"
+  syllabus: "수업계획서"
+  syllabus_f191f65b: "수업계획서"
+  syllabus_tutorial_tray_97e8ef82: "수업계획서 튜토리얼 트레이"
+  syllabus_visibility_options_a81ef419: "수업계획서 공개 옵션"
   sync_68e5c167: 동기화
   sync_completed_successfully_8f68b542: "동기화가 완료되었습니다."
   sync_grades_a16622ca: "성적 동기화"
@@ -17438,7 +17438,7 @@ ko:
     people: 사용자 및 그룹
     quizzes: 시험 및 설문
     settings: 설정
-    syllabus: 강의계획서
+    syllabus: 수업계획서
     tab_location_error: "탭 위치가 잘못되었습니다."
     tab_unmanagable_error: "%{css_class}은 (는) 관리 할 수 ​​없습니다"
     course_assignments: "과목 과제"
@@ -18266,7 +18266,7 @@ ko:
   updating_6edbab78: "업데이트 중"
   upload_8b403d05: "업로드"
   upload_course_files_syllabi_readings_or_other_docu_21f8725f: |-
-    과목 파일, 강의 계획서, 독서물 또는 기타 문서를 업로드하십시오.
+    과목 파일, 수업 계획서, 독서물 또는 기타 문서를 업로드하십시오.
     폴더를 잠그면 학생들이 숨길 수 있습니다. 모듈, 과제, 토론 또는 페이지에 파일을 추가하십시오.
   upload_data_dc4fa4cb: "데이터 업로드"
   upload_drop_zone:
