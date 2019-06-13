@@ -78,6 +78,11 @@ define([], function() {
   code = code.substring(code.indexOf('{') + 1, code.lastIndexOf('}'))
 
   const blob = new Blob([code], {type: 'application/javascript'})
-  const quizTakingPolice = new Worker(URL.createObjectURL(blob))
+  let quizTakingPolice = null
+  try {
+    quizTakingPolice = new Worker(URL.createObjectURL(blob))
+  } catch(e) {
+    quizTakingPolice = null
+  }
   return quizTakingPolice
 })
