@@ -128,6 +128,7 @@ gem 'canvas_statsd', '2.0.4'
 gem 'gepub', '0.7.0beta4'
 gem 'imperium', '0.3.0', require: false
 gem 'academic_benchmarks', '0.0.10', require: false
+  gem 'sprockets', '3.7.2'
 
 gem 'graphql', '1.8.0'
 gem 'graphql-batch', '0.3.9'
