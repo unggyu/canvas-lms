@@ -16,7 +16,7 @@ services:
       - CASSANDRA_PORT=9160
       - ENCRYPTION_KEY=Sox2VyCebdeLOBIT1TiJQ1k5tcBKJLZJ
       - DOMAIN=canvas-docker.xinics.kr
-      - SSL_ENABLED=false
+      - SSL_ENABLED=true
       - FILE_STORE_PATH=tmp/nas_files # default
 
   jobs:
