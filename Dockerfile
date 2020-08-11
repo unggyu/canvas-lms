@@ -104,3 +104,14 @@ USER docker
 # TODO: switch to canvas:compile_assets_dev once we stop using this Dockerfile in production/e2e
 # 여기서는 그냥 bundle 하면 앞에서 지정한 1.13.6 이 사용된다.
 RUN CANVAS_BUILD_CONCURRENCY=1 COMPILE_ASSETS_NPM_INSTALL=0 bundle exec rake canvas:compile_assets
+
+# 이미지 개발하는 동안 vim 이 필요해서
+USER root
+RUN add-apt-repository -y ppa:chris-lea/redis-server \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends \
+    vim \
+    redis-server \
+  && apt-get clean
+USER docker
+# 이미지 개발하는 동안 vim 이 필요해서 end
