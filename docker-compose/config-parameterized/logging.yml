@@ -11,7 +11,7 @@ test:
   logger: rails
 
 production:
-  logger: syslog
+  logger: rails
   log_context: true
   log_level: debug
 #  logger: syslog
