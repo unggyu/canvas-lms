@@ -15,6 +15,7 @@ production:
 #   - redis://redis02
 #   # off, compact, or json
 #   # log_style: compact
+  database: <%= ENV['REDIS_DATABASE'] %>
 
 test:
   # only tests that are exercising the integration with redis require redis to run.
