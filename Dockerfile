@@ -1,9 +1,11 @@
 # GENERATED FILE, DO NOT MODIFY!
 # To update this file please edit the relevant template and run the generation
 # task `build/dockerfile_writer.rb`
+# 
+# 이 파일은 learningx/canvas-lms:xinics-d8c14d5 태그로 빌드
 
 # See doc/docker/README.md or https://github.com/instructure/canvas-lms/tree/master/doc/docker
-FROM instructure/ruby-passenger:2.4
+FROM learningx/ruby-passenger:2.4-xenial
 
 ENV APP_HOME /usr/src/app/
 ENV RAILS_ENV "production"
@@ -37,10 +39,12 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
   && rm -rf /var/lib/apt/lists/* \
   && mkdir -p /home/docker/.gem/ruby/$RUBY_MAJOR.0
 
+RUN gem install bundler --no-document --version 1.13.6
+RUN gem list bundler
 RUN if [ -e /var/lib/gems/$RUBY_MAJOR.0/gems/bundler-* ]; then BUNDLER_INSTALL="-i /var/lib/gems/$RUBY_MAJOR.0"; fi \
   && gem uninstall --all --ignore-dependencies --force $BUNDLER_INSTALL bundler \
-  && gem install bundler --no-document -v 1.16.1 \
   && find $GEM_HOME ! -user docker | xargs chown docker:docker
+
 
 # We will need sfnt2woff in order to build fonts
 COPY build/vendor/woff-code-latest.zip ./
@@ -65,8 +69,8 @@ RUN find gems packages -type d ! -user docker -print0 | xargs -0 chown -h docker
 
 # Install deps as docker to avoid sadness w/ npm lifecycle hooks
 USER docker
-RUN bundle install --jobs 8 \
-  && yarn install --pure-lockfile
+RUN bundle _1.13.6_ install --jobs 8
+RUN yarn install --pure-lockfile
 USER root
 
 COPY . $APP_HOME
@@ -98,4 +102,5 @@ RUN mkdir -p .yardoc \
 
 USER docker
 # TODO: switch to canvas:compile_assets_dev once we stop using this Dockerfile in production/e2e
-RUN COMPILE_ASSETS_NPM_INSTALL=0 bundle exec rake canvas:compile_assets
+# 여기서는 그냥 bundle 하면 앞에서 지정한 1.13.6 이 사용된다.
+RUN CANVAS_BUILD_CONCURRENCY=1 COMPILE_ASSETS_NPM_INSTALL=0 bundle exec rake canvas:compile_assets
