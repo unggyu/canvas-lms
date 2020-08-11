@@ -2,18 +2,32 @@
 version: '2'
 services:
   web: &WEB
-    build:
-      context: .
-    links:
-      - postgres
-      - redis
+    image: learningx/canvas-lms:xinics-d8c14d5
+    container_name: canvas_web
+    ports:
+      - 8000:80
+    environment:
+      - POSTGRESQL_HOST=172.17.0.1
+      - POSTGRESQL_DB=canvas_production
+      - POSTGRESQL_USER=canvas
+      - POSTGRESQL_PASSWORD=password
+      - REDIS_URI=redis://172.17.0.1
+      - CASSANDRA_HOST=172.17.0.1
+      - CASSANDRA_PORT=9160
+      - ENCRYPTION_KEY=Sox2VyCebdeLOBIT1TiJQ1k5tcBKJLZJ
+      - DOMAIN=canvas-docker.xinics.kr
+      - SSL_ENABLED=false
+      - FILE_STORE_PATH=tmp/nas_files # default
 
   jobs:
     <<: *WEB
+    container_name: canvas_jobs
+    # yaml empty list is []
+    ports: []
     command: bundle exec script/delayed_job run
 
-  postgres:
-    build: ./docker-compose/postgres
+  # postgres:
+  #   build: ./docker-compose/postgres
 
-  redis:
-    image: redis:alpine
+  # redis:
+  #   image: redis:alpine
