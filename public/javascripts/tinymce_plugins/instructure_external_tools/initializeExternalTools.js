@@ -105,7 +105,7 @@ import Links from 'tinymce_plugins/instructure_links/links'
               '<input id="selection_input" type="hidden" name="selection" />' +
               '<input id="editor_contents_input" type="hidden" name="editor_contents" />' +
             '</form>' +
-            "<iframe name='external_tool_launch' src='/images/ajax-loader-medium-444.gif' id='external_tool_button_frame' style='width: 800px; height: " +
+            "<iframe name='external_tool_launch' src='about:blank' id='external_tool_button_frame' style='width: 800px; height: " +
             frameHeight +
             "px; border: 0;' allow='" + iframeAllowancesString + "' borderstyle='0' tabindex='0'/>" +
             '<div class="after_external_content_info_alert screenreader-only" tabindex="0">' +
