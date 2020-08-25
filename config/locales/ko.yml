@@ -2005,7 +2005,7 @@ ko:
     grading_type_options:
         gpa_scale: "GPA 등급"
         letter_grade: "알파벳 성적"
-        not_graded: "없음(온라인 제출없음)"
+        not_graded: "제출/평가없음"
         pass_fail: "완료/미완료"
         percent: "퍼센트"
         points: 점수
@@ -2292,7 +2292,7 @@ ko:
       grading_type_options:
         gpa_scale: "GPA 등급"
         letter_grade: "알파벳 성적"
-        not_graded: "없음(온라인 제출없음)"
+        not_graded: "제출/평가없음"
         pass_fail: "완료/미완료"
         percent: "퍼센트"
         points: 점수
