@@ -436,7 +436,7 @@ ko:
       full_name_description: "채점시 선생님들이 사용할 이름입니다."
       labels:
         account_id: "하위 계정"
-        course_code: "참조 코드"
+        course_code: "과목 코드"
         enrollment_term_id: "등록 기간"
         full_name: "전체 이름"
         name: "과목 이름"
@@ -1566,8 +1566,8 @@ ko:
   admin_navigation_menu_77b801a2: "관리자 네비게이션 메뉴"
   admin_user_name_29dd115a: "admin_user_name"
   admins_3e1dce15: "관리자"
-  after_48b9d69: "다음 항목의 뒤에"
-  after_4c71e718: 다음 항목의뒤에
+  after_48b9d69: 변경 후..
+  after_4c71e718: 변경 후
   after_date_981cd41b: "%{date} 이후"
   after_last_attempt_c9168da2: "마지막 시도 이후"
   after_the_assignment_is_graded_53754607: "과제가 채점 된 후"
@@ -1678,6 +1678,7 @@ ko:
   allow_students_to_see_who_has_signed_up_for_time_s_497f4a46: "학생들이 타임 슬롯에 누가 가입했는지 볼 수 있습니다."
   allow_students_to_see_who_was_signed_up_for_time_s_160ba252: "학생들이 타임 슬롯에 가입 한 사람을 볼 수있게합니다."
   allow_the_ability_to_send_notifications_through_ou_13cc8537: "디스패치 대기열을 통해 알림을 전송하는 기능 허용"
+  allow_users_to_comment_45b8f753: "댓글 허용"
   allowed_attempts_4e229caa: "허용 횟수"
   allows_creating_announcements_for_a_specific_secti_14e0a63d: "특정 섹션에 대한 공지 사항 작성 가능"
   allows_teachers_to_mark_grade_data_to_be_exported__a6bf77cf: |-
@@ -2004,7 +2005,7 @@ ko:
     grading_type_options:
         gpa_scale: "GPA 등급"
         letter_grade: "알파벳 성적"
-        not_graded: "없음"
+        not_graded: "없음(온라인 제출없음)"
         pass_fail: "완료/미완료"
         percent: "퍼센트"
         points: 점수
@@ -2291,7 +2292,7 @@ ko:
       grading_type_options:
         gpa_scale: "GPA 등급"
         letter_grade: "알파벳 성적"
-        not_graded: "없음"
+        not_graded: "없음(온라인 제출없음)"
         pass_fail: "완료/미완료"
         percent: "퍼센트"
         points: 점수
@@ -2461,7 +2462,7 @@ ko:
         view_rubric_evaluation: "루브릭 평가 보기"
       messages:
         no_comments: "내용 없음"
-        submission_late_timestamp: "%{submitted_at} (지연)"
+        submission_late_timestamp: "%{submitted_at} (지각)"
       titles:
         assigned_peer_reviews: "할당된 피어 리뷰"
         comments: "설명:"
@@ -2811,8 +2812,8 @@ ko:
   bb_file_description: "Blackboard 6/7/8/9 내보내기 .zip 파일"
   bb_name: "Blackboard 변환기"
   be_a_hero_and_ask_your_instructor_to_fix_this_link_4981930c: "교수자에게 이 링크에 대해 수정 요청하십시오."
-  before_44c686b4: 다음 항목의 앞에
-  before_cb32fc0: "다음 항목의 앞에"
+  before_44c686b4: 변경 전
+  before_cb32fc0: 변경 전..
   before_implementing_custom_css_or_javascript_pleas_128da8cd: |-
     커스텀 CSS 혹은 Javascript 를 구현하기 전에, *커스텀 작업하기 문서*를 확인하세요.
   before_implementing_custom_css_or_javascript_pleas_65423572: |-
@@ -3494,7 +3495,7 @@ ko:
   canvas_user_id_4c18b78a: "canvas_user_id"
   card_view_eaf73185: "카드 보기"
   careful_changes_to_group_membership_will_apply_to__19a9089c: |-
-    꼼꼼한! 그룹 멤버쉽의 변경 사항은 이미 과제 제출이있는 그룹에 적용됩니다. 그룹 과제 제출이 결과로 정렬되지 않을 수 있습니다. 앞으로 할당할 새 그룹을 만들겠습니까?
+    주의! 이 그룹은 1회 이상 과제를 제출하였습니다. 편집 시 기존에 제출한 과제에도 반영됩니다. 새로운 과제에 이와 동일한 그룹을 사용하고자 하시면 그룹 세트를 복제하시기 바랍니다.
   cas_url_4ba2843e: "CAS URL"
   catalog_already_enabled_56478a3c: "카탈로그가 이미 사용 설정되었습니다."
   catalog_name_46d37909: "카탈로그 이름"
@@ -3517,7 +3518,7 @@ ko:
   change_beginning_date_to_39dbd06e: "시작일 변경"
   change_dcaa253a: 바꾸기
   change_ending_date_to_d2cebd54: "종료일 변경"
-  change_groups_4e2ab6c3: "그룹 변경"
+  change_groups_4e2ab6c3: "무시하고 그룹 변경"
   change_name_c8cce76c: "이름 변경"
   change_name_to_568374c8: "\"%{name}\"을(를) 변경합니다."
   change_points_possible_to_match_rubric_dialog:
@@ -3580,7 +3581,7 @@ ko:
   click_to_create_a_new_user_for_login_56d2daf5: "%{login}에 대한 새 사용자를 만들려면 클릭하십시오"
   click_to_edit_drag_to_reorder_ab725681: "수정하려면 클릭하고 재정렬하려면 끌기"
   click_to_enter_comments_if_the_student_chooses_thi_507c20f6: "학생이 이 대답을 선택하면 코멘트를 입력하십시오"
-  click_to_load_a020891b: "(클릭하여 읽기)"
+  click_to_load_a020891b: "(클릭하여 미리보기)"
   click_to_report_profile_picture_370f9625: "프로필 사진을 신고하려면 클릭하십시오"
   click_to_select_bd3b3a0d: "클릭하여 선택하십시오."
   click_to_select_user_name_41746803: "사용자 %{name}을(를) 클릭하여 선택하십시오."
@@ -5405,7 +5406,7 @@ ko:
         course_description: 설명
         course_epub_export: "Epub 내보내기"
         course_format: 수업 형식
-        course_name: 이름
+        course_name: 과목명
         course_offline_export: "오프라인 과목"
         course_section_name: "새 섹션 추가"
         course_status_published: "과목 공개"
@@ -5816,7 +5817,7 @@ ko:
         count: "오답 학생 수"
         ratio: "오답 학생 비율"
   csv_file_8061540e: "CSV 파일"
-  current_367624e9: 흐름
+  current_367624e9: 현재
   current_courses_d5287d50: "현재 과목"
   current_grading_scheme_for_this_assignment_d525463e: "이 과제의 현재 채점 방식"
   current_letter_grade_50f4ebb1: "현재 편지 그레이드"
@@ -6350,7 +6351,7 @@ ko:
       removed: "공지 사항이 삭제되었습니다."
     group_discussion:
       separated_conversation_notice: |-
-        그룹 토론이기 때문에 각 그룹은이 주제에 대해 자체 대화를가집니다. 액세스 권한이있는 사용자는 다음과 같습니다.
+        그룹 토론이므로 각 그룹별로 토론을 진행하게 됩니다. 하단의 그룹을 클릭하면 개별 그룹 홈페이지로 이동합니다.
     group_discussion_locked: |-
       Students have already submitted to this discussion, so group settings
       cannot be changed.
@@ -8964,10 +8965,9 @@ ko:
     If you leave, the zip file download currently being prepared will be
     canceled.
   if_you_made_changes_to_the_student_submission_file_e006d49b: |-
-    이전에 다운로드 한 학생 제출 파일을 변경 한 경우 파일을 압축하여 아래 양식과 함께 우편 번호를 업로드하십시오.
-      학생들은제출 된 의견에 수정 된 파일을 볼 수 있습니다.
+    제출물을 수정한 경우, 아래 폼을 이용해서 압축해서 업로드 하십시오.
 
-      * 우리가 그들을 인식 할 수 있도록 제출 파일의 이름을 변경하지 않도록하십시오. *
+    *제출 파일명은 동일하게 유지해 주십시오.*
   if_you_ve_been_using_another_course_management_sys_67edfab1: |-
     다른 과목 관리 시스템을 사용했다면 Canvas로 옮기고 싶은 자료가 있을 지도 모릅니다. 여러분의 자료를 Canvas로 손쉽게 이전할
     수 있는 과정을 안내해 드리겠습니다.
@@ -9308,7 +9308,7 @@ ko:
   last_user_access_title: "최종 사용자 액세스"
   late_2be42b88: 지각
   late_8bd684b6: 지각
-  late_bd436902: 기작
+  late_bd436902: 지각
   late_penalty_78099d18: "지각 패널티 :"
   late_penalty_817fff4e: "지각 패널티 :"
   late_penalty_9c312b22: "지각 패널티"
@@ -9351,8 +9351,8 @@ ko:
       view_all_accounts: "모든 계정 보기"
       view_all_groups: "모든 그룹 보기"
   learn_more_about_collaborations_2978f66d: "공동 작업에 대해 자세히 알아보기"
-  learning_mastery_5fc34276: "학습 숙달"
-  learning_mastery_6ed4fd63: "학습 숙달 ..."
+  learning_mastery_5fc34276: "학습 성과 (러닝 마스터)"
+  learning_mastery_6ed4fd63: "학습 성과 (러닝 마스터) ..."
   learning_mastery_gradebook_description: |-
     학습 숙달 성적표를 이용하면 수업 성과에 대한 학생과 과목 상황을 빠르게 참조해 볼 수 있습니다.
     학습 성과는 성적표와 같은 스타일로 표시되고 학생의 진척 상황은 점수와 함께 달성/거의 달성/미흡 으로 표시됩니다.
@@ -9367,7 +9367,7 @@ ko:
   len_maxlen_97f1c88d: "%{len}/%{maxLen}"
   length_notifications_found_25276610: "%{length} 개의 통지가 발견되었습니다"
   length_results_found_3afd01e5: "%{length} 개의 결과가 발견되었습니다"
-  let_students_see_the_correct_answers_dacc2faf: "공개 시기 설정"
+  let_students_see_the_correct_answers_dacc2faf: "정답 공개 시기 설정"
   let_students_see_their_quiz_responses_incorrect_qu_f5c9cb70: |-
     답변 표시 방식 (잘못 답변한 문제는 학생 피드백 내에 표시됩니다)
   letter_grade_29ff1938: "편지 그레이드"
@@ -9555,7 +9555,7 @@ ko:
   lock_date_cannot_be_after_section_end_d37da70c: "이용 종료일은 섹션 종료일 이전으로 설정되어야 합니다."
   lock_date_cannot_be_after_term_end_cf1a188f: "이용 종료일은 학기 종료일 이전으로 설정되어야 합니다."
   lock_date_cannot_be_before_due_date_ac30f54: "이용 종료일은 마감일 이후로 설정되어야 합니다."
-  lock_questions_after_answering_5aecef9d: "답변 후 문제 잠금"
+  lock_questions_after_answering_5aecef9d: "답변 후 문제 잠금(이전 문제 이동 불가)"
   lock_this_setting_for_sub_accounts_2ae5af17: "하위 계정에 대해 이 설정 잠금"
   locked_762f138b: 잠김
   locked_796957c7: "잠김 :"
@@ -10356,7 +10356,7 @@ ko:
         user_submitted: "지연된 과제: %{user_name}, %{assignment_name}"
       sms:
         more_info_at: "자세한 정보는 %{web_address} 참고"
-        user_submitted: "%{user_name}이(가) %{assignment_name} 과제를 제출함(지연)"
+        user_submitted: "%{user_name}이(가) %{assignment_name} 과제를 제출함(지각)"
       summary:
         turned_in_at: "제출일: %{submission_date}"
         user_submitted: "지연된 과제: %{user_name}, %{assignment_name}"
@@ -10958,7 +10958,7 @@ ko:
         subject: "지연된 과제: %{group_name}, %{assignment_name}"
       sms:
         more_info: "자세한 정보는 %{web_address} 참고"
-        subject: "%{group_name}이 %{assignment_name} 과제 제출(지연)"
+        subject: "%{group_name}이 %{assignment_name} 과제 제출(지각)"
       summary:
         body: |-
           %{group_name} 그룹이 %{course_name} 과목에서 %{assignment_name}에 대한 지연된 제출물을
@@ -12030,7 +12030,7 @@ ko:
   new_gradebook_297f7e2d: "새 성적표"
   new_gradebook_enables_an_early_release_of_new_grad_76b8bf45: "New Gradebook을 사용하면 새로운 Gradebook 향상 기능을 초기에 릴리스 할 수 있습니다."
   new_group_category_66be9cbd: "새 그룹 카테고리"
-  new_group_set_7241a581: "새 그룹 세트"
+  new_group_set_7241a581: "새 그룹 세트 생성"
   new_module_4e9287e4: "새 모듈"
   new_outcome_7fba8c7d: "새 성과"
   new_outcome_group_af59f145: "새 성과그룹"
@@ -12527,9 +12527,9 @@ ko:
   online_url_37830a72: "온라인 URL"
   only_a_maximum_of_limit_events_can_be_created_b81c405e: "최대 %{limit} 일정 만 만들 수 있습니다"
   only_add_posts_with_a_specific_phrase_in_the_title_b8b7b04e: "제목에 특정 어구가 있는 게시물만 추가"
-  only_after_their_last_attempt_3593d101: "마지막 시도 후에 만"
+  only_after_their_last_attempt_3593d101: "마지막 시도 후에만 오답 표시"
   only_available_to_students_with_link_not_visible_i_b21ec391: "링크가 있는 학생들만 이용 가능합니다. 학생들의 파일 목록에는 보이지 않습니다."
-  only_once_after_each_attempt_cc842738: "각 시도마다 한번씩"
+  only_once_after_each_attempt_cc842738: "매 시도마다 오답 표시"
   open_event_menu_e9a21e39: "일정 메뉴 열기"
   open_for_comments_f8f7641e: "댓글 허용"
   open_in_theme_editor_156028e2: "테마 편집기에서 열기"
@@ -12808,7 +12808,7 @@ ko:
   pass_fail_3d9461b0: "통과 실패"
   password_8a271b1c: 암호
   past_14da759a: 과거
-  past_terms_4b6ec40e: "지난 이용 약관"
+  past_terms_4b6ec40e: "지난 학기"
   paste_xml_cda3a64e: "XML 붙여넣기"
   path_4f9abf12: 통로
   paypal:
@@ -13990,7 +13990,7 @@ ko:
       give_everyone_full_credit: "이 문제에 대해 모두에게 만점 주기"
       no_scores_reduced: "수정된 정답과 이전 정답에 모두 점수 주기 (*낮아지는 점수가 없음*)"
       regrade_disabled: "학생이 제출을 완료 한 후에 응답이 제거되었거나 문제 유형이 변경 되었기 때문에이 문제에 대한 재평가는 허용되지 않습니다."
-      regrade_options: "이미 퀴즈를 푼 학생에 대한 재채점 방식을 선택하십시오. 변경 내용을 저장하면 해당 퀴즈에 대한 모든 점수를 재산정합니다. (학생들의 점수에 변경이 발생할 수 있습니다.)."
+      regrade_options: "이미 답안을 제출한 학생들에 대한 재채점 옵션을 선택하십시오. 퀴즈 저장시 일괄 재채점 됩니다.(학생 점수에 영향이 있을 수 있습니다.)"
       some_scores_reduced: "정답에만 점수 주기 (*일부 학생*의 점수가 낮아질 수도 있음)"
       update_question_without_regrading: "다시 평가하지 않고 문제를 업데이트"
   quiz_40ee61b1: "퀴즈"
@@ -14211,7 +14211,7 @@ ko:
       quiz_score_too_long: "점수는 2,000,000,000보다 작아야 합니다."
       quiz_score_too_short: "점수는 0보다 커야 합니다."
       retrieving_filters_failed: "필터 검색 실패"
-    'false': 거짓
+    'false': "False"
     file_uploaded_or_removed:
       quizzes:
         file_successfully_uploaded: "파일을 업로드 하였습니다."
@@ -14475,7 +14475,7 @@ ko:
           group_pick_count: 선택
           group_points: 점
         links:
-          clear_all_banks: "모두 지우기"
+          clear_all_banks: "전체 선택 해제"
           more_questions: "더 많은 문제"
           select_all_banks: "전체 선택"
           view_question_banks: "과목 문제 은행 보기"
@@ -15197,7 +15197,7 @@ ko:
       set_as_correct: "이 답변을 정답으로 지정"
     toggle_message: "퀴즈 표시 토\x1D글"
     top_level: ""
-    'true': 참
+    'true': "True"
     quiz_item_view:
       links:
         delete: 삭제
@@ -15215,7 +15215,7 @@ ko:
         one: "다른 제출물 %{count}개"
         other: "다른 제출물 %{count}개"
   quizzes/quiz:
-    submission_action_take_quiz: "%{title} 가져 가라."
+    submission_action_take_quiz: "%{title} 제출"
   quizzes_7e598f57: 퀴즈
   quizzes_tutorial_tray_6f87cdd3: "퀴즈 튜토리얼 트레이"
   radio_button_option_1_a8ec51f9: "라디오 버튼 옵션 1"
@@ -15759,7 +15759,7 @@ ko:
       outcome_info: "성과 정보"
     screenreader_gradebook:
       assignments: 과제
-      learning_mastery: "학습 숙달"
+      learning_mastery: "학습 성과 (러닝 마스터)"
     settings:
       assignment_toggles_and_actions:
         download_current_scores: "현재 점수 다운로드 (.csv)"
@@ -17280,7 +17280,7 @@ ko:
       submission_details: "제출물 세부정보"
       submitted_at: "%{submit_date}에 제출됨"
       teachers_notified_of_comments: "교수와 제출자에게 모든 의견을 알립니다."
-      late_submission: "(지연)"
+      late_submission: "(지각)"
       out_of_points: "/ %{points_possible}"
     show_preview:
       anonymous_username: "이 학생"
@@ -17594,6 +17594,7 @@ ko:
     사용자 %{current_user_name} 및 결과 %{outcome_name}의 가장 최근 점수.
   the_next_available_appointment_in_this_course_is_o_da10316c: "이 과정에서 사용할 수있는 다음 약속은 *%{date}*입니다."
   the_preceding_content_is_partner_provided_d753928c: "앞의 내용은 파트너가 제공 한 것입니다."
+  plagiarism_review_d753928f: "표절 검사"
   the_previous_sis_batch_was_aborted_d7d89955: "이전 SIS 배치가 중단되었습니다."
   the_profile_picture_has_been_reported_d609d6dd: "프로필 사진이보고되었습니다."
   the_provided_academic_benchmark_file_has_an_error_4ad2c631: "제공된 Academic Benchmark 파일에 오류가 있습니다."
@@ -18147,7 +18148,7 @@ ko:
     no_score_after_retries: |-
       Turnitin은 %{max_tries}이(가) 검색하려고 시도한 후에 점수를 반환하지 않았습니다.
     tooltip:
-      score: "Turnitin 유사성 점수 - 자세한 보고서 보기"
+      score: "유사성 점수 - 자세한 보고서 보기"
     error_default: "Turnitin으로 제출하는 중에 오류가 발생했습니다. 지원팀에 문의하기 전에 파일을 다시 제출해 보시기 바랍니다."
   turnitin_info:
     buttons:
@@ -18792,7 +18793,7 @@ ko:
   view_course_analytics_eefe6b2: "과목 분석 보기"
   view_faculty_journals_ad0e8c8f: "교수진 저널 보기"
   view_file_8a1c62e5: "파일보기"
-  view_gradebook_history_a9272918: "성적표 기록 보기"
+  view_gradebook_history_a9272918: "성적 변경 이력 보기"
   view_grades_8d3bae6c: "성적 보기"
   view_grades_for_name_45aeb2f2: "%{name}의 성적 보기"
   view_name_app_62a2ad8e: "%{name} 앱보기"
