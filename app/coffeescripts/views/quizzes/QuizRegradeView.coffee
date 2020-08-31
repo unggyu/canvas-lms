@@ -17,12 +17,13 @@
 #
 
 define [
+  'i18n!quizzes.index'
   'jquery'
   'underscore'
   'Backbone'
   '../DialogBaseView'
   'jst/quiz/regrade'
-], ($, _, Backbone, DialogBaseView, template) ->
+], (I18n, $, _, Backbone, DialogBaseView, template) ->
 
   class QuizRegradeView extends DialogBaseView
 
@@ -47,7 +48,7 @@ define [
       super
 
     defaultOptions: ->
-      title: "Regrade Options"
+      title: I18n.t('regrading_options_title', 'Regrading Options')
       width: "600px"
 
     update: =>

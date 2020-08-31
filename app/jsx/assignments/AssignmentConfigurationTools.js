@@ -166,7 +166,7 @@ import OriginalityReportVisibilityPicker from './OriginalityReportVisibilityPick
           value={this.state.selectedToolValue}
         >
           <option title="Plagiarism Review Tool" data-launch="about:blank" data-type="none">
-            None
+            미사용(None)
           </option>
           {
             this.state.tools.map(tool => (
@@ -242,7 +242,7 @@ import OriginalityReportVisibilityPicker from './OriginalityReportVisibilityPick
         <div>
           <div className="form-column-left">
             <label htmlFor="similarity_detection_tool">
-              Plagiarism Review
+              표절 검사(Plagiarism Review)
             </label>
           </div>
 

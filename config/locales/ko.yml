@@ -1344,7 +1344,7 @@ ko:
       account_reports:
         auburn:
           pseudonym_ids:
-            field: "로그인 ID"
+            field: "로그인ID (학번/사번)"
     student_assignment_outcome_map_csv_description:
       account_reports:
         student_assignment_map:
@@ -3493,7 +3493,7 @@ ko:
   canvas_ticketing_email_connector_27e253ae: "CANVAS 티켓 전자 메일 커넥터"
   canvas_ticketing_web_post_connector_11158897: "CANVAS 티켓 웹 공개 커넥터"
   canvas_user_id_4c18b78a: "canvas_user_id"
-  card_view_eaf73185: "카드 보기"
+  card_view_eaf73185: "과목 카드보기"
   careful_changes_to_group_membership_will_apply_to__19a9089c: |-
     주의! 이 그룹은 1회 이상 과제를 제출하였습니다. 편집 시 기존에 제출한 과제에도 반영됩니다. 새로운 과제에 이와 동일한 그룹을 사용하고자 하시면 그룹 세트를 복제하시기 바랍니다.
   cas_url_4ba2843e: "CAS URL"
@@ -9367,9 +9367,9 @@ ko:
   len_maxlen_97f1c88d: "%{len}/%{maxLen}"
   length_notifications_found_25276610: "%{length} 개의 통지가 발견되었습니다"
   length_results_found_3afd01e5: "%{length} 개의 결과가 발견되었습니다"
-  let_students_see_the_correct_answers_dacc2faf: "정답 공개 시기 설정"
+  let_students_see_the_correct_answers_dacc2faf: "정답 공개하기"
   let_students_see_their_quiz_responses_incorrect_qu_f5c9cb70: |-
-    답변 표시 방식 (잘못 답변한 문제는 학생 피드백 내에 표시됩니다)
+    오답 여부 표시하기 (오답일 경우 오답 여부와 피드백이 표시됩니다)
   letter_grade_29ff1938: "편지 그레이드"
   letter_grade_f00fedc4: "편지 등급"
   lib:
@@ -9517,7 +9517,7 @@ ko:
       feedback: "여기를 클릭하고 어떤 일이 발생했는지 알려주십시오."
     show_me_where: "위치 표시"
   links_14b70841: 링크
-  list_view_430aecce: "목록 보기"
+  list_view_430aecce: "할 일 목록 보기"
   live_events_subscriptions_service_is_not_configure_8c6024e2: "라이브 일정 구독 서비스가 구성되지 않았습니다."
   load_bank:
     error_loading_banks: "문제 은행에 오류가 있습니다."
@@ -9664,8 +9664,8 @@ ko:
   login_attribute_731a8181: "로그인 속성"
   login_footer_link_badb3898: "로그인 꼬리말 링크"
   login_footer_link_hover_1b474e6c: "로그인 바닥 글 링크 가져 오기"
-  login_id_12109693: "로그인 ID"
-  login_id_bc943b97: "로그인 ID:"
+  login_id_12109693: "로그인ID (학번/사번)"
+  login_id_bc943b97: "로그인ID (학번/사번):"
   login_info_d1d9f11e: "로그인 정보"
   login_instructure_logo_8f2332db: "교육 기관 로그인 로고"
   login_is_invalid_must_be_alphanumeric_or_an_email__ae4499b3: "로그인이 잘못되었습니다. 영숫자 또는 전자 메일 주소 여야합니다."
@@ -12527,7 +12527,7 @@ ko:
   online_url_37830a72: "온라인 URL"
   only_a_maximum_of_limit_events_can_be_created_b81c405e: "최대 %{limit} 일정 만 만들 수 있습니다"
   only_add_posts_with_a_specific_phrase_in_the_title_b8b7b04e: "제목에 특정 어구가 있는 게시물만 추가"
-  only_after_their_last_attempt_3593d101: "마지막 시도 후에만 오답 표시"
+  only_after_their_last_attempt_3593d101: "마지막 시도 후에만 정답 표시"
   only_available_to_students_with_link_not_visible_i_b21ec391: "링크가 있는 학생들만 이용 가능합니다. 학생들의 파일 목록에는 보이지 않습니다."
   only_once_after_each_attempt_cc842738: "매 시도마다 오답 표시"
   open_event_menu_e9a21e39: "일정 메뉴 열기"
@@ -14231,6 +14231,7 @@ ko:
       buttons:
         publishing_quizzes: "퀴즈 공개 중..."
       default_title: "제목 없음"
+      regrading_options_title: "재채점 옵션 선택"
     index_view:
       add_quiz: 퀴즈
       links:
@@ -17594,7 +17595,6 @@ ko:
     사용자 %{current_user_name} 및 결과 %{outcome_name}의 가장 최근 점수.
   the_next_available_appointment_in_this_course_is_o_da10316c: "이 과정에서 사용할 수있는 다음 약속은 *%{date}*입니다."
   the_preceding_content_is_partner_provided_d753928c: "앞의 내용은 파트너가 제공 한 것입니다."
-  plagiarism_review_d753928f: "표절 검사"
   the_previous_sis_batch_was_aborted_d7d89955: "이전 SIS 배치가 중단되었습니다."
   the_profile_picture_has_been_reported_d609d6dd: "프로필 사진이보고되었습니다."
   the_provided_academic_benchmark_file_has_an_error_4ad2c631: "제공된 Academic Benchmark 파일에 오류가 있습니다."
@@ -18148,11 +18148,11 @@ ko:
     no_score_after_retries: |-
       Turnitin은 %{max_tries}이(가) 검색하려고 시도한 후에 점수를 반환하지 않았습니다.
     tooltip:
-      score: "유사성 점수 - 자세한 보고서 보기"
-    error_default: "Turnitin으로 제출하는 중에 오류가 발생했습니다. 지원팀에 문의하기 전에 파일을 다시 제출해 보시기 바랍니다."
+      score: "유사성 점수 - 상세 보고서 보기"
+    error_default: "제출하는 중에 오류가 발생했습니다. 지원팀에 문의하기 전에 파일을 다시 제출해 보시기 바랍니다."
   turnitin_info:
     buttons:
-      resubmit_to_turnitin: "Turnitin에 다시 제출"
+      resubmit_to_turnitin: "다시 제출"
   turnitin_settings:
     originality_report_never: 불가
     originality_report_visible_after_due_date: "마감일 이후"

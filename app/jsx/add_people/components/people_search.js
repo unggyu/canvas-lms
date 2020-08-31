@@ -103,7 +103,7 @@ import {parseNameList, findEmailInEntry, emailValidator} from '../helpers'
           labelText = I18n.t('Enter the SIS IDs of the users you would like to add, separated by commas or line breaks');
           break;
         case 'unique_id':
-          exampleText = 'lsmith, mfoster';
+          exampleText = '20001234, 1020304';
           labelText = I18n.t('Enter the login IDs of the users you would like to add, separated by commas or line breaks');
           break;
         case 'cc_path':
