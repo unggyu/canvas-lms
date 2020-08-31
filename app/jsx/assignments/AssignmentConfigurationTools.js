@@ -89,6 +89,17 @@ import OriginalityReportVisibilityPicker from './OriginalityReportVisibilityPick
             toolType: this.props.selectedToolType,
             toolLaunchUrl: prevToolLaunch || 'about:blank'
           });
+          const findCK = data.find(value=>value.name==='카피킬러');
+          if(findCK) {
+            const value = `${findCK.definition_type}_${findCK.definition_id}`;
+            this.setState(
+              {
+                selectedToolValue: value,
+                visibilityEnabled: value.toLowerCase().indexOf('none') === -1
+              },
+              () => this.setToolLaunchUrl()
+            );
+          }
         }, self),
         error: function(xhr) {
           $.flashError(I18n.t('Error retrieving similarity detection tools'));
