@@ -112,7 +112,7 @@ class PeopleSearch extends React.Component {
         inputLabel = I18n.t('SIS IDs (required)')
         break
       case 'unique_id':
-        exampleText = 'lsmith, mfoster'
+        exampleText = '20001234, 1020304'
         description = I18n.t(
           'Enter the login IDs of the users you would like to add, separated by commas or line breaks'
         )
