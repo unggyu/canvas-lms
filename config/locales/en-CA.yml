@@ -548,12 +548,12 @@ en-CA:
     help_menu_name_too_long: "Help menu name is too long"
     links: 
       turnitin: 
-        confirm_settings: "confirm Turnitin settings"
+        confirm_settings: "confirm settings"
     notices: 
       turnitin: 
-        checking_settings: "checking Turnitin settings..."
-        invalid_settings: "invalid Turnitin settings, please check your account id and shared secret from Turnitin"
-        setings_confirmed: "Turnitin settings confirmed!"
+        checking_settings: "checking settings..."
+        invalid_settings: "invalid Turnitin settings, please check your account id and shared secret"
+        setings_confirmed: "Settings confirmed!"
     siteadmin: "Site Admin"
     titles: 
       configure_report: "Configure Report"
@@ -1193,7 +1193,7 @@ en-CA:
         add_users: "OK Looks Good, Add These Users"
         continue: Continue...
         modify_users: "Go back and edit the list of users"
-      confirm_turnitin_settings_link: "confirm Turnitin settings"
+      confirm_turnitin_settings_link: "confirm settings"
       create_courses_description: "(Account Administrators can always create courses)"
       create_courses_title: "Who Can Create New Courses"
       default_language_description: "This will override any browser/OS language settings. Preferred languages can still be set at the course/user level."
@@ -1263,11 +1263,11 @@ en-CA:
         sub_account_includes: "Let sub-accounts use the Theme Editor to customize their own branding"
         teachers_can_create_courses: Teachers
         trusted_referers: "Trusted HTTP Referers"
-        turnitin_account_id: "Turnitin Account ID"
+        turnitin_account_id: "Account ID"
         turnitin_comments: "Submission Comments"
-        turnitin_host: "Turnitin Host"
+        turnitin_host: "Host"
         turnitin_pledge: "Similarity Pledge"
-        turnitin_shared_secret: "Turnitin Shared Secret"
+        turnitin_shared_secret: "Shared Secret"
         users_can_edit_name: "Users can edit their name"
         value: "Disable comments on announcements"
       links: 
@@ -1342,9 +1342,9 @@ en-CA:
       tab_reports: Reports
       tab_settings: Settings
       transifex_message: "Join the [Canvas Translation Community](%{transifex_url})"
-      turnitin_comments_help: "these comments will be shown to students when submitting a Turnitin-enabled assignment"
+      turnitin_comments_help: "these comments will be shown to students when submitting"
       turnitin_pledge_help: "students must check a box acknowledging that they agree with this pledge"
-      turnitin_settings_title: "Turnitin Settings"
+      turnitin_settings_title: "Settings"
       update_settings_button: "Update Settings"
     show: 
       courses_crumb: Courses
@@ -2334,7 +2334,7 @@ en-CA:
   an_error_occurred_when_cloning_the_group_set_8e80da6b: "An error occurred when cloning the group set."
   an_error_occurred_when_saving_the_group_536c8f66: "An error occurred when saving the group."
   an_error_occurred_when_setting_the_usage_right_for_d4ea78f5: "An error occurred when setting the usage right for %{filename}"
-  an_error_occurred_while_attempting_to_contact_turn_b7de17d6: "An error occurred while attempting to contact Turnitin."
+  an_error_occurred_while_attempting_to_contact_turn_b7de17d6: "An error occurred while attempting to contact Plagiarism system."
   an_error_occurred_while_checking_the_migration_sta_d17035b1: "An error occurred while checking the migration status"
   an_error_occurred_while_deleting_announcements_ab1ff3f6: "An error occurred while deleting announcements."
   an_error_occurred_while_loading_account_proficienc_c7d6568b: "An error occurred while loading account proficiency ratings: %{m}"
@@ -3195,8 +3195,8 @@ en-CA:
       submission_types: "File Types"
       submitting: Submitting
       turnitin: Turnitin
-      turnitin_enabled: "Turnitin has been enabled for this assignment."
-      turnitin_enabled_short: "(Turnitin enabled)"
+      turnitin_enabled: "Plagiarism system has been enabled for this assignment."
+      turnitin_enabled_short: "(Plagiarism system enabled)"
       until: Until
       vericite: VeriCite
       vericite_enabled: "VeriCite has been enabled for this assignment."
@@ -3245,8 +3245,8 @@ en-CA:
         submission_not_turned_in: "Not Submitted!"
         submission_turned_in: Submitted!
     submission_types_form: 
-      advanced_turnitin_settings: "Advanced Turnitin Settings"
-      advanced_vericite_settings: "Advanced VeriCite Settings"
+      advanced_turnitin_settings: "Advanced Settings"
+      advanced_vericite_settings: "Advanced Settings"
       descriptions: 
         allowed_extensions: "Enter a list of accepted extensions, for example: doc,xls,txt"
       external_tool_group_warning: "Group assignments can't use External Tools. The group setting will be unchecked when you save"
@@ -3380,7 +3380,7 @@ en-CA:
           journal_check: "Journals, Periodicals, and Publications"
           student_paper_check: "Other Student Papers"
           submit_papers_to: "Include in Repository"
-          turnitin_repository: "Turnitin Repository"
+          turnitin_repository: "Plagiarism system Repository"
         originality_report_never: Never
         originality_report_visibility: "Students Can See the Originality Report"
         originality_report_visible_after_due_date: "After the Due Date"
@@ -6252,7 +6252,7 @@ en-CA:
       syllabus_body: syllabus_body
       tab_configuration: "Tab Configuration"
       template_course_id: "Template Course Id"
-      turnitin_comments: "Turnitin Comments"
+      turnitin_comments: "Comments"
       updated_at: "Updated At"
       uuid: UUID
       wiki_id: "Wiki Id"
@@ -6605,7 +6605,7 @@ en-CA:
         start_at: Starts
         storage_quota: "File Storage"
         time_zone: "Time Zone"
-        turnitin_comments: "Turnitin Comments"
+        turnitin_comments: "Comments"
         usage_rights_required: "File Copyright"
       language_overrides_preferences: "This will override any user/system language preferences. This is only recommended for foreign language courses"
       links: 
@@ -6646,7 +6646,7 @@ en-CA:
       tooltips: 
         cannot_unpublish_course: "You cannot unpublish this course if there are graded student submissions"
       transifex_message: "Join the [Canvas Translation Community](%{transifex_url})"
-      turnitin: "these comments will be shown to students when submitting a Turnitin-enabled assignment"
+      turnitin: "these comments will be shown to students when submitting a Plagiarism system-enabled assignment"
       view_grading_scheme: "view grading scheme"
       wiki_editing_roles_change_existing: "Change pages currently editable by \"%{current_setting}\" to \"%{new_setting}\"."
     settings_sidebar: 
@@ -18265,8 +18265,8 @@ en-CA:
   see_scoring_details_f7fd1f3b: "See scoring details"
   see_some_lti_tools_that_work_great_with_canvas_16ef75a0: "*See some LTI tools* that work great with Canvas."
   see_some_lti_tools_that_work_great_with_canvas_53e92091: "See some LTI tools that work great with Canvas."
-  see_turnitin_results_cd9d4a6c: "See Turnitin results"
-  see_vericite_results_b44dd8c8: "See VeriCite results"
+  see_turnitin_results_cd9d4a6c: "See Plagiarism results"
+  see_vericite_results_b44dd8c8: "See Plagiarism results"
   select_1e849959: "[ Select ]"
   select_a_course_4710371f: "Select a Course"
   select_a_grading_period_5ea50f1: "Select a Grading Period..."
@@ -19879,7 +19879,7 @@ en-CA:
   successfully_deleted_the_comment_a8bbe561: "Successfully deleted the comment"
   successfully_moved_model_to_newgroup_f7b7aa5a: "Successfully moved %{model} to %{newGroup}"
   successfully_posted_the_comment_12d95d56: "Successfully posted the comment"
-  successfully_resubmitted_to_turnitin_c908de0f: "Successfully resubmitted to turnitin."
+  successfully_resubmitted_to_turnitin_c908de0f: "Successfully resubmitted to Plagiarism system."
   successfully_resubmitted_to_vericite_dab924b6: "Successfully resubmitted to VeriCite."
   successfully_saved_the_comment_c87681fd: "Successfully saved the comment"
   successfully_updated_the_comment_946360d5: "Successfully updated the comment"
@@ -21247,13 +21247,13 @@ en-CA:
   turnitin: 
     error_1007: "The uploaded file is too big."
     error_1009: "Invalid file type. (Valid file types are MS Word, Acrobat PDF, Postscript, Text, HTML, WordPerfect (WPD) and Rich Text Format.)"
-    error_1013: "The student submission must be more than twenty words of text in order for it to be rated by turnitin."
+    error_1013: "The student submission must be more than twenty words of text in order for it to be rated by Plagiarism system."
     error_1023: "The PDF file could not be read. Please make sure that the file is not password protected."
     error_216: "The student limit for this account has been reached. Please contact your account administrator."
-    error_217: "The turnitin product for this account has expired. Please contact your sales agent to renew the turnitin product."
+    error_217: "The Plagiarism system product for this account has expired. Please contact your sales agent to renew the Plagiarism system product."
     error_414: "The originality report for this submission is not available yet."
     error_415: "The originality score for this submission is not available yet."
-    no_score_after_retries: "Turnitin has not returned a score after %{max_tries} attempts to retrieve one."
+    no_score_after_retries: "Plagiarism system has not returned a score after %{max_tries} attempts to retrieve one."
     tooltip: 
       score: "Similarity Score - See detailed report"
   turnitin_info: 
