@@ -128,7 +128,7 @@ Rails.configuration.after_initialize do
     IncomingMailProcessor::Instrumentation.process
   end
 
-  Delayed::Periodic.cron 'ErrorReport.destroy_error_reports', '2-59/5 * * * *' do
+  Delayed::Periodic.cron 'ErrorReport.destroy_error_reports', '0 19 * * *' do
     cutoff = Setting.get('error_reports_retain_for', 3.months.to_s).to_i
     if cutoff > 0
       with_each_shard_by_database(ErrorReport, :destroy_error_reports, cutoff.seconds.ago)
@@ -147,8 +147,8 @@ Rails.configuration.after_initialize do
   Delayed::Periodic.cron 'Ignore.cleanup', '45 23 * * *' do
     with_each_shard_by_database(Ignore, :cleanup, local_offset: true)
   end
-
-  Delayed::Periodic.cron 'DelayedMessageScrubber.scrub_all', '0 1 * * *' do
+  
+  Delayed::Periodic.cron 'DelayedMessageScrubber.scrub_all', '0 19 * * *' do
     with_each_shard_by_database(DelayedMessageScrubber, :scrub, local_offset: true)
   end
 
@@ -182,11 +182,11 @@ Rails.configuration.after_initialize do
     with_each_shard_by_database(Quizzes::QuizSubmissionEventPartitioner, :process, jitter: 30.minutes, local_offset: true)
   end
 
-  Delayed::Periodic.cron 'Version::Partitioner.process', '0 0 * * *' do
+  Delayed::Periodic.cron 'Version::Partitioner.process', '0 19 * * *' do
     with_each_shard_by_database(Version::Partitioner, :process, jitter: 30.minutes, local_offset: true)
   end
 
-  Delayed::Periodic.cron 'Messages::Partitioner.process', '0 0 * * *' do
+  Delayed::Periodic.cron 'Messages::Partitioner.process', '0 19 * * *' do
     with_each_shard_by_database(Messages::Partitioner, :process, jitter: 30.minutes, local_offset: true)
   end
 
