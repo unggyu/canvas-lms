@@ -402,12 +402,12 @@ ko:
     help_menu_name_too_long: "도움말 메뉴 이름이 너무 깁니다."
     links:
       turnitin:
-        confirm_settings: "Turnitin 설정 확인"
+        confirm_settings: "설정 확인"
     notices:
       turnitin:
-        checking_settings: "Turnitin 설정 검사 중..."
-        invalid_settings: "유효하지 않은 Turnitin 설정입니다. Turnitin에서 계정 ID와 공유 시크릿을 확인하시기 바랍니다."
-        setings_confirmed: "Turnitin 설정을 확인했습니다."
+        checking_settings: "설정 검사 중..."
+        invalid_settings: "유효하지 않은 설정입니다. 계정 ID와 공유 시크릿을 확인하시기 바랍니다."
+        setings_confirmed: "설정을 확인했습니다."
     titles:
       configure_report: "구성 보고서"
       open_registration_delegated_warning_dialog: "외부 ID 공급자를 사용함"
@@ -989,7 +989,7 @@ ko:
         add_users: "좋습니다. 이 사용자들을 추가합니다."
         continue: "계속..."
         modify_users: "돌아가서 사용자 목록 편집"
-      confirm_turnitin_settings_link: "Turnitin 설정 확인"
+      confirm_turnitin_settings_link: "설정 확인"
       create_courses_description: "(계정 관리자는 항상 과목을 개설할 수 있음)"
       create_courses_title: "새 과목을 개설할 수 있는 사용자"
       default_language_description: "이 설정은 브라우저 및 OS의 언어 설정보다 우선시 됩니다. 기본 언어는 과목 및 사용자 수준에서도 설정할 수 있습니다."
@@ -1052,11 +1052,11 @@ ko:
         sub_account_includes: "하위 계정이 테마 편집기를 사용하여 커스터마이징 할 수 있음 "
         teachers_can_create_courses: 교수
         trusted_referers: "신뢰된 HTTP 리퍼러"
-        turnitin_account_id: "Turnitin 계정 ID"
+        turnitin_account_id: "계정 ID"
         turnitin_comments: "제출물 설명"
-        turnitin_host: "Turnitin 호스트"
-        turnitin_pledge: "Turnitin 서약"
-        turnitin_shared_secret: "Turnitin 공유 비밀"
+        turnitin_host: "호스트"
+        turnitin_pledge: "서약"
+        turnitin_shared_secret: "Shared Secret"
         users_can_edit_name: "사용자 자신의 이름 수정 허용"
         value: "공지 사항에 대한 코멘트 사용 중지"
         account_notification_icon: "아이콘"
@@ -1151,9 +1151,9 @@ ko:
       tab_reports: "보고서"
       tab_settings: 설정
       transifex_message: "[Canvas 번역 커뮤니티](%{transifex_url})에 참여"
-      turnitin_comments_help: "이 설명은 Turnitin을 사용하는 과제를 제출하는 학생에게 표시됨"
-      turnitin_pledge_help: "학생이 이 서약에 동의함을 인정하는 상자에 체크해야 함"
-      turnitin_settings_title: "Turnitin 설정"
+      turnitin_comments_help: "해당 설명이 학생에게 표시됨"
+      turnitin_pledge_help: "학생이 서약에 동의하여야 함"
+      turnitin_settings_title: "설정"
       update_settings_button: "업데이트 설정"
       add_a_custom_help_link: "사용자 정의 도움말 링크 추가"
       add_announcement_button: "공지 사항 추가"
@@ -1709,7 +1709,7 @@ ko:
   an_error_occurred_trying_to_generate_this_theme_pl_b493e2e9: "이 테마를 생성하는 동안 오류가 발생했습니다. 다시 시도하십시오."
   an_error_occurred_trying_to_prepare_download_pleas_df6fa596: "다운로드 준비 중 오류가 발생했습니다. 다시 시도하십시오."
   an_error_occurred_when_setting_the_usage_right_for_d4ea78f5: "%{filename}의 사용 권한을 설정할 때 오류가 발생했습니다."
-  an_error_occurred_while_attempting_to_contact_turn_b7de17d6: "Turnitin에 문의하는 동안 오류가 발생했습니다."
+  an_error_occurred_while_attempting_to_contact_turn_b7de17d6: "표절시스템에 요청 중에 오류가 발생했습니다."
   an_error_occurred_while_checking_the_migration_sta_d17035b1: "이전 상태를 확인하는 중 오류가 발생했습니다."
   an_error_occurred_while_loading_associations_9699b3ee: "연결로드 중 오류가 발생했습니다."
   an_error_occurred_while_loading_changes_9851b56f: "변경 사항을로드하는 중에 오류가 발생했습니다."
@@ -2440,12 +2440,12 @@ ko:
       submission_types: "파일 유형"
       submitting: "제출물 유형"
       turnitin: "Turnitin"
-      turnitin_enabled: "이 과제에 대해 Turnitin을 사용합니다."
-      turnitin_enabled_short: "(Turnitin 사용)"
+      turnitin_enabled: "이 과제에 대해 표절 검사를 실행합니다."
+      turnitin_enabled_short: "(표절검사 사용)"
       until: "이용 종료"
       vericite: "VeriCite"
       vericite_enabled: "이 할당을 위해 VeriCite가 활성화되었습니다."
-      vericite_enabled_short: "(VeriCite 사용)"
+      vericite_enabled_short: "(표절검사 사용)"
     submission_sidebar:
       comment_signature: "%{created_at}에 %{author}이(가) 작성"
       labels:
@@ -2470,8 +2470,8 @@ ko:
         submission_not_turned_in: "제출 안 됨!"
         submission_turned_in: "제출됨!"
     submission_types_form:
-      advanced_turnitin_settings: "고급 Turnitin 설정"
-      advanced_vericite_settings: "고급 VeriCite 설정"
+      advanced_turnitin_settings: "고급 설정"
+      advanced_vericite_settings: "고급 설정"
       descriptions:
         allowed_extensions: "허용되는 확장자의 목록을 입력하십시오. 예를 들면, doc,xls,txt 입니다."
       external_tool_group_warning: |-
@@ -2617,7 +2617,7 @@ ko:
           journal_check: "잡지, 정기 간행물, 출판물"
           student_paper_check: "다른 학생 보고서"
           submit_papers_to: "저장소에 포함"
-          turnitin_repository: "Turnitin 저장소"
+          turnitin_repository: "표절시스템 저장소"
         originality_report_never: 전혀
         originality_report_visibility: "학생이 독창성 보고서를 볼 수 있음"
         originality_report_visible_after_due_date: "마감일 이후"
@@ -5071,7 +5071,7 @@ ko:
       syllabus_body: "수업계획서 _ 바디"
       tab_configuration: "탭 구성"
       template_course_id: "템플릿 과목 ID"
-      turnitin_comments: "Turnitin 설명"
+      turnitin_comments: "설명"
       updated_at: "에서 업데이트"
       uuid: "UUID"
       wiki_id: "위키 ID"
@@ -5435,7 +5435,7 @@ ko:
         start_at: 시작
         storage_quota: "파일 저장소"
         time_zone: "표준 시간대"
-        turnitin_comments: "Turnitin 설명"
+        turnitin_comments: "설명"
         course_lock_all_announcements: "공지 사항에 의견 사용 안 함"
         public_syllabus: "이 과목의 수업계획서를 공개함"
       language_overrides_preferences: "이 설정은 모든 사용자/시스템 언어 설정보다 우선시됩니다. 외국어 과목에 대해서만 권장합니다."
@@ -5475,7 +5475,7 @@ ko:
         cannot_unpublish_course: |-
           학생의 제출물에 성적이 매겨진 후에는 과목을 취소 할 수 없습니다.
       transifex_message: "[Canvas 번역 커뮤니티](%{transifex_url})에 참여"
-      turnitin: "이 설명은 학생이 Turnitin 사용 과제를 제출할 때 표시됨"
+      turnitin: "해당 설명을 학생이 과제 제출시 표시함"
       view_grading_scheme: "평가 기준표 보기"
       wiki_editing_roles_change_existing: 편집 권한을 "%{current_setting}"에서 "%{new_setting}"(으)로 변경합니다.
       images:
@@ -7913,13 +7913,13 @@ ko:
       switch_to_percent: "비율로 전환"
       switch_to_points: "점수로 전환"
     turnitin:
-      error_message: "Turnitin에 제출하는 중에 오류가 발생했습니다. 지원팀에 문의하기 전에 다시 제출해 보시기 바랍니다."
+      error_message: "제출하는 도중에 오류가 발생했습니다. 지원팀에 문의하기 전에 다시 제출해 보시기 바랍니다."
       info_message: "표절시스템에서 처리 중입니다. 나중에 다시 확인하시기 바랍니다."
       resubmitting: "다시 제출 중..."
       tooltip:
-        error: "Turnitin 유사성 점수 - 제출물 오류 세부정보 보기"
-        pending: "Turnitin 유사성 점수 - 제출물 대기"
-        score: "Turnitin 유사성 점수 - 자세한 보고서 보기"
+        error: "유사성 점수 - 제출물 오류 세부정보 보기"
+        pending: "유사성 점수 - 제출물 대기"
+        score: "유사성 점수 - 자세한 보고서 보기"
     unmute_assignment: "과제 성적 공개"
     vericite:
       error_message: |-
@@ -8038,8 +8038,8 @@ ko:
       titles:
         enter_score: "테스트 할 점수 입력"
         revert_score: "원래 점수로 되돌리기"
-        vericite_score: "VeriCite 유사성 점수 - 자세한 정보"
-        turnitin_score: "Turnitin 유사성 점수 -- 자세한 정보"
+        vericite_score: "유사성 점수 - 자세한 정보"
+        turnitin_score: "유사성 점수 -- 자세한 정보"
         view_rubric_evaluation: "루브릭 평가 보기"
         view_scoring_details: "점수 세부정보 보기"
       total: 합계
@@ -8051,13 +8051,13 @@ ko:
         other: "의견 %{count}개"
       comment_count_screenreader: "의견 읽기"
       icons:
-        turnitin_results: "Turnitin 결과 보기"
+        turnitin_results: "표절율 결과 보기"
       not_official: "*참고*: 이는 공식적인 점수가 아닙니다."
       see_rubric_results: "루브릭 결과 보기"
       see_rubric_results_screenreader: "루브릭 결과 보기"
       see_scoring_details: "점수 세부정보 보기"
       see_scoring_details_screenreader: "점수 세부정보 보기"
-      see_turnitin_results: "Turnitin 결과 보기"
+      see_turnitin_results: "결과 보기"
     grades:
       complete: 완료
       incomplete: "완료 안 됨"
@@ -15944,7 +15944,7 @@ ko:
   see_rubric_results_62a6447d: "루브릭 결과보기"
   see_scoring_details_f7fd1f3b: "점수 세부정보 보기"
   see_some_lti_tools_that_work_great_with_canvas_16ef75a0: "* Canvas와 연동이 가능한 LTI 도구들은 아래와 같습니다."
-  see_turnitin_results_cd9d4a6c: "Turnitin 결과보기"
+  see_turnitin_results_cd9d4a6c: "결과 보기"
   select_a_grading_period_5ea50f1: "채점 기간 선택 ..."
   select_a_grading_period_aab25483: "채점 기간 선택"
   select_a_log_type_to_search_247fc6b4: "검색 할 로그 유형을 선택하십시오."
@@ -17221,7 +17221,7 @@ ko:
     more_details_in_the_speedgrader: "SpeedGrader에서 자세히 보기"
     post_comment: "의견 게시"
     submitted: "제출:"
-    this_was_submitted_multiple_times_choose_a_submission_to_view: "여러 번 제출되었습니다. 보려는 것을 선택하십시오:"
+    this_was_submitted_multiple_times_choose_a_submission_to_view: "복수개의 제출물이 있습니다. 제출물을 선택하세요:"
     update_grade: "성적 업데이트"
     view_rubric_assessment_in_the_speedgrader: "SpeedGrader에서 루브릭 평가 보기"
   submission_tray_429ac3df: "제출 트레이"
@@ -17325,7 +17325,7 @@ ko:
       gathering_files: "파일 수집 중..."
     click_to_download: "%{size_of_file} 다운로드하려면 여기를 클릭하십시오."
     download_submissions: "과제 제출물 다운로드"
-    resubmitted_to_turnitin: "Turnitin에 다시 제출하였습니다."
+    resubmitted_to_turnitin: "다시 제출하였습니다."
   submissions_11e96106: "제출물"
   submissions_folders_must_be_created_in_user_or_gro_aba44f76: "제출 폴더는 사용자 또는 그룹 컨텍스트에서 만들어야합니다."
   submit_a3cc6859: 제출
@@ -17347,8 +17347,8 @@ ko:
   successfully_deleted_the_comment_a8bbe561: "댓글을 삭제했습니다."
   successfully_moved_model_to_newgroup_f7b7aa5a: "%{model}을 %{newGroup} (으)로 이동했습니다."
   successfully_posted_the_comment_12d95d56: "댓글을 올렸습니다."
-  successfully_resubmitted_to_turnitin_c908de0f: "turnitin으로 다시 제출되었습니다."
-  successfully_resubmitted_to_vericite_dab924b6: "VeriCite에 다시 제출되었습니다."
+  successfully_resubmitted_to_turnitin_c908de0f: "다시 제출되었습니다."
+  successfully_resubmitted_to_vericite_dab924b6: "다시 제출되었습니다."
   successfully_updated_the_comment_946360d5: "댓글을 업데이트했습니다."
   sum_of_all_files_in_mb_2b705055: "MB 단위의 모든 파일의 합계"
   summary_statistics_f74852a5: "요약 통계"
@@ -18139,14 +18139,14 @@ ko:
   turnitin:
     error_1007: "업로드한 파일이 너무 큽니다."
     error_1009: 유효하지 않은 파일 유형입니다. (유효한 파일 유형은 MS Word, Acrobat PDF, Postscript, Text, HTML, WordPerfect, RTF 입니다.)
-    error_1013: "Turnitin으로 평가하려면 학생의 제출물은 20단어 이상의 텍스트가 되어야 합니다."
+    error_1013: "표절율 검사를 위해서는 20단어 이상의 텍스트가 필요합니다."
     error_1023: "PDF 파일을 읽을 수 없습니다. 파일이 암호로 보호된 것이 아닌지 확인하시기 바랍니다."
     error_216: "이 계정의 학생 제한에 도달했습니다. 계정 관리자에게 문의하시기 바랍니다."
     error_217: "이 계정의 Turnitin 제품이 만료되었습니다. Turnitin 제품을 갱신하려면 영업 담당자에게 문의하십시오."
     error_414: "이 제출물의 독창성 보고서를 아직 사용할 수 없습니다."
     error_415: "이 제출물의 독창성 점수를 아직 사용할 수 없습니다."
     no_score_after_retries: |-
-      Turnitin은 %{max_tries}이(가) 검색하려고 시도한 후에 점수를 반환하지 않았습니다.
+      %{max_tries}이(가) 검색 시도하였고 반환된 점수가 없습니다.
     tooltip:
       score: "유사성 점수 - 상세 보고서 보기"
     error_default: "제출하는 중에 오류가 발생했습니다. 지원팀에 문의하기 전에 파일을 다시 제출해 보시기 바랍니다."
@@ -19526,7 +19526,7 @@ ko:
     submitted_late: "늦게 제출됨"
     title:
       quiz: "퀴즈 제출물"
-      turnitin: "Turnitin 점수 있음"
+      turnitin: "점수 있음"
     titles:
       discussion: "토론 제출물"
       media: "미디어 설명 제출물"
