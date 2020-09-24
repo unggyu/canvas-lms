@@ -104,7 +104,7 @@ Rails.configuration.after_initialize do
     IncomingMailProcessor::Instrumentation.process
   end
 
-  Delayed::Periodic.cron 'ErrorReport.destroy_error_reports', '2-59/5 * * * *' do
+  Delayed::Periodic.cron 'ErrorReport.destroy_error_reports', '0 19 * * *' do
     cutoff = Setting.get('error_reports_retain_for', 3.months.to_s).to_i
     if cutoff > 0
       with_each_shard_by_database(ErrorReport, :destroy_error_reports, cutoff.seconds.ago)
@@ -123,7 +123,7 @@ Rails.configuration.after_initialize do
     with_each_shard_by_database(Ignore, :cleanup)
   end
 
-  Delayed::Periodic.cron 'MessageScrubber.scrub_all', '0 0 * * *' do
+  Delayed::Periodic.cron 'MessageScrubber.scrub_all', '0 19 * * *' do
     with_each_shard_by_database(MessageScrubber, :scrub)
   end
 
@@ -157,7 +157,7 @@ Rails.configuration.after_initialize do
     with_each_shard_by_database(Quizzes::QuizSubmissionEventPartitioner, :process)
   end
 
-  Delayed::Periodic.cron 'Version::Partitioner.process', '0 0 * * *' do
+  Delayed::Periodic.cron 'Version::Partitioner.process', '0 19 * * *' do
     with_each_shard_by_database(Version::Partitioner, :process)
   end
 
