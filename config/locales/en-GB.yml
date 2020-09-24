@@ -404,12 +404,12 @@ en-GB:
     help_menu_name_too_long: "Help menu name is too long"
     links: 
       turnitin: 
-        confirm_settings: "confirm Turnitin settings"
+        confirm_settings: "confirm Plagiarism system settings"
     notices: 
       turnitin: 
-        checking_settings: "checking Turnitin settings..."
-        invalid_settings: "invalid Turnitin settings, please check your account ID and shared secret from Turnitin"
-        setings_confirmed: "Turnitin settings confirmed!"
+        checking_settings: "checking Plagiarism system settings..."
+        invalid_settings: "invalid Plagiarism system settings, please check your account ID and shared secret from Plagiarism system"
+        setings_confirmed: "Plagiarism system settings confirmed!"
     titles: 
       configure_report: "Configure report"
       open_registration_delegated_warning_dialog: "An external identity provider is enabled"
@@ -1026,7 +1026,7 @@ en-GB:
         continue: Continue...
         modify_users: "Go back and edit the list of users"
       confirm_global_announcement: "This announcement will be shown to *all* Canvas users. Confirm that you want to create it."
-      confirm_turnitin_settings_link: "confirm Turnitin settings"
+      confirm_turnitin_settings_link: "confirm Plagiarism system settings"
       course_roles: "Course roles:"
       create_courses_description: "(Account administrators can always create courses)"
       create_courses_title: "Who can create new courses"
@@ -1129,11 +1129,11 @@ en-GB:
         teachers_can_create_courses: Teachers
         trusted_referers: "Trusted HTTP Referers"
         turnitin: Turnitin
-        turnitin_account_id: "Turnitin account ID"
+        turnitin_account_id: "Plagiarism system account ID"
         turnitin_comments: "Submission comments"
-        turnitin_host: "Turnitin host"
+        turnitin_host: "Plagiarism system host"
         turnitin_pledge: "Similarity Pledge"
-        turnitin_shared_secret: "Turnitin shared secret"
+        turnitin_shared_secret: "Plagiarism system shared secret"
         users_can_edit_name: "Users may edit their name"
         value: "Disable comments on announcements"
       links: 
@@ -1208,9 +1208,9 @@ en-GB:
       tab_reports: Reports
       tab_settings: Settings
       transifex_message: "Join the [Canvas Translation Community](%{transifex_url})"
-      turnitin_comments_help: "these comments will be shown to students when submitting a Turnitin-enabled assignment"
+      turnitin_comments_help: "these comments will be shown to students when submitting a Plagiarism system-enabled assignment"
       turnitin_pledge_help: "students must check a box acknowledging that they agree with this pledge"
-      turnitin_settings_title: "Turnitin settings"
+      turnitin_settings_title: "Plagiarism system settings"
       update_settings_button: "Update settings"
     show: 
       courses_crumb: Courses
@@ -1754,7 +1754,7 @@ en-GB:
   an_error_occurred_updating_the_assignment_7391dd3a: "An error occurred updating the assignment."
   an_error_occurred_updating_this_assignment_21287c7e: "An error occurred updating this assignment."
   an_error_occurred_when_setting_the_usage_right_for_d4ea78f5: "An error occurred when setting the usage right for %{filename}"
-  an_error_occurred_while_attempting_to_contact_turn_b7de17d6: "An error occurred while attempting to contact Turnitin."
+  an_error_occurred_while_attempting_to_contact_turn_b7de17d6: "An error occurred while attempting to contact Plagiarism system."
   an_error_occurred_while_checking_the_migration_sta_d17035b1: "An error occurred while checking the migration status"
   an_error_occurred_while_deleting_announcements_ab1ff3f6: "An error occurred while deleting announcements."
   an_error_occurred_while_loading_account_proficienc_c7d6568b: "An error occurred while loading account proficiency ratings: %{m}"
@@ -2613,8 +2613,8 @@ en-GB:
       submission_types: "File types"
       submitting: Submitting
       turnitin: Turnitin
-      turnitin_enabled: "Turnitin has been enabled for this assignment."
-      turnitin_enabled_short: "(Turnitin enabled)"
+      turnitin_enabled: "Plagiarism system has been enabled for this assignment."
+      turnitin_enabled_short: "(Plagiarism system enabled)"
       until: Until
       vericite: VeriCite
       vericite_enabled: "VeriCite has been enabled for this assignment."
@@ -2653,8 +2653,8 @@ en-GB:
         submission_not_turned_in: "Not submitted!"
         submission_turned_in: Submitted!
     submission_types_form: 
-      advanced_turnitin_settings: "Advanced Turnitin settings"
-      advanced_vericite_settings: "Advanced VeriCite Settings"
+      advanced_turnitin_settings: "Advanced Plagiarism system settings"
+      advanced_vericite_settings: "Advanced Plagiarism system Settings"
       descriptions: 
         allowed_extensions: "Enter a list of accepted extensions, for example: doc,xls,txt"
       external_tool_group_warning: "Group assignments can not use External Tools. The group setting will be unchecked when you save."
@@ -2662,8 +2662,8 @@ en-GB:
       label: 
         external_tool_new_tab: "Load this tool in a new tab"
         external_tool_url: "External tool URL"
-        turnitin_enabled: "Enable Turnitin submissions"
-        vericite_enabled: "Enable VeriCite Submissions"
+        turnitin_enabled: "Enable Plagiarism system submissions"
+        vericite_enabled: "Enable Plagiarism system Submissions"
       labels: 
         allow_file_uploads: "File Uploads"
         allow_media_recordings: "Media Recordings"
@@ -2797,7 +2797,7 @@ en-GB:
           journal_check: "Journals, Periodicals, and Publications"
           student_paper_check: "Other student papers"
           submit_papers_to: "Include in Repository"
-          turnitin_repository: "Turnitin Repository"
+          turnitin_repository: "Plagiarism system Repository"
         originality_report_never: Never
         originality_report_visibility: "Students can see the originality report"
         originality_report_visible_after_due_date: "After the due date"
@@ -5449,7 +5449,7 @@ en-GB:
       syllabus_body: syllabus_body
       tab_configuration: "Tab Configuration"
       template_course_id: "Template Course Id"
-      turnitin_comments: "Turnitin comments"
+      turnitin_comments: "comments"
       updated_at: "Updated at"
       uuid: UUID
       wiki_id: "Wiki Id"
@@ -5890,7 +5890,7 @@ en-GB:
         start_at: Starts
         storage_quota: "File storage"
         time_zone: "Time zone"
-        turnitin_comments: "Turnitin comments"
+        turnitin_comments: "comments"
       language_overrides_preferences: "This will override any user/system language preferences. This is only recommended for foreign language courses"
       links: 
         more_options: "more options"
@@ -5931,7 +5931,7 @@ en-GB:
       tooltips: 
         cannot_unpublish_course: "You cannot unpublish this course if there are graded student submissions"
       transifex_message: "Join the [Canvas Translation Community](%{transifex_url})"
-      turnitin: "these comments will be shown to students when submitting a Turnitin-enabled assignment"
+      turnitin: "these comments will be shown to students when submitting a Plagiarism system-enabled assignment"
       view_grading_scheme: "view grading scheme"
       wiki_editing_roles: "can create, rename, and edit course wiki pages by default"
       wiki_editing_roles_change_existing: "Change pages currently editable by \"%{current_setting}\" to \"%{new_setting}\"."
@@ -8663,7 +8663,7 @@ en-GB:
     submitted_late: "Submitted late"
     title: 
       quiz: "Quiz submission"
-      turnitin: "Has Turnitin score"
+      turnitin: "Has score"
     titles: 
       discussion: "Discussion submission"
       media: "Media comment submission"
@@ -8782,7 +8782,7 @@ en-GB:
         out_of: "Out of"
         score: Score
       icons: 
-        turnitin_results: "See Turnitin results"
+        turnitin_results: "See Plagiarism results"
       labels: 
         final_grade_hidden: "Calculation of totals has been disabled"
         high: High
@@ -8806,7 +8806,7 @@ en-GB:
       see_rubric_results_screenreader: "See rubric results"
       see_scoring_details: "See scoring details"
       see_scoring_details_screenreader: "See scoring details"
-      see_turnitin_results: "See Turnitin results"
+      see_turnitin_results: "See Plagiarism results"
       see_vericite_results: "See VeriCite results"
       student_mute_legend: "Your instructor is working on grades. While your instructor is working on grades, grade and comment information is unavailable."
       student_mute_notification: "Instructor is working on grades"
@@ -8814,8 +8814,8 @@ en-GB:
       titles: 
         enter_score: "Enter a score to test"
         revert_score: "Revert to original score"
-        turnitin_score: "Turnitin similarity score -- more information"
-        vericite_score: "VeriCite Similarity score - more information"
+        turnitin_score: "similarity score -- more information"
+        vericite_score: "Similarity score - more information"
         view_rubric_evaluation: "View rubric evaluation"
         view_scoring_details: "View scoring details"
       total: Total
@@ -9617,7 +9617,7 @@ en-GB:
     time: 
       event: "%{date} at %{time}"
   has_similarity_score_d5f332b4: "Has similarity score"
-  has_turnitin_score_3e1cacf6: "Has Turnitin score"
+  has_turnitin_score_3e1cacf6: "Has Plagiarism score"
   haven_t_been_graded_d7dee5bb: "Haven't been graded"
   haven_t_submitted_yet_e63834db: "Haven't submitted yet"
   hello_name_your_outcomes_import_failed_due_to_an_e_385db5d3: |-
@@ -17211,7 +17211,7 @@ en-GB:
   see_rubric_results_62a6447d: "See rubric results"
   see_scoring_details_f7fd1f3b: "See scoring details"
   see_some_lti_tools_that_work_great_with_canvas_16ef75a0: "*See some LTI tools* that work incredibly well with Canvas."
-  see_turnitin_results_cd9d4a6c: "See Turnitin results"
+  see_turnitin_results_cd9d4a6c: "See Plagiarism results"
   select_1e849959: "[ Select ]"
   select_a_grading_period_5ea50f1: "Select a grading period..."
   select_a_grading_period_aab25483: "Select a grading period"
@@ -18610,7 +18610,7 @@ en-GB:
     gathering_files_progress: "Gathering files (%{progress})..."
     notices: 
       submission_doesnt_count: "This assignment will no longer count towards your grade."
-    resubmitted_to_turnitin: "Successfully resubmitted to turnitin."
+    resubmitted_to_turnitin: "Successfully resubmitted to Plagiarism system."
     see_attached_files: "See attached files"
     show: 
       anonymous_user: "Anonymous User"
@@ -18711,7 +18711,7 @@ en-GB:
   successfully_deleted_the_comment_a8bbe561: "Successfully deleted the comment"
   successfully_moved_model_to_newgroup_f7b7aa5a: "Successfully moved %{model} to %{newGroup}"
   successfully_posted_the_comment_12d95d56: "Successfully posted the comment"
-  successfully_resubmitted_to_turnitin_c908de0f: "Successfully resubmitted to turnitin."
+  successfully_resubmitted_to_turnitin_c908de0f: "Successfully resubmitted to Plagiarism system."
   successfully_resubmitted_to_vericite_dab924b6: "Successfully resubmitted to VeriCite."
   successfully_updated_the_comment_946360d5: "Successfully updated the comment"
   sum_of_all_files_in_mb_2b705055: "sum of all files in MB"
@@ -19530,14 +19530,14 @@ en-GB:
   turnitin: 
     error_1007: "The uploaded file is too big."
     error_1009: "Invalid file type. (Valid file types are MS Word, Acrobat PDF, Postscript, Text, HTML, WordPerfect (WPD) and Rich Text Format.)"
-    error_1013: "The student submission must be more than twenty words of text in order for it to be rated by Turnitin."
+    error_1013: "The student submission must be more than twenty words of text in order for it to be rated by Plagiarism system."
     error_1023: "The PDF file could not be read. Please make sure that the file is not password protected."
     error_216: "The student limit for this account has been reached. Please contact your account administrator."
-    error_217: "The Turnitin product for this account has expired. Please contact your sales agent to renew the Turnitin product."
+    error_217: "The Plagiarism system product for this account has expired. Please contact your sales agent to renew the Plagiarism system product."
     error_414: "The originality report for this submission is not available yet."
     error_415: "The originality score for this submission is not available yet."
-    error_default: "There was an error submitting to Turnitin. Please try resubmitting the file before contacting support."
-    no_score_after_retries: "Turnitin has not returned a score after %{max_tries} attempts to retrieve one."
+    error_default: "There was an error submitting to Plagiarism system. Please try resubmitting the file before contacting support."
+    no_score_after_retries: "Plagiarism system has not returned a score after %{max_tries} attempts to retrieve one."
     tooltip: 
       score: "Similarity Score - See detailed report"
   turnitin_info: 
@@ -19548,7 +19548,7 @@ en-GB:
     originality_report_visible_after_due_date: "After the date due"
     originality_report_visible_after_grading: "After the assignment is graded"
     originality_report_visible_immediately: Immediately
-  turnitin_similarity_score_more_information_e2571be8: "Turnitin similarity score -- more information"
+  turnitin_similarity_score_more_information_e2571be8: "similarity score -- more information"
   twitter_fcef6b54: Twitter
   type_a_few_letters_to_start_searching_3334657b: "Type a few letters to start searching"
   type_c8106334: Type
