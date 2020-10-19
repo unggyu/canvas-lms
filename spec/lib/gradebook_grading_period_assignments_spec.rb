@@ -79,7 +79,7 @@ describe GradebookGradingPeriodAssignments do
       it "excludes deleted submissions" do
         assignment_in_gp2 = @example_course.assignments.create!(due_at: 1.day.from_now)
         assignment_in_gp2.destroy
-        assignment_in_gp2.submissions.map(&:destroy)
+        assignment_in_gp2.submissions.preload(:all_submission_comments, :lti_result, :versions, :submission_drafts).map(&:destroy)
         expect(hash[@period2.id]).not_to include(assignment_in_gp2.id.to_s)
       end
 
@@ -135,12 +135,12 @@ describe GradebookGradingPeriodAssignments do
           end
 
           it 'optionally includes assignments assigned exclusively to concluded students' do
-            @settings[@course.id] = { 'show_concluded_enrollments' => 'true' }
+            @settings = { 'show_concluded_enrollments' => 'true' }
             expect(hash[@period2.id]).to include @assignment.id.to_s
           end
 
           it 'optionally excludes assignments assigned exclusively to concluded students' do
-            @settings[@course.id] = { 'show_concluded_enrollments' => 'false' }
+            @settings = { 'show_concluded_enrollments' => 'false' }
             expect(hash[@period2.id]).to be_nil
           end
         end
@@ -172,12 +172,12 @@ describe GradebookGradingPeriodAssignments do
           end
 
           it 'optionally includes assignments assigned exclusively to deactivated students' do
-            @settings[@course.id] = { 'show_inactive_enrollments' => 'true' }
+            @settings = { 'show_inactive_enrollments' => 'true' }
             expect(hash[@period2.id]).to include @assignment.id.to_s
           end
 
           it 'optionally excludes assignments assigned exclusively to deactivated students' do
-            @settings[@course.id] = { 'show_inactive_enrollments' => 'false' }
+            @settings = { 'show_inactive_enrollments' => 'false' }
             expect(hash[@period2.id]).to be_nil
           end
         end

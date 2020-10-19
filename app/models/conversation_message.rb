@@ -19,8 +19,10 @@
 require 'atom'
 
 class ConversationMessage < ActiveRecord::Base
-  include HtmlTextHelper
+  self.ignored_columns = %i[root_account_id]
 
+  include HtmlTextHelper
+  include ConversationHelper
   include Rails.application.routes.url_helpers
   include SendToStream
   include SimpleTags::ReaderInstanceMethods
@@ -36,6 +38,7 @@ class ConversationMessage < ActiveRecord::Base
   delegate :participants, :to => :conversation
   delegate :subscribed_participants, :to => :conversation
 
+  before_create :set_root_account_ids
   after_create :generate_user_note!
   after_save :update_attachment_associations
 
@@ -58,7 +61,7 @@ class ConversationMessage < ActiveRecord::Base
       # crunch in ruby (generally none, unless a conversation has multiple
       # most-recent messages, i.e. same created_at)
       unless connection.adapter_name == 'PostgreSQL'
-        base_conditions << <<-SQL
+        base_conditions << <<~SQL
           AND conversation_messages.created_at = (
             SELECT MAX(created_at)
             FROM conversation_messages cm2
@@ -249,7 +252,7 @@ class ConversationMessage < ActiveRecord::Base
         t(:subject, "Private message")
       end
       note = format_message(body).first
-      recipient.user_notes.create(:creator => author, :title => title, :note => note)
+      recipient.user_notes.create(creator: author, title: title, note: note, root_account_id: root_account_id)
     end
   end
 
@@ -281,7 +284,8 @@ class ConversationMessage < ActiveRecord::Base
   end
 
   def root_account_id
-    context_id if context_type == 'Account'
+    return nil unless context && context_type == 'Account'
+    context.resolved_root_account_id
   end
 
   def reply_from(opts)
@@ -289,7 +293,13 @@ class ConversationMessage < ActiveRecord::Base
     # It would be nice to have group conversations via e-mail, but if so, we need to make it much more obvious
     # that replies to the e-mail will be sent to multiple recipients.
     recipients = [author]
-    conversation.reply_from(opts.merge(:root_account_id => self.root_account_id, :only_users => recipients))
+    tags = conversation.conversation_participants.where(user_id: author.id).pluck(:tags)
+    opts = opts.merge(
+      :root_account_id => self.root_account_id,
+      :only_users => recipients,
+      :tags => tags
+    )
+    conversation.reply_from(opts)
   end
 
   def forwarded_messages

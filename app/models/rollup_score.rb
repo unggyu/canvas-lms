@@ -21,22 +21,34 @@ class RollupScore
   PRECISION = 2
 
   attr_reader :outcome_results, :outcome, :score, :count, :title, :submitted_at, :hide_points
-  def initialize(outcome_results, opts={})
+
+  def initialize(outcome_results:, opts: {}, context: nil)
     @outcome_results = outcome_results
     @aggregate = opts[:aggregate_score]
+    @median = opts[:aggregate_stat] == 'median'
     @outcome = @outcome_results.first.learning_outcome
     @count = @outcome_results.size
     @points_possible = @outcome.rubric_criterion[:points_possible]
     @mastery_points = @outcome.rubric_criterion[:mastery_points]
-    @calculation_method = @outcome.calculation_method || "highest"
-    @calculation_int = @outcome.calculation_int
-    score_set = @aggregate ? aggregate_score : calculate_results
+    if context.is_a?(Course) && context.root_account.feature_enabled?(:account_level_mastery_scales) && context.resolved_outcome_calculation_method
+      @calculation_method = context.resolved_outcome_calculation_method.calculation_method
+      @calculation_int = context.resolved_outcome_calculation_method.calculation_int
+    else
+      @calculation_method = @outcome.calculation_method || "highest"
+      @calculation_int = @outcome.calculation_int
+    end
+
+    score_set = if @aggregate
+                  @median ? median_aggregate_score : aggregate_score
+                else
+                  calculate_results
+    end
     @score = score_set[:score] if score_set
     @hide_points = score_set[:results].all?(&:hide_points) if score_set
     latest_result unless @aggregate
   end
 
-  # TODO - do send(@calculation_method) instead of the case to streamline this more
+  # TODO: do send(@calculation_method) instead of the case to streamline this more
   def calculate_results
     # decaying average is default for new outcomes
     case @calculation_method
@@ -50,7 +62,7 @@ class RollupScore
       latest_set = score_sets.first
       {score: latest_set[:score].round(PRECISION), results: [latest_set[:result]]}
     when 'highest'
-      highest_set = score_sets.max_by{|set| set[:score]}
+      highest_set = score_sets.max_by {|set| set[:score]}
       {score: highest_set[:score].round(PRECISION), results: [highest_set[:result]]}
     end
   end
@@ -59,7 +71,7 @@ class RollupScore
     return unless @outcome.rubric_criterion
     # mastery_points represents the cutoff score for which results
     # will be considered towards mastery
-    tmp_score_sets = score_sets.compact.delete_if{|set| set[:score] < @mastery_points}
+    tmp_score_sets = score_sets.compact.delete_if {|set| set[:score] < @mastery_points}
     return nil if tmp_score_sets.length < @calculation_int
 
     tmp_scores = tmp_score_sets.pluck(:score)
@@ -80,7 +92,7 @@ class RollupScore
     latest = tmp_score_sets.pop
 
     if tmp_score_sets.empty?
-      return { score: latest[:score].round(PRECISION), results: [latest[:result]] }
+      return {score: latest[:score].round(PRECISION), results: [latest[:result]]}
     end
 
     tmp_scores = tmp_score_sets.pluck(:score)

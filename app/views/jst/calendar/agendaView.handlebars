@@ -29,7 +29,7 @@
                   {{/if}},
                 </span>
                 <span class="screenreader-only">
-                  {{#if ../../meta.better_scheduler}}
+                  {{#if ../../meta.use_scheduler}}
                     {{#if isAppointmentGroupEvent}}
                       {{#if can_edit}}
                         {{#truncate title 60}}{{/truncate}} - {{appointmentGroupEventStatus}} {{#if reservedUsers }} - {{reservedUsers}} {{/if}}
@@ -59,7 +59,7 @@
                   <div class="agenda-event__icon group_{{contextCode}}">
                     <i class="icon-{{iconType}}"></i>
                   </div>
-                  <span class="screenreader-only">{{#t}}Open event menu{{/t}}</span>
+                  <span class="screenreader-only">{{#t}}Open event menu for{{/t}} {{title}}</span>
                   <div class="agenda-event__time" aria-hidden="true">
                     {{#if assignment}}
                       {{#t "due"}}Due {{/t}} {{fcMomentToString originalStart "tiny"}}
@@ -70,7 +70,7 @@
                     {{/if}}
                   </div>
                   <span class="agenda-event__title group_{{contextCode}} {{#if isCompleted}}calendar__event--completed{{/if}}">
-                    {{#if ../../meta.better_scheduler}}
+                    {{#if ../../meta.use_scheduler}}
                       {{#if isAppointmentGroupEvent}}
                         {{#if can_edit}}
                           {{#truncate title 60}}{{/truncate}} - {{appointmentGroupEventStatus}} {{#if reservedUsers }} - {{reservedUsers}} {{/if}}

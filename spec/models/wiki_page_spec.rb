@@ -29,7 +29,7 @@ describe WikiPage do
     p.notify_of_update = true
     p.save!
     expect(p.created_at).to be <= 3.days.ago
-    p.update_attributes(:body => "Awgawg")
+    p.update(:body => "Awgawg")
     expect(p.messages_sent).not_to be_nil
     expect(p.messages_sent).not_to be_empty
     expect(p.messages_sent["Updated Wiki Page"]).not_to be_nil
@@ -45,7 +45,7 @@ describe WikiPage do
     p.created_at = 3.days.ago
     p.notify_of_update = true
     p.save!
-    p.update_attributes(:body => "Awgawg")
+    p.update(:body => "Awgawg")
     expect(p.messages_sent["Updated Wiki Page"].map(&:user)).to be_include(@student)
   end
 
@@ -53,12 +53,12 @@ describe WikiPage do
     course_with_student(:active_all => true)
     n = Notification.create(:name => "Updated Wiki Page", :category => "TestImmediately")
     NotificationPolicy.create(:notification => n, :communication_channel => @user.communication_channel, :frequency => "immediately")
-    @course.update_attributes(:start_at => 2.days.from_now, :restrict_enrollments_to_course_dates => true)
+    @course.update(:start_at => 2.days.from_now, :restrict_enrollments_to_course_dates => true)
     p = @course.wiki_pages.create(:title => "some page")
     p.created_at = 3.days.ago
     p.notify_of_update = true
     p.save!
-    p.update_attributes(:body => "Awgawg")
+    p.update(:body => "Awgawg")
     expect(p.messages_sent["Updated Wiki Page"].map(&:user)).to_not be_include(@student)
   end
 
@@ -200,6 +200,12 @@ describe WikiPage do
     expect(p1.url).to eql('asdf-2')
   end
 
+  it "sets root_account_id on create" do
+    course_with_teacher(:active_all => true)
+    wp = @course.wiki_pages.create!(:title => "Asdf")
+    expect(wp.root_account_id).to eql @course.root_account_id
+  end
+
   context "unpublished" do
     before :once do
       teacher_in_course(:active_all => true)
@@ -217,29 +223,33 @@ describe WikiPage do
       expect(@page.can_read_page?(@teacher)).to eq true
     end
 
-    it "allows account admins with :manage_wiki rights to read" do
-      account = @course.root_account
-      role = custom_account_role('CustomAccountUser', :account => account)
-      RoleOverride.manage_role_override(account, role, 'manage_wiki', :override => true)
-      admin = account_admin_user(:account => account, :role => role, :active_all => true)
-      expect(@page.can_read_page?(admin)).to eq true
+    context 'allows account admins to read' do
+      [:manage_wiki_create, :manage_wiki_update, :manage_wiki_delete].each do |perm|
+        it "with #{perm} rights" do
+          account = @course.root_account
+          role = custom_account_role('CustomAccountUser', :account => account)
+          RoleOverride.manage_role_override(account, role, perm, :override => true)
+          admin = account_admin_user(:account => account, :role => role, :active_all => true)
+          expect(@page.can_read_page?(admin)).to eq true
+        end
+      end
     end
   end
 
   describe '#can_edit_page?' do
-    it 'is true if the user has manage_wiki rights' do
+    it 'is true if the user has manage_wiki_update rights' do
       course_with_teacher(:active_all => true)
       page = @course.wiki_pages.create(:title => "some page", :editing_roles => 'teachers')
       page.workflow_state = 'unpublished'
       expect(page.can_edit_page?(@teacher)).to be_truthy
     end
 
-    describe "without :manage_wiki rights" do
+    describe "without :manage_wiki_update rights" do
       before :once do
         course_with_teacher(:active_all => true)
         course_with_ta(:course => @course, :active_all => true)
-        @course.account.role_overrides.create!(:role => teacher_role, :permission => 'manage_wiki', :enabled => false)
-        @course.account.role_overrides.create!(:role => ta_role, :permission => 'manage_wiki', :enabled => false)
+        @course.account.role_overrides.create!(:role => teacher_role, :permission => 'manage_wiki_update', :enabled => false)
+        @course.account.role_overrides.create!(:role => ta_role, :permission => 'manage_wiki_update', :enabled => false)
       end
 
       it 'does not grant teachers or TAs edit rights when editing roles are "Only teachers"' do

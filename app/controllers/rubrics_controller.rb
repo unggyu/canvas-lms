@@ -16,6 +16,7 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+# @API Rubrics
 class RubricsController < ApplicationController
   before_action :require_context
   before_action { |c| c.active_tab = "rubrics" }
@@ -23,13 +24,18 @@ class RubricsController < ApplicationController
   include Api::V1::Outcome
 
   def index
-    permission = @context.is_a?(User) ? :manage : :manage_rubrics
+    permission = @context.is_a?(User) ? :manage : [:manage_rubrics, :read_rubrics]
     return unless authorized_action(@context, @current_user, permission)
     js_env :ROOT_OUTCOME_GROUP => get_root_outcome,
       :PERMISSIONS => {
-        manage_outcomes: @context.grants_right?(@current_user, session, :manage_outcomes)
+        manage_outcomes: @context.grants_right?(@current_user, session, :manage_outcomes),
+        manage_rubrics: @context.grants_right?(@current_user, session, :manage_rubrics)
       },
       :NON_SCORING_RUBRICS => @domain_root_account.feature_enabled?(:non_scoring_rubrics)
+
+    mastery_scales_js_env
+    set_tutorial_js_env
+
     @rubric_associations = @context.rubric_associations.bookmarked.include_rubric.to_a
     @rubric_associations = Canvas::ICU.collate_by(@rubric_associations.select(&:rubric_id).uniq(&:rubric_id)) { |r| r.rubric.title }
     @rubrics = @rubric_associations.map(&:rubric)
@@ -37,10 +43,14 @@ class RubricsController < ApplicationController
   end
 
   def show
-    permission = @context.is_a?(User) ? :manage : :manage_rubrics
+    permission = @context.is_a?(User) ? :manage : [:manage_rubrics, :read_rubrics]
     return unless authorized_action(@context, @current_user, permission)
     if (id = params[:id]) =~ Api::ID_REGEX
-      js_env :ROOT_OUTCOME_GROUP => get_root_outcome
+      js_env :ROOT_OUTCOME_GROUP => get_root_outcome,
+        :PERMISSIONS => {
+          manage_rubrics: @context.grants_right?(@current_user, session, :manage_rubrics)
+        }
+      mastery_scales_js_env
       @rubric_association = @context.rubric_associations.bookmarked.where(rubric_id: params[:id]).first
       raise ActiveRecord::RecordNotFound unless @rubric_association
       @actual_rubric = @rubric_association.rubric
@@ -50,24 +60,38 @@ class RubricsController < ApplicationController
   end
 
   # @API Create a single rubric
+  #
   # Returns the rubric with the given id.
+  #
+  # Unfortuantely this endpoint does not return a standard Rubric object,
+  # instead it returns a hash that looks like
+  #   { 'rubric': Rubric, 'rubric_association': RubricAssociation }
+  #
+  # This may eventually be deprecated in favor of a more standardized return
+  # value, but that is not currently planned.
+  #
   # @argument id [Integer]
   #   The id of the rubric
   # @argument rubric_association_id [Integer]
   #   The id of the object with which this rubric is associated
   # @argument rubric[title] [String]
+  #   The title of the rubric
   # @argument rubric[free_form_criterion_comments] [Boolean]
+  #   Whether or not you can write custom comments in the ratings field for a rubric
   # @argument rubric_association[association_id] [Integer]
   #   The id of the object with which this rubric is associated
   # @argument rubric_association[association_type] ["Assignment"|"Course"|"Account"]
   #   The type of object this rubric is associated with
   # @argument rubric_association[use_for_grading] [Boolean]
+  #   Whether or not the associated rubric is used for grade calculation
   # @argument rubric_association[hide_score_total] [Boolean]
+  #   Whether or not the score total is displayed within the rubric.
+  #   This option is only available if the rubric is not used for grading.
   # @argument rubric_association[purpose] [String]
+  #   Whether or not the association is for grading (and thus linked to an assignment)
+  #   or if it's to indicate the rubric should appear in its context
   # @argument rubric[criteria] [Hash]
   #   An indexed Hash of RubricCriteria objects where the keys are integer ids and the values are the RubricCriteria objects
-  # @returns Rubric
-
   def create
     update
   end
@@ -81,13 +105,24 @@ class RubricsController < ApplicationController
 
 
   # @API Update a single rubric
+  #
   # Returns the rubric with the given id.
+  #
+  # Unfortuantely this endpoint does not return a standard Rubric object,
+  # instead it returns a hash that looks like
+  #   { 'rubric': Rubric, 'rubric_association': RubricAssociation }
+  #
+  # This may eventually be deprecated in favor of a more standardized return
+  # value, but that is not currently planned.
+  #
   # @argument id [Integer]
   #   The id of the rubric
   # @argument rubric_association_id [Integer]
   #   The id of the object with which this rubric is associated
   # @argument rubric[title] [String]
+  #   The title of the rubric
   # @argument rubric[free_form_criterion_comments] [Boolean]
+  #   Whether or not you can write custom comments in the ratings field for a rubric
   # @argument rubric[skip_updating_points_possible] [Boolean]
   #   Whether or not to update the points possible
   # @argument rubric_association[association_id] [Integer]
@@ -95,12 +130,15 @@ class RubricsController < ApplicationController
   # @argument rubric_association[association_type] ["Assignment"|"Course"|"Account"]
   #   The type of object this rubric is associated with
   # @argument rubric_association[use_for_grading] [Boolean]
+  #   Whether or not the associated rubric is used for grade calculation
   # @argument rubric_association[hide_score_total] [Boolean]
-  # @argument rubric_association[purpose] [String]
+  #   Whether or not the score total is displayed within the rubric.
+  #   This option is only available if the rubric is not used for grading.
+  # @argument rubric_association[purpose] ["grading"|"bookmark"]
+  #   Whether or not the association is for grading (and thus linked to an assignment)
+  #   or if it's to indicate the rubric should appear in its context
   # @argument rubric[criteria] [Hash]
   #   An indexed Hash of RubricCriteria objects where the keys are integer ids and the values are the RubricCriteria objects
-  # @returns Rubric
-
   def update
     association_params = params[:rubric_association] ?
       params[:rubric_association].permit(:use_for_grading, :title, :purpose, :url, :hide_score_total, :hide_points, :hide_outcome_results, :bookmarked) : {}
@@ -141,10 +179,15 @@ class RubricsController < ApplicationController
     end
   end
 
+  # @API Delete a single rubric
+  #
+  # Deletes a Rubric and removes all RubricAssociations.
+  #
+  # @returns Rubric
   def destroy
     @rubric = RubricAssociation.where(rubric_id: params[:id], context_id: @context, context_type: @context.class.to_s).first.rubric
-    if authorized_action(@rubric, @current_user, :delete_associations)
-      @rubric.destroy_for(@context)
+    if authorized_action(@rubric, @current_user, :delete_associations) && authorized_action(@context, @current_user, :manage_rubrics)
+      @rubric.destroy_for(@context, current_user: @current_user)
       render :json => @rubric
     end
   end

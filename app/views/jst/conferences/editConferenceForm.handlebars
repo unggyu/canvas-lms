@@ -66,6 +66,12 @@
       {{#t "invite_all.course"}}Invite All Course Members{{/t}}
     {{/if}}
   </label>
+  {{#unless context_is_group}}
+    <label class="checkbox" for="observers_remove">
+      {{checkbox "observers.remove" class="remove_observers_checkbox" checked=removeObservers}}
+      {{#t}}Remove All Course Observer Members{{/t}}
+    </label>
+  {{/unless}}
   <div>
     <ul id="members_list" style="border: 1px solid #333; padding: 10px; overflow-y: auto; max-height: 150px;">
       {{# each users}}

@@ -19,7 +19,6 @@
 class AppointmentGroup < ActiveRecord::Base
   include Workflow
   include TextHelper
-  include HtmlTextHelper
 
   has_many :appointments, -> { order(:start_at).preload(:child_events).where("calendar_events.workflow_state <> 'deleted'") }, opts = { class_name: 'CalendarEvent', as: :context, inverse_of: :context }
   # has_many :through on the same table does not alias columns in condition
@@ -31,7 +30,7 @@ class AppointmentGroup < ActiveRecord::Base
   has_many :appointment_group_sub_contexts, -> { preload(:sub_context) }
 
   def context
-    appointment_group_contexts.first.context
+    appointment_group_contexts.first&.context
   end
 
   def contexts
@@ -196,7 +195,7 @@ class AppointmentGroup < ActiveRecord::Base
               "ON appointment_groups.id = agc.appointment_group_id " \
               "LEFT JOIN #{AppointmentGroupSubContext.quoted_table_name} sc " \
               "ON appointment_groups.id = sc.appointment_group_id").
-        where(<<-COND, codes[:primary], codes[:secondary])
+        where(<<~COND, codes[:primary], codes[:secondary])
         workflow_state = 'active'
         AND agc.context_code IN (?)
         AND (
@@ -220,7 +219,7 @@ class AppointmentGroup < ActiveRecord::Base
               "ON appointment_groups.id = agc.appointment_group_id " \
               "LEFT JOIN #{AppointmentGroupSubContext.quoted_table_name} sc " \
               "ON appointment_groups.id = sc.appointment_group_id").
-        where(<<-COND, codes[:full] + codes[:limited], codes[:full], codes[:secondary])
+        where(<<~COND, codes[:full] + codes[:limited], codes[:full], codes[:secondary])
         workflow_state <> 'deleted'
         AND agc.context_code IN (?)
         AND (
@@ -229,8 +228,8 @@ class AppointmentGroup < ActiveRecord::Base
         )
         COND
   }
-  scope :current, -> { where("end_at>=?", Time.zone.now.midnight) }
-  scope :current_or_undated, -> { where("end_at>=? OR end_at IS NULL", Time.zone.now.midnight) }
+  scope :current, -> { where("end_at>=?", Time.zone.now) }
+  scope :current_or_undated, -> { where("end_at>=? OR end_at IS NULL", Time.zone.now) }
   scope :intersecting, lambda { |start_date, end_date| where("start_at<? AND end_at>?", end_date, start_date) }
 
   set_policy do
@@ -393,23 +392,18 @@ class AppointmentGroup < ActiveRecord::Base
     :location_address
   ]
 
-  def description_html
-    format_message(description).first if description
-  end
-
   def update_appointments
     changed = Hash[
       EVENT_ATTRIBUTES.select{ |attr| saved_change_to_attribute?(attr) }.
-      map{ |attr| [attr, attr == :description ? description_html : send(attr)] }
+      map{ |attr| [attr, send(attr)] }
     ]
 
     if @contexts_changed
+      changed[:root_account_id] = self.context&.root_account_id
       changed[:effective_context_code] = contexts.map(&:asset_string).join(",")
     end
 
-    return unless changed.present?
-
-    desc = changed.delete :description
+    return if changed.blank?
 
     if changed.present?
       appointments.update_all(changed)
@@ -417,12 +411,10 @@ class AppointmentGroup < ActiveRecord::Base
     end
 
     if changed.present?
-      CalendarEvent.joins(:parent_event).where(workflow_state: ['active', 'locked'], parent_events_calendar_events: { context_id: self, context_type: 'AppointmentGroup' }).update_all(changed)
-    end
-
-    if desc
-      appointments.where(:description => description_before_last_save).update_all(:description => desc)
-      CalendarEvent.joins(:parent_event).where(workflow_state: ['active', 'locked'], parent_events_calendar_events: { context_id: self, context_type: 'AppointmentGroup' }, description: description_before_last_save).update_all(:description => desc)
+      CalendarEvent.joins(:parent_event).where(
+          workflow_state: ['active', 'locked'],
+          parent_events_calendar_events: { context_id: self, context_type: 'AppointmentGroup' }
+      ).update_all(changed)
     end
 
     @new_appointments.each(&:reload) if @new_appointments.present?
@@ -434,13 +426,14 @@ class AppointmentGroup < ActiveRecord::Base
     types.first || 'User'
   end
 
-  def available_slots
+  def available_slots(current_only: false)
     return nil unless participants_per_appointment
     Rails.cache.fetch([self, 'available_slots'].cache_key) do
+      filtered_appointments = current_only ? appointments.current : appointments
       # participants_per_appointment can change after the fact, so a given
       # could exceed it and we can't just say:
       #   appointments.size * participants_per_appointment
-      appointments.inject(0){ |total, appointment|
+      filtered_appointments.inject(0){ |total, appointment|
         total + [participants_per_appointment - appointment.child_events.size, 0].max
       }
     end

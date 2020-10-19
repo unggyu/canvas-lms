@@ -25,17 +25,23 @@ module Canvas
         config && config['servers'] && config['keyspace']
       end
 
-      def self.from_config(config_name, environment = :current)
+      # If for a migration or a support week one has reason to override the settings that would come from cassandra.yml,
+      # you can pass them in overrride_options. Note, the keys from the yml will be strings so it'll be easier to hash
+      # rocket it.
+      #
+      # Example: from_config("auditors", override_options: { 'timeout' => 360 })
+      def self.from_config(config_name, environment = :current, override_options: nil)
         @connections ||= {}
         environment = Rails.env if environment == :current
         key = [config_name, environment]
         @connections.fetch(key) do
-          config = ConfigFile.load('cassandra', environment)
+          config = ConfigFile.load('cassandra', environment).dup
           config = config && config[config_name]
           unless config
             @connections[key] = nil
             return nil
           end
+          config = config.merge(override_options) if override_options
           servers = Array(config['servers'])
           raise "No Cassandra servers defined for: #{config_name.inspect}" unless servers.present?
           keyspace = config['keyspace']
@@ -57,6 +63,10 @@ module Canvas
 
       def self.configs
         ConfigFile.load('cassandra') || {}
+      end
+
+      def self.reset_connections!
+        @connections = {}
       end
 
       def self.config_names

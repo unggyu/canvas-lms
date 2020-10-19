@@ -78,14 +78,19 @@ module AccountReports
     Hash[*REPORTS.select { |report, details| enabled_reports.include?(report) }.flatten]
   end
 
-  def self.generate_report(account_report)
-    account_report.update_attributes(workflow_state: 'running', start_at: Time.zone.now)
+  def self.generate_report(account_report, send_message: true)
+    account_report.update(workflow_state: 'running', start_at: Time.zone.now)
     begin
       REPORTS[account_report.report_type].proc.call(account_report)
+      message_recipient(account_report) if send_message
     rescue => e
       account_report.logger.error e
       @er = ErrorReport.log_exception(nil, e, :user => account_report.user)
-      self.message_recipient(account_report, "Generating the report, #{account_report.report_type.to_s.titleize}, failed.  Please report the following error code to your system administrator: ErrorReport:#{@er.id}")
+      title = account_report.report_type.to_s.titleize
+      error_message = "Generating the report, #{title}, failed.  Please report the following error code to your system administrator: ErrorReport:#{@er.id}"
+      self.finalize_report(account_report, error_message)
+      message_recipient(account_report) if send_message
+      @er = nil
     end
   end
 
@@ -163,29 +168,36 @@ module AccountReports
         )
       end
     end
-    attachment
+    account_report.attachment = attachment
   end
 
-  def self.message_recipient(account_report, message, csv=nil)
-    notification = NotificationFinder.new.by_name("Report Generated")
-    notification = NotificationFinder.new.by_name("Report Generation Failed") if !csv
-    attachment = report_attachment(account_report, csv) if csv
+  def self.failed_report(account_report)
+    fail_text = if @er
+                  I18n.t("Failed, please report the following error code to your system administrator: ErrorReport:%{error};",
+                         error: @er.id.to_s)
+                else
+                  I18n.t("Failed, the report failed to generate a file. Please try again.")
+                end
+    account_report.parameters["extra_text"] = fail_text
+  end
+
+  def self.finalize_report(account_report, message, csv=nil)
+    report_attachment(account_report, csv)
     account_report.message = message
-    account_report.parameters ||= {}
-    account_report.parameters["extra_text"] = (I18n.t('account_reports.default.error_text',
-      "Failed, please report the following error code to your system administrator: ErrorReport:%{error};",
-      :error => @er.id)) if !csv
+    failed_report(account_report) unless csv
     if account_report.workflow_state == 'aborted'
       account_report.parameters["extra_text"] = (I18n.t('Report has been aborted'))
     else
-      account_report.attachment = attachment
       account_report.workflow_state = csv ? 'complete' : 'error'
     end
     account_report.update_attribute(:progress, 100)
-    account_report.end_at ||= Time.now
-    account_report.save
-    notification.create_message(account_report, [account_report.user]) if notification
-    message
+    account_report.end_at ||= Time.zone.now
+    account_report.save!
+  end
+
+  def self.message_recipient(account_report)
+    notification = account_report.attachment ? NotificationFinder.new.by_name("Report Generated") : NotificationFinder.new.by_name("Report Generation Failed")
+    notification&.create_message(account_report, [account_report.user])
   end
 
 end

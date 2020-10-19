@@ -342,7 +342,7 @@ describe "differentiated_assignments" do
           it "should update when enrollments are destroyed" do
             ensure_user_sees_assignment
             enrollments = StudentEnrollment.where(:user_id => @user.id, :course_id => @course.id, :course_section_id => @section_foo.id)
-            enrollments.each(&:destroy_permanently!)
+            enrollments.destroy_all
             ensure_user_does_not_see_assignment
           end
 
@@ -479,11 +479,11 @@ describe "differentiated_assignments" do
       end
 
       it "excludes student ids for deleted enrollments" do
-        course.enrollments.find_by(user_id: first_student).destroy
         expected_visibilities = {
           assignment.id => [],
           assignment_only_visible_to_overrides.id => []
         }
+        course.enrollments.find_by(user_id: first_student).destroy
         expect(assignments_with_visibilities).to eq expected_visibilities
       end
 

@@ -19,100 +19,144 @@
 import _ from 'underscore'
 import GradingPeriodsHelper from '../grading/helpers/GradingPeriodsHelper'
 
-  const TOOLTIP_KEYS = {
-    NOT_IN_ANY_GP: "not_in_any_grading_period",
-    IN_ANOTHER_GP: "in_another_grading_period",
-    IN_CLOSED_GP: "in_closed_grading_period",
-    NONE: null
-  };
-
-  function visibleToStudent(assignment, student) {
-    if (!assignment.only_visible_to_overrides) return true;
-    return _.contains(assignment.assignment_visibility, student.id);
+function submissionGradingPeriodInformation(assignment, student) {
+  const submissionInfo = assignment.effectiveDueDates[student.id] || {}
+  return {
+    gradingPeriodID: submissionInfo.grading_period_id,
+    inClosedGradingPeriod: submissionInfo.in_closed_grading_period
   }
+}
 
-  function cellMapForSubmission(
+function hiddenFromStudent(assignment, student) {
+  if (assignment.only_visible_to_overrides) {
+    return !_.includes(assignment.assignment_visibility, student.id)
+  }
+  return false
+}
+
+function gradingPeriodInfoForCell(assignment, student, selectedGradingPeriodID) {
+  const specificPeriodSelected = !GradingPeriodsHelper.isAllGradingPeriods(selectedGradingPeriodID)
+  const {gradingPeriodID, inClosedGradingPeriod} = submissionGradingPeriodInformation(
     assignment,
-    student,
-    hasGradingPeriods,
-    selectedGradingPeriodID,
-    isAdmin
-  ) {
-    if (assignment.moderated_grading && !assignment.grades_published) {
-      return { locked: true, hideGrade: false };
-    } else if (assignment.anonymous_grading && assignment.muted) {
-      return { locked: true, hideGrade: true };
-    } else if (!visibleToStudent(assignment, student)) {
-      return { locked: true, hideGrade: true, tooltip: TOOLTIP_KEYS.NONE };
-    } else if (hasGradingPeriods) {
-      return cellMappingsForMultipleGradingPeriods(assignment, student, selectedGradingPeriodID, isAdmin);
-    } else {
-      return { locked: false, hideGrade: false, tooltip: TOOLTIP_KEYS.NONE };
-    }
+    student
+  )
+  const inNoGradingPeriod = !gradingPeriodID
+  const inOtherGradingPeriod =
+    !!gradingPeriodID && specificPeriodSelected && selectedGradingPeriodID !== gradingPeriodID
+
+  return {
+    inNoGradingPeriod,
+    inOtherGradingPeriod,
+    inClosedGradingPeriod
+  }
+}
+
+function cellMappingsForMultipleGradingPeriods(
+  assignment,
+  student,
+  selectedGradingPeriodID,
+  isAdmin
+) {
+  const specificPeriodSelected = !GradingPeriodsHelper.isAllGradingPeriods(selectedGradingPeriodID)
+  const {gradingPeriodID, inClosedGradingPeriod} = submissionGradingPeriodInformation(
+    assignment,
+    student
+  )
+  const gradingPeriodInfo = gradingPeriodInfoForCell(assignment, student, selectedGradingPeriodID)
+  let cellMapping
+
+  if (specificPeriodSelected && (!gradingPeriodID || selectedGradingPeriodID !== gradingPeriodID)) {
+    cellMapping = {locked: true, hideGrade: true}
+  } else if (!isAdmin && inClosedGradingPeriod) {
+    cellMapping = {locked: true, hideGrade: false}
+  } else {
+    cellMapping = {locked: false, hideGrade: false}
   }
 
-  function submissionGradingPeriodInformation(assignment, student) {
-    const submissionInfo = assignment.effectiveDueDates[student.id] || {};
-    return {
-      gradingPeriodID: submissionInfo.grading_period_id,
-      inClosedGradingPeriod: submissionInfo.in_closed_grading_period
-    };
+  return {...cellMapping, ...gradingPeriodInfo}
+}
+
+function cellMapForSubmission(
+  assignment,
+  student,
+  hasGradingPeriods,
+  selectedGradingPeriodID,
+  isAdmin
+) {
+  if (!assignment.published || assignment.anonymize_students) {
+    return {locked: true, hideGrade: true}
+  } else if (assignment.moderated_grading && !assignment.grades_published) {
+    return {locked: true, hideGrade: false}
+  } else if (hiddenFromStudent(assignment, student)) {
+    return {locked: true, hideGrade: true}
+  } else if (hasGradingPeriods) {
+    return cellMappingsForMultipleGradingPeriods(
+      assignment,
+      student,
+      selectedGradingPeriodID,
+      isAdmin
+    )
+  } else {
+    return {locked: false, hideGrade: false}
+  }
+}
+
+function missingSubmission(student, assignment) {
+  const submission = {
+    assignment_id: assignment.id,
+    user_id: student.id,
+    excused: false,
+    late: false,
+    missing: false,
+    seconds_late: 0
+  }
+  const dueDates = assignment.effectiveDueDates[student.id] || {}
+  if (dueDates.due_at != null && new Date(dueDates.due_at) < new Date()) {
+    submission.missing = true
+  }
+  return submission
+}
+
+class SubmissionStateMap {
+  constructor({hasGradingPeriods, selectedGradingPeriodID, isAdmin}) {
+    this.hasGradingPeriods = hasGradingPeriods
+    this.selectedGradingPeriodID = selectedGradingPeriodID
+    this.isAdmin = isAdmin
+    this.submissionCellMap = {}
+    this.submissionMap = {}
   }
 
-  function cellMappingsForMultipleGradingPeriods(assignment, student, selectedGradingPeriodID, isAdmin) {
-    const specificPeriodSelected = !GradingPeriodsHelper.isAllGradingPeriods(selectedGradingPeriodID);
-    const { gradingPeriodID, inClosedGradingPeriod } = submissionGradingPeriodInformation(assignment, student);
-
-    if (specificPeriodSelected && !gradingPeriodID) {
-      return { locked: true, hideGrade: true, tooltip: TOOLTIP_KEYS.NOT_IN_ANY_GP };
-    } else if (specificPeriodSelected && selectedGradingPeriodID != gradingPeriodID) {
-      return { locked: true, hideGrade: true, tooltip: TOOLTIP_KEYS.IN_ANOTHER_GP };
-    } else if (!isAdmin && inClosedGradingPeriod) {
-      return { locked: true, hideGrade: false, tooltip: TOOLTIP_KEYS.IN_CLOSED_GP };
-    } else {
-      return { locked: false, hideGrade: false, tooltip: TOOLTIP_KEYS.NONE };
-    }
+  setup(students, assignments) {
+    students.forEach(student => {
+      this.submissionCellMap[student.id] = {}
+      this.submissionMap[student.id] = {}
+      _.each(assignments, assignment => {
+        this.setSubmissionCellState(student, assignment, student[`assignment_${assignment.id}`])
+      })
+    })
   }
 
-  class SubmissionState {
-    constructor({ hasGradingPeriods, selectedGradingPeriodID, isAdmin }) {
-      this.hasGradingPeriods = hasGradingPeriods;
-      this.selectedGradingPeriodID = selectedGradingPeriodID;
-      this.isAdmin = isAdmin;
-      this.submissionCellMap = {};
-      this.submissionMap = {};
-    }
+  setSubmissionCellState(student, assignment, submission) {
+    this.submissionMap[student.id][assignment.id] =
+      submission || missingSubmission(student, assignment)
+    const params = [
+      assignment,
+      student,
+      this.hasGradingPeriods,
+      this.selectedGradingPeriodID,
+      this.isAdmin
+    ]
 
-    setup(students, assignments) {
-      students.forEach((student) => {
-        this.submissionCellMap[student.id] = {};
-        this.submissionMap[student.id] = {};
-        _.each(assignments, (assignment) => {
-          this.setSubmissionCellState(student, assignment, student[`assignment_${assignment.id}`]);
-        });
-      });
-    }
+    this.submissionCellMap[student.id][assignment.id] = cellMapForSubmission(...params)
+  }
 
-    setSubmissionCellState(student, assignment, submission = { assignment_id: assignment.id, user_id: student.id }) {
-      this.submissionMap[student.id][assignment.id] = submission;
-      const params = [
-        assignment,
-        student,
-        this.hasGradingPeriods,
-        this.selectedGradingPeriodID,
-        this.isAdmin
-      ];
+  getSubmission(userId, assignmentId) {
+    return (this.submissionMap[userId] || {})[assignmentId]
+  }
 
-      this.submissionCellMap[student.id][assignment.id] = cellMapForSubmission(...params);
-    }
+  getSubmissionState({user_id: userId, assignment_id: assignmentId}) {
+    return (this.submissionCellMap[userId] || {})[assignmentId]
+  }
+}
 
-    getSubmission(user_id, assignment_id) {
-      return (this.submissionMap[user_id] || {})[assignment_id];
-    }
-
-    getSubmissionState({ user_id, assignment_id }) {
-      return (this.submissionCellMap[user_id] || {})[assignment_id];
-    }
-  };
-
-export default SubmissionState
+export default SubmissionStateMap

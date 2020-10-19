@@ -138,7 +138,7 @@ class GradeChangeAuditApiController < AuditorApiController
   def for_assignment
     return render_unauthorized_action unless admin_authorized?
 
-    @assignment = Assignment.active.find(params[:assignment_id])
+    @assignment = api_find(Assignment.active, params[:assignment_id])
     unless @assignment.context.root_account == @domain_root_account
       raise ActiveRecord::RecordNotFound, "Couldn't find assignment with API id '#{params[:assignment_id]}'"
     end
@@ -194,7 +194,7 @@ class GradeChangeAuditApiController < AuditorApiController
     end
 
     events = Auditors::GradeChange.for_root_account_student(@domain_root_account, @student, query_options)
-    render_events(events, api_v1_audit_grade_change_student_url(@student))
+    render_events(events, api_v1_audit_grade_change_student_url(@student), remove_anonymous: true)
   end
 
   # @API Query by grader.
@@ -232,7 +232,12 @@ class GradeChangeAuditApiController < AuditorApiController
     return render_unauthorized_action unless course_authorized?(course)
 
     args = { course: course }
-    args[:assignment] = course.assignments.find(params[:assignment_id]) if params[:assignment_id]
+    restrict_to_override_grades = params[:assignment_id] == "override"
+    if restrict_to_override_grades
+      args[:assignment] = Auditors::GradeChange::COURSE_OVERRIDE_ASSIGNMENT
+    elsif params[:assignment_id]
+      args[:assignment] = api_find(course.assignments, params[:assignment_id])
+    end
     args[:grader] = course.all_users.find(params[:grader_id]) if params[:grader_id]
     args[:student] = course.all_users.find(params[:student_id]) if params[:student_id]
 
@@ -253,7 +258,9 @@ class GradeChangeAuditApiController < AuditorApiController
     end
 
     events = Auditors::GradeChange.for_course_and_other_arguments(course, args, query_options)
-    render_events(events, send(url_method, args), course: course)
+
+    route_args = restrict_to_override_grades ? args.merge({assignment: "override"}) : args
+    render_events(events, send(url_method, route_args), course: course, remove_anonymous: params[:student_id].present?)
   end
 
   private
@@ -266,26 +273,64 @@ class GradeChangeAuditApiController < AuditorApiController
     course.grants_any_right?(@current_user, session, :manage_grades, :view_all_grades)
   end
 
-  def render_events(events, route, course: nil)
+  def render_events(events, route, course: nil, remove_anonymous: false)
+    events = BookmarkedCollection.filter(events) { |event| !event.override_grade? } if exclude_override_grades?
     events = Api.paginate(events, self, route)
 
     if params.fetch(:include, []).include?("current_grade")
       grades = current_grades(events)
       events.each { |event| event.grade_current = current_grade_for_event(event, grades) }
+
+      apply_current_override_grades!(events)
     end
 
     if course.present?
       events = events_visible_to_current_user(course, events)
     end
 
+    # In the case of for_student, simply anonymizing the data would continue
+    # to leak information, so just drop the event completely while the
+    # assignment is still anonymous and muted.
+    events = remove_anonymous ? remove_anonymous_events(events) : anonymize_events(events)
     render :json => grade_change_events_compound_json(events, @current_user, session)
+  end
+
+  def remove_anonymous_events(events)
+    assignments_anonymous_and_muted = anonymous_and_muted(events)
+
+    events.reject do |event|
+      assignment_id = event["attributes"].fetch("assignment_id")
+      assignments_anonymous_and_muted[assignment_id]
+    end
+  end
+
+  def anonymize_events(events)
+    assignments_anonymous_and_muted = anonymous_and_muted(events)
+
+    events.each do |event|
+      attributes = event["attributes"]
+      assignment_id = attributes.fetch("assignment_id")
+      attributes["student_id"] = nil if assignments_anonymous_and_muted[assignment_id]
+    end
+  end
+
+  def anonymous_and_muted(events)
+    assignment_ids = events.map { |event| event["attributes"].fetch("assignment_id") }.compact
+    assignments = api_find_all(Assignment, assignment_ids)
+    assignments_anonymous_and_muted = {}
+
+    assignments.each do |assignment|
+      assignments_anonymous_and_muted[assignment.global_id] = assignment.anonymous_grading? && assignment.muted?
+    end
+
+    assignments_anonymous_and_muted
   end
 
   def events_visible_to_current_user(course, events)
     visible_student_ids =
       course.students_visible_to(@current_user, include: :priors_and_deleted).index_by(&:global_id)
 
-    events.select { |event| visible_student_ids[event.student_id] }
+    events.select { |event| visible_student_ids[Shard.global_id_for(event.student_id)] }
   end
 
   def current_grade_for_event(event, grades)
@@ -297,5 +342,64 @@ class GradeChangeAuditApiController < AuditorApiController
     submission_ids = events.map(&:submission_id)
     grades = Submission.where(id: submission_ids).pluck(:id, :grade)
     grades.each_with_object({}) { |(key, value), hsh| hsh[key] = value }
+  end
+
+  def apply_current_override_grades!(events)
+    override_events = events.select(&:override_grade?)
+    return if override_events.blank?
+
+    current_scores = current_override_scores_query(override_events).each_with_object({}) do |score, hash|
+      key = key_from_ids(score.enrollment.course_id, score.enrollment.user_id, score.grading_period_id)
+      hash[key] = score
+    end
+
+    override_events.each do |event|
+      grading_period_id = event.in_grading_period? ? event.grading_period_id : nil
+      key = key_from_ids(event.context_id, event.student_id, grading_period_id)
+      event.grade_current = current_scores[key]&.override_grade || current_scores[key]&.override_score.to_s
+    end
+  end
+
+  def current_override_scores_query(events)
+    base_score_scope = Score.active.joins(:enrollment).preload(:enrollment)
+    scopes = []
+
+    events_with_grading_period = events.select(&:in_grading_period?)
+    if events_with_grading_period.present?
+      values = events_with_grading_period.map do |event|
+        key = key_from_ids(event.context_id, event.student_id, event.grading_period_id).join(",")
+        "(#{key})"
+      end.join(", ")
+
+      scopes << base_score_scope.
+        where("(enrollments.course_id, enrollments.user_id, scores.grading_period_id) IN (#{values})")
+    end
+
+    events_without_grading_period = events.reject(&:in_grading_period?)
+    if events_without_grading_period.present?
+      values = events_without_grading_period.map do |event|
+        key = key_from_ids(event.context_id, event.student_id).join(",")
+        "(#{key})"
+      end.join(", ")
+
+      scopes << base_score_scope.
+        where(course_score: true).
+        where("(enrollments.course_id, enrollments.user_id) IN (#{values})")
+    end
+
+    scopes.reduce { |result, scope| result.union(scope) }
+  end
+
+  def key_from_ids(*ids)
+    # If we fetched our override change records from Postgres, the relevant ID
+    # fields will already be relative to the current shard and so the below
+    # method won't change them. If we got them from Cassandra, however, we have
+    # to adjust them before searching.
+
+    ids.map { |id| Shard.relative_id_for(id, Shard.current, Shard.current) }
+  end
+
+  def exclude_override_grades?
+    !Auditors::GradeChange.return_override_grades?
   end
 end

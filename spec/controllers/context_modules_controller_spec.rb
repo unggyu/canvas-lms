@@ -39,9 +39,9 @@ describe ContextModulesController do
     end
 
     it "should assign variables" do
-      user_session(@student)
+      user_session(@teacher)
       get 'index', params: {:course_id => @course.id}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "should touch modules if necessary" do
@@ -53,7 +53,7 @@ describe ContextModulesController do
       end
       user_session(@student)
       get 'index', params: {:course_id => @course.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(@mod1.reload.updated_at.to_i).to_not eq time.to_i # should be touched in case view for old unlock time was cached
       expect(@mod2.reload.updated_at.to_i).to eq time.to_i # should not be touched since the unlock_at was already in the past the last time it was updated
     end
@@ -76,6 +76,35 @@ describe ContextModulesController do
         user_session(@student)
         get 'index', params: {:course_id => @course.id}
         expect(assigns[:modules]).to eq [@m2]
+      end
+    end
+
+    context "default post to SIS" do
+      before :once do
+        @course.account.tap do |a|
+          a.enable_feature! :new_sis_integrations
+          a.settings[:sis_syncing] = {locked: false, value: true}
+          a.settings[:sis_default_grade_export] = {locked: false, value: true}
+          a.save!
+        end
+      end
+
+      before :each do
+        user_session(@teacher)
+      end
+
+      it "is true if account setting is on" do
+        get 'index', params: {:course_id => @course.id}
+        expect(controller.js_env[:DEFAULT_POST_TO_SIS]).to eq true
+      end
+
+      it "is false if a due date is required" do
+        @course.account.tap do |a|
+          a.settings[:sis_require_assignment_due_date] = {locked: false, value: true}
+          a.save!
+        end
+        get 'index', params: {:course_id => @course.id}
+        expect(controller.js_env[:DEFAULT_POST_TO_SIS]).to eq false
       end
     end
   end
@@ -369,7 +398,7 @@ describe ContextModulesController do
       ContextModule.where(:id => [m1, m2]).update_all(:updated_at => time)
 
       post 'reorder', params: {:course_id => @course.id, :order => "#{m2.id},#{m1.id}"}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(m1.reload.position).to eq 2
       expect(m1.updated_at > time).to be_truthy
       expect(m2.reload.position).to eq 1
@@ -386,7 +415,7 @@ describe ContextModulesController do
 
       expect(Canvas::LiveEvents).to receive(:module_updated).twice
       post 'reorder', params: {:course_id => @course.id, :order => "#{m2.id},#{m1.id},#{m3.id}"}
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -599,6 +628,14 @@ describe ContextModulesController do
                     "requirements_met"=>[],
                     "incomplete_requirements"=>[]}}])
       end
+
+      it "should not error on public course" do
+        assignment = @course.assignments.create!(title: 'hello')
+        @mod1.add_item(type: 'assignment', id: assignment.id)
+        get 'content_tag_assignment_data', params: {course_id: @course.id}, format: 'json'
+        expect(response.code).to eql '200'
+      end
+
     end
 
     before :once do
@@ -795,6 +832,54 @@ describe ContextModulesController do
       get 'content_tag_assignment_data', params: {course_id: @course.id}, format: 'json' # precache
       json = json_parse(response.body)
       expect(json[@tag.id.to_s]["past_due"]).to be_blank
+    end
+
+    it "should return a todo date for an ungraded page with a todo_date" do
+      course_with_teacher_logged_in(:active_all => true)
+      @mod = @course.context_modules.create!
+      wiki_date = 1.day.from_now
+      @wiki_page = @course.wiki_pages.build(:title => "title", :todo_date => wiki_date)
+      @wiki_page.body = "hello world"
+      @wiki_page.workflow_state = 'active'
+      @wiki_page.save!
+      @tag = @mod.add_item(type: 'WikiPage', id: @wiki_page.id)
+
+      get 'content_tag_assignment_data', params: {course_id: @course.id}, format: 'json' # precache
+      json = json_parse(response.body)
+      expect(Time.zone.parse(json[@tag.id.to_s]["todo_date"]).to_i).to eq wiki_date.to_i
+    end
+
+    it "should return external urls properly" do
+      course_with_teacher_logged_in(:active_all => true)
+      @module = @course.context_modules.create!
+      @module.add_item :type => 'external_url', :url => 'http://lolcats', :title => 'lol'
+      get 'content_tag_assignment_data', params: {course_id: @course.id}, format: 'json'
+      expect(response).to be_successful
+    end
+
+    it "should return mastery connect objectives correctly" do
+      ext_data = {
+        key: "https://canvas.instructure.com/lti/mastery_connect_assessment",
+        points: 10,
+        objectives: "6.R.P.A.1, 6.R.P.A.2",
+        trackerName: "My Tracker Name",
+        studentCount: 15,
+        trackerAlignment: "6th grade Math"
+      }
+
+      course_with_teacher_logged_in(:active_all => true)
+      @tool = factory_with_protected_attributes(@course.context_external_tools,
+        :url => "http://www.justanexamplenotarealwebsite.com/tool1",
+        :shared_secret => 'test123', :consumer_key => 'test123', :name => 'mytool')
+      @mod = @course.context_modules.create!
+      @assign = @course.assignments.create! title: "WHAT", :submission_types => 'external_tool',
+        :external_tool_tag_attributes => {:content => @tool, :url => @tool.url, :external_data => ext_data.to_json}
+      @tag = @mod.add_item(type: 'assignment', id: @assign.id)
+
+      get 'content_tag_assignment_data', params: {course_id: @course.id}, format: 'json'
+      expect(response).to be_successful
+      json = json_parse(response.body)
+      expect(json[@tag.id.to_s]['mc_objectives']).to eq(ext_data[:objectives])
     end
   end
 
@@ -993,12 +1078,74 @@ describe ContextModulesController do
       assert_redirected_to controller: 'discussion_topics', action: 'edit', id: topic.id, anchor: 'mastery-paths-editor'
     end
 
+    it "should redirect to the assignment edit mastery paths page for new quizzes" do
+      tool = @course.context_external_tools.create! tool_id: ContextExternalTool::QUIZ_LTI, name: 'Q.N',
+                                                    consumer_key: '1', shared_secret: '1', domain: 'quizzes.example.com'
+      assignment = @course.assignments.create!
+      assignment.quiz_lti!
+      assignment.save!
+      item = @mod.add_item type: 'assignment', id: assignment.id
+
+      get 'item_redirect_mastery_paths', params: {course_id: @course.id, id: item.id}
+      assert_redirected_to controller: 'assignments', action: 'edit', id: assignment.id, anchor: 'mastery-paths-editor'
+    end
+
     it "should 404 if module item is not a graded type" do
       page = @course.wiki_pages.create title: "test"
       item = @mod.add_item type: 'page', id: page.id
 
       get 'item_redirect_mastery_paths', params: {:course_id => @course.id, :id => item.id}
       assert_response :missing
+    end
+  end
+
+  describe "POST 'toggle_collapse_all'" do
+    it "should collapse all modules as teacher when passed collapse=1" do
+      course_with_teacher_logged_in(active_all: true)
+      page1 = @course.wiki_pages.create title: "test 1"
+      page2 = @course.wiki_pages.create title: "test 2"
+      module1 = @course.context_modules.create!
+      module2 = @course.context_modules.create!
+      module1.add_item type: 'page', id: page1.id
+      module2.add_item type: 'page', id: page2.id
+
+      post 'toggle_collapse_all', params: {:collapse => '1', :course_id => @course.id}
+      expect(response).to be_successful
+      progression1 = module1.evaluate_for(@teacher)
+      progression2 = module2.evaluate_for(@teacher)
+      expect(progression1.collapsed).to be_truthy
+      expect(progression2.collapsed).to be_truthy
+    end
+
+    it "should expand all modules as student when passed collapse=0" do
+      course_with_student_logged_in(active_all: true)
+      page1 = @course.wiki_pages.create title: "test 1"
+      page2 = @course.wiki_pages.create title: "test 2"
+      module1 = @course.context_modules.create!
+      module2 = @course.context_modules.create!
+      module1.add_item type: 'page', id: page1.id
+      module2.add_item type: 'page', id: page2.id
+
+      post 'toggle_collapse_all', params: {:collapse => '0', :course_id => @course.id}
+      expect(response).to be_successful
+      progression1 = module1.evaluate_for(@student)
+      progression2 = module2.evaluate_for(@student)
+      expect(progression1.collapsed).to be_falsey
+      expect(progression2.collapsed).to be_falsey
+    end
+
+    it "should work multiple times in a row as a student" do
+      course_with_student_logged_in(active_all: true)
+      page1 = @course.wiki_pages.create title: "test 1"
+      module1 = @course.context_modules.create!
+      module1.add_item type: 'page', id: page1.id
+
+      post 'toggle_collapse_all', params: {:collapse => '1', :course_id => @course.id}
+      post 'toggle_collapse_all', params: {:collapse => '0', :course_id => @course.id}
+      post 'toggle_collapse_all', params: {:collapse => '0', :course_id => @course.id}
+      expect(response).to be_successful
+      progression1 = module1.evaluate_for(@student)
+      expect(progression1.collapsed).to be_falsey
     end
   end
 end

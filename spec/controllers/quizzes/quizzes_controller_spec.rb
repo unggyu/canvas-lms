@@ -19,10 +19,10 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe Quizzes::QuizzesController do
-
-  def course_quiz(active=false)
+  def course_quiz(active=false, title=nil)
     @quiz = @course.quizzes.create
     @quiz.workflow_state = "available" if active
+    @quiz.title = title if title
     @quiz.save!
     @quiz
   end
@@ -138,6 +138,63 @@ describe Quizzes::QuizzesController do
       expect(assigns[:js_env][:SIS_NAME]).to eq('Foo Bar')
     end
 
+    it "js_env quiz_lti_enabled is true when quizzes_next/newquizzes_on_quiz_page is enabled" do
+      user_session(@teacher)
+      @course.context_external_tools.create!(
+        :name => 'Quizzes.Next',
+        :consumer_key => 'test_key',
+        :shared_secret => 'test_secret',
+        :tool_id => 'Quizzes 2',
+        :url => 'http://example.com/launch'
+      )
+      @course.root_account.settings[:provision] = {'lti' => 'lti url'}
+      @course.root_account.save!
+      @course.root_account.enable_feature! :quizzes_next
+      @course.root_account.enable_feature! :newquizzes_on_quiz_page
+      @course.enable_feature! :quizzes_next
+      get 'index', params: {course_id: @course.id}
+      expect(assigns[:js_env][:FLAGS][:quiz_lti_enabled]).to be true
+    end
+
+    it "js_env quiz_lti_enabled is false when newquizzes_on_quiz_page is disabled" do
+      user_session(@teacher)
+      @course.context_external_tools.create!(
+        :name => 'Quizzes.Next',
+        :consumer_key => 'test_key',
+        :shared_secret => 'test_secret',
+        :tool_id => 'Quizzes 2',
+        :url => 'http://example.com/launch'
+      )
+      @course.root_account.settings[:provision] = {'lti' => 'lti url'}
+      @course.root_account.save!
+      @course.root_account.enable_feature! :quizzes_next
+      @course.enable_feature! :quizzes_next
+      get 'index', params: {course_id: @course.id}
+      expect(assigns[:js_env][:FLAGS][:quiz_lti_enabled]).to be false
+    end
+
+    it "js_env quiz_lti_enabled is false when quizzes_next is disabled" do
+      user_session(@teacher)
+      @course.context_external_tools.create!(
+        :name => 'Quizzes.Next',
+        :consumer_key => 'test_key',
+        :shared_secret => 'test_secret',
+        :tool_id => 'Quizzes 2',
+        :url => 'http://example.com/launch'
+      )
+      @course.root_account.settings[:provision] = {'lti' => 'lti url'}
+      @course.root_account.save!
+      @course.root_account.enable_feature! :newquizzes_on_quiz_page
+      get 'index', params: {course_id: @course.id}
+      expect(assigns[:js_env][:FLAGS][:quiz_lti_enabled]).to be false
+    end
+
+    it "js_env quiz_lti_enabled is false when new quizzes is not available" do
+      user_session @teacher
+      get 'index', params: {course_id: @course.id}
+      expect(assigns[:js_env][:FLAGS][:quiz_lti_enabled]).to be false
+    end
+
     it "js_env migrate_quiz_enabled is false when only quizzes_next is enabled" do
       user_session(@teacher)
       @course.root_account.settings[:provision] = {'lti' => 'lti url'}
@@ -189,6 +246,107 @@ describe Quizzes::QuizzesController do
       get 'index', params: {:course_id => @course.id}
       expect(assigns[:js_env][:MAX_NAME_LENGTH_REQUIRED_FOR_ACCOUNT]).to eq(false)
     end
+
+    context 'DIRECT_SHARE_ENABLED' do
+      before :once do
+        course_quiz()
+      end
+
+      it "js_env DIRECT_SHARE_ENABLED is true when feature flag is on" do
+        Account.default.enable_feature!(:direct_share)
+        user_session(@teacher)
+        get 'index', params: {course_id: @course.id}
+        expect(assigns[:js_env][:FLAGS][:DIRECT_SHARE_ENABLED]).to eq(true)
+      end
+
+      it "js_env DIRECT_SHARE_ENABLED is false when feature flag is off" do
+        user_session(@teacher)
+        get 'index', params: {:course_id => @course.id}
+        expect(assigns[:js_env][:FLAGS][:DIRECT_SHARE_ENABLED]).to eq(false)
+      end
+
+      it "js_env DIRECT_SHARE_ENABLED is false when user does not have manage" do
+        Account.default.enable_feature!(:direct_share)
+        user_session(@student)
+        get 'index', params: {:course_id => @course.id}
+        expect(assigns[:js_env][:FLAGS][:DIRECT_SHARE_ENABLED]).to eq(false)
+      end
+    end
+
+    context 'when newquizzes_on_quiz_page FF is enabled' do
+      let_once(:due_at) { Time.zone.now + 1.week }
+      let_once(:course_assignments) do
+        group = @course.assignment_groups.create(:name => "some group")
+        (0..3).map do |i|
+          @course.assignments.create(
+            title: "some assignment #{i}",
+            assignment_group: group,
+            due_at: due_at,
+            external_tool_tag_attributes: { content: tool },
+            workflow_state: workflow_states[i]
+          )
+        end
+      end
+
+      let_once(:course_quizzes) do
+        [course_quiz(false, 'quiz 1'), course_quiz(true, 'quiz 2')]
+      end
+
+      let_once(:workflow_states) do
+        [:unpublished, :published, :unpublished, :published]
+      end
+
+      let_once(:tool) do
+        @course.context_external_tools.create!(
+          name: 'Quizzes.Next',
+          consumer_key: 'test_key',
+          shared_secret: 'test_secret',
+          tool_id: 'Quizzes 2',
+          url: 'http://example.com/launch'
+        )
+      end
+
+      before :once do
+        @course.root_account.settings[:provision] = {'lti' => 'lti url'}
+        @course.root_account.save!
+        @course.root_account.enable_feature! :quizzes_next
+        @course.enable_feature! :quizzes_next
+        @course.root_account.enable_feature! :newquizzes_on_quiz_page
+        # make the last two of course_assignments to be quiz_lti assignment
+        (2..3).each { |i| course_assignments[i].quiz_lti! && course_assignments[i].save! }
+        course_quizzes
+      end
+
+      context "teacher interface" do
+        it "includes all old quizzes and new quizzes, sorted by [due_date, title]" do
+          user_session(@teacher)
+          get 'index', params: { course_id: @course.id }
+          expect(controller.js_env[:QUIZZES][:assignment]).not_to be_nil
+          expect(controller.js_env[:QUIZZES][:assignment].count).to eq(4)
+
+          expect(
+            controller.js_env[:QUIZZES][:assignment].map{ |x| [x[:id], x[:due_at], x[:title]] }
+          ).to eq([
+            [course_assignments[2].id, due_at, 'some assignment 2'],
+            [course_assignments[3].id, due_at, 'some assignment 3'],
+            [course_quizzes[0].id, nil, 'quiz 1'],
+            [course_quizzes[1].id, nil, 'quiz 2']
+          ])
+        end
+      end
+
+      context "student interface" do
+        it "includes published quizzes" do
+          user_session(@student)
+          get 'index', params: { course_id: @course.id }
+          expect(controller.js_env[:QUIZZES][:assignment]).not_to be_nil
+          expect(controller.js_env[:QUIZZES][:assignment].count).to eq(2)
+          expect(
+            controller.js_env[:QUIZZES][:assignment].map{ |x| x[:id] }
+          ).to contain_exactly(course_quizzes[1].id, course_assignments[3].id)
+        end
+      end
+    end
   end
 
   describe "POST 'new'" do
@@ -217,7 +375,7 @@ describe Quizzes::QuizzesController do
       context "if xhr request" do
         it "returns the new quiz's edit url" do
           post 'new', params: {:course_id => @course.id}, xhr: true
-          expect(response).to have_http_status :success
+          expect(response).to be_successful
           expect(JSON.parse(response.body)['url']).to match(%r{/courses/\w+/quizzes/\w+/edit$})
         end
       end
@@ -379,7 +537,6 @@ describe Quizzes::QuizzesController do
     end
 
     it "assigns js_env for attachments if submission is present" do
-      require 'action_controller_test_process'
       user_session(@student)
       course_quiz !!:active
       submission = @quiz.generate_submission @student
@@ -392,15 +549,37 @@ describe Quizzes::QuizzesController do
       expect(attach[:display_name]).to eq attachment.display_name
     end
 
-    it "assigns js_env for versions if submission is present" do
-      require 'action_controller_test_process'
-      user_session(@student)
-      course_quiz !!:active
-      submission = @quiz.generate_submission @student
-      create_attachment_for_file_upload_submission!(submission)
+    describe "js_env SUBMISSION_VERSIONS_URL" do
+      before(:each) do
+        user_session(@student)
+        course_quiz(true)
+      end
+
+      let(:submission) { @quiz.generate_submission(@student) }
+
+      it "is assigned if a quiz submission is present and posted to the student" do
+        Quizzes::SubmissionGrader.new(submission).grade_submission
+        create_attachment_for_file_upload_submission!(submission)
+        get 'show', params: {:course_id => @course.id, :id => @quiz.id}
+        path = "courses/#{@course.id}/quizzes/#{@quiz.id}/submission_versions"
+        expect(assigns[:js_env][:SUBMISSION_VERSIONS_URL]).to include(path)
+      end
+
+      it "is not assigned if a quiz submission is present but hidden for the student" do
+        @quiz.assignment.post_policy.update!(post_manually: true)
+        Quizzes::SubmissionGrader.new(submission).grade_submission
+        create_attachment_for_file_upload_submission!(submission)
+        get 'show', params: {:course_id => @course.id, :id => @quiz.id}
+        expect(assigns[:js_env]).not_to include(:SUBMISSION_VERSIONS_URL)
+      end
+    end
+
+    it "assigns js_env for quiz details url" do
+      user_session(@teacher)
+      course_quiz
       get 'show', params: {:course_id => @course.id, :id => @quiz.id}
-      path = "courses/#{@course.id}/quizzes/#{@quiz.id}/submission_versions"
-      expect(assigns[:js_env][:SUBMISSION_VERSIONS_URL]).to include(path)
+      path = "courses/#{@course.id}/quizzes/#{@quiz.id}/managed_quiz_data"
+      expect(assigns[:js_env][:QUIZ_DETAILS_URL]).to include(path)
     end
 
     it "doesn't show unpublished quizzes to students with draft state" do
@@ -408,7 +587,7 @@ describe Quizzes::QuizzesController do
       course_quiz(active=true)
       @quiz.unpublish!
       get 'show', params: {course_id: @course.id, id: @quiz.id}
-      expect(response).not_to be_success
+      expect(response).not_to be_successful
     end
 
     it 'logs a single asset access entry with an action level of "view"' do
@@ -439,7 +618,7 @@ describe Quizzes::QuizzesController do
 
       get 'show', params: {course_id: @course.id, id: @quiz.id}
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(submission.reload.has_seen_results).to eq true
     end
 
@@ -459,7 +638,7 @@ describe Quizzes::QuizzesController do
 
       get 'show', params: {course_id: @course.id, id: @quiz.id}
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(submission.reload.has_seen_results).to be_nil
     end
 
@@ -495,7 +674,7 @@ describe Quizzes::QuizzesController do
 
         user_session(@teacher)
         get 'show', params: { course_id: @course.id, id: @quiz.id, take: '1', preview: '1' }
-        expect(response).to have_http_status(:success)
+        expect(response).to be_successful
       end
     end
   end
@@ -976,10 +1155,23 @@ describe Quizzes::QuizzesController do
   describe "GET 'history'" do
     before :once do
       course_quiz
+      @quiz.assignment.unmute!
     end
 
     it "should require authorization" do
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id}
+      assert_unauthorized
+    end
+
+    it "should require view grade permissions to view a quiz submission" do
+      role = Role.find_by(name: 'TeacherEnrollment')
+      ['view_all_grades', 'manage_grades'].each do |permission|
+        RoleOverride.create!(permission: permission, enabled: false, context: @course.account, role: role)
+      end
+
+      user_session(@teacher)
+      quiz_submission = @quiz.generate_submission(@student)
+      get 'history', params: { course_id: @course.id, quiz_id: @quiz.id, quiz_submission_id: quiz_submission.id }
       assert_unauthorized
     end
 
@@ -995,7 +1187,7 @@ describe Quizzes::QuizzesController do
       @submission = @quiz.generate_submission(@student)
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id}
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns[:user]).not_to be_nil
       expect(assigns[:user]).to eql(@student)
       expect(assigns[:quiz]).not_to be_nil
@@ -1010,7 +1202,7 @@ describe Quizzes::QuizzesController do
       @submission.submission.mark_unread(@student)
       @submission.save!
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       submission = Quizzes::QuizSubmission.find(@submission.id)
       expect(submission.submission.read?(@student)).to be_truthy
     end
@@ -1022,7 +1214,7 @@ describe Quizzes::QuizzesController do
       @submission.submission.mark_unread(@student)
       @submission.save!
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       submission = Quizzes::QuizSubmission.find(@submission.id)
       expect(submission.submission.read?(@teacher)).to be_falsey
       expect(submission.submission.read?(@student)).to be_falsey
@@ -1036,7 +1228,7 @@ describe Quizzes::QuizzesController do
       user_session(@observer)
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns[:user]).not_to be_nil
       expect(assigns[:user]).to eql(@student)
       expect(assigns[:quiz]).not_to be_nil
@@ -1050,7 +1242,7 @@ describe Quizzes::QuizzesController do
       s = @quiz.generate_submission(@student2)
       @submission = @quiz.generate_submission(@student)
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student2.id}
-      expect(response).not_to be_success
+      expect(response).not_to be_successful
     end
 
     it "should allow viewing other submissions if a teacher" do
@@ -1059,7 +1251,7 @@ describe Quizzes::QuizzesController do
       @submission = @quiz.generate_submission(@teacher)
       get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
 
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns[:user]).not_to be_nil
       expect(assigns[:user]).to eql(@student)
       expect(assigns[:quiz]).not_to be_nil
@@ -1096,7 +1288,7 @@ describe Quizzes::QuizzesController do
         @submission = @quiz.generate_submission(@teacher)
         get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
 
-        expect(response).to be_success
+        expect(response).to be_successful
       end
 
       it "should allow teacher viewing if the term has ended" do
@@ -1106,7 +1298,7 @@ describe Quizzes::QuizzesController do
         @quiz.generate_submission(@student)
         get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
 
-        expect(response).to be_success
+        expect(response).to be_successful
       end
 
       it "should allow teacher viewing if the enrollment is concluded" do
@@ -1116,7 +1308,28 @@ describe Quizzes::QuizzesController do
         @quiz.generate_submission(@student)
         get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
 
-        expect(response).to be_success
+        expect(response).to be_successful
+      end
+    end
+
+    it "allows a student to view their own history if the submission is posted" do
+      user_session(@student)
+      quiz_submission = @quiz.generate_submission(@student)
+      Quizzes::SubmissionGrader.new(quiz_submission).grade_submission
+      get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
+      expect(response).to be_successful
+    end
+
+    it "does not allow a student to view their own history if the submission is not posted" do
+      user_session(@student)
+      quiz_submission = @quiz.generate_submission(@student)
+      Quizzes::SubmissionGrader.new(quiz_submission).grade_submission
+      quiz_submission.submission.update!(posted_at: nil)
+      get 'history', params: {:course_id => @course.id, :quiz_id => @quiz.id, :user_id => @student.id}
+
+      aggregate_failures do
+        expect(response).to redirect_to("/courses/#{@course.id}/quizzes/#{@quiz.id}")
+        expect(flash[:notice]).to match(/You cannot view the quiz history while the quiz is muted/)
       end
     end
 
@@ -1151,7 +1364,7 @@ describe Quizzes::QuizzesController do
 
         user_session(@teacher)
         get 'history', params: { course_id: @course.id, quiz_id: @quiz.id, quiz_submission_id: quiz_submission.id }
-        expect(response).to have_http_status(:success)
+        expect(response).to be_successful
       end
     end
   end
@@ -1173,7 +1386,7 @@ describe Quizzes::QuizzesController do
       post 'create', params: {:course_id => @course.id, :quiz => {:title => "some quiz"}}
       expect(assigns[:quiz]).not_to be_nil
       expect(assigns[:quiz].title).to eql("some quiz")
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "creates quizzes with overrides" do
@@ -1193,7 +1406,7 @@ describe Quizzes::QuizzesController do
           }]
         }}
 
-      expect(response).to be_success
+      expect(response).to be_successful
       quiz = assigns[:quiz].overridden_for(@teacher)
       overrides = AssignmentOverrideApplicator.overrides_for_assignment_and_user(quiz, @teacher)
       expect(overrides.length).to eq 1
@@ -1404,13 +1617,80 @@ describe Quizzes::QuizzesController do
         post 'update', params: {:course_id => @course.id, :id => survey.id, :quiz => {:title => "changed"}, :post_to_sis => '1'}
         expect(assigns[:quiz].title).to eq "changed"
       end
+
+      context 'with required due dates' do
+        before do
+          @course.account.enable_feature!(:new_sis_integrations)
+          @course.account.settings = { sis_syncing: { value: true }, sis_require_assignment_due_date: { value: true } }
+          @course.account.save!
+
+          user_session(@teacher)
+          course_quiz
+        end
+
+        it "saves with a due date" do
+          post 'update', params: { course_id: @course.id, id: @quiz.id, quiz: { title: 'updated', due_at: 2.days.from_now.iso8601 }, post_to_sis: '1'}
+          expect(response).to be_redirect
+          expect(flash[:error]).to be_nil
+          expect(@quiz.reload.title).to eq 'updated'
+        end
+
+        it "fails to save without a due date" do
+          post 'update', params: { course_id: @course.id, id: @quiz.id, quiz: { title: 'updated' }, post_to_sis: '1'}
+          expect(response).to be_redirect
+          expect(flash[:error]).to match(/failed to update/)
+          expect(@quiz.reload.title).not_to eq 'updated'
+        end
+
+        context 'with overrides' do
+          before do
+            @section = @course.course_sections.create
+          end
+
+          it "saves with a due date" do
+            post 'update', params: {
+              course_id: @course.id,
+              id: @quiz.id,
+              quiz: {
+                title: "overrides",
+                assignment_overrides: [{
+                  course_section_id: @section.id,
+                  due_at: 2.days.from_now.iso8601
+                }]
+              },
+              post_to_sis: '1'
+            }
+            expect(response).to be_redirect
+            expect(flash[:error]).to be_nil
+            expect(@quiz.reload.title).to eq 'overrides'
+          end
+
+          it "fails to save without a due date" do
+            post 'update', params: {
+              course_id: @course.id,
+              id: @quiz.id,
+              quiz: {
+                title: "overrides",
+                assignment_overrides: [{
+                  course_section_id: @section.id,
+                  due_at: nil
+                }]
+              },
+              post_to_sis: '1'
+            }
+            expect(response).to be_redirect
+            expect(flash[:error]).to match(/failed to update/)
+            expect(@quiz.reload.title).not_to eq 'overrides'
+          end
+        end
+      end
     end
 
     it "should be able to change ungraded survey to quiz without error" do
       # aka should handle the case where the quiz's assignment is nil/not present.
       user_session(@teacher)
       course_quiz
-      @quiz.update_attributes(quiz_type: 'survey')
+      @quiz.update(quiz_type: 'survey')
       # make sure the assignment doesn't exist
       @quiz.assignment = nil
       expect(@quiz.assignment).not_to be_present
@@ -1486,6 +1766,17 @@ describe Quizzes::QuizzesController do
       expect(quiz.reload.assignment_id).to be_nil
       expect(override.reload.assignment_id).to be_nil
       expect(override.quiz_id).to eq quiz.id
+    end
+
+    it 'should not remove attributes when called with no description param' do
+      user_session(@teacher)
+      quiz = @course.quizzes.create!(title: 'blah', quiz_type: 'assignment', description: 'foobar')
+      post 'update', params: {
+        course_id: @course.id,
+        id: quiz.id,
+      }
+      expect(quiz.reload.title).to eq 'blah'
+      expect(quiz.reload.description).to eq 'foobar'
     end
 
     describe "DueDateCacher" do
@@ -1675,7 +1966,7 @@ describe Quizzes::QuizzesController do
 
         @section = @course.course_sections.create!
 
-        @student.communication_channels.create(:path => "student@instructure.com").confirm!
+        communication_channel(@student, {username: 'student@instructure.com', active_cc: true})
         @student.email_channel.notification_policies.create!(notification: @notification,
                                                              frequency: 'immediately')
 
@@ -2052,7 +2343,7 @@ describe Quizzes::QuizzesController do
       course_quiz
       @enrollment.conclude
       get 'statistics', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template('statistics_cqs')
     end
 
@@ -2085,7 +2376,7 @@ describe Quizzes::QuizzesController do
 
 
         get 'statistics', params: {:course_id => @course.id, :quiz_id => @quiz.id, :all_versions => '1'}
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(response).to render_template('statistics_cqs')
       end
     end
@@ -2096,7 +2387,7 @@ describe Quizzes::QuizzesController do
       @course.save!
       course_quiz
       get 'statistics', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template('statistics_cqs')
     end
   end
@@ -2107,13 +2398,13 @@ describe Quizzes::QuizzesController do
     it "should allow concluded teachers to see a read-only view of a quiz" do
       user_session(@teacher)
       get 'read_only', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template('read_only')
 
       @enrollment.conclude
       controller.js_env.clear
       get 'read_only', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template('read_only')
     end
 
@@ -2130,7 +2421,7 @@ describe Quizzes::QuizzesController do
     it "should include banks hash" do
       user_session(@teacher)
       get 'read_only', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(assigns[:banks_hash]).not_to be_nil
     end
   end
@@ -2183,7 +2474,7 @@ describe Quizzes::QuizzesController do
 
     it "renders nothing if there's no submission for current user" do
       get 'submission_html', params: {course_id: @course.id, quiz_id: @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response.body.strip).to be_empty
     end
 
@@ -2192,7 +2483,7 @@ describe Quizzes::QuizzesController do
       sub.mark_completed
       sub.save!
       get 'submission_html', params: {course_id: @course.id, quiz_id: @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
       expect(response).to render_template("quizzes/submission_html")
     end
   end
@@ -2213,7 +2504,7 @@ describe Quizzes::QuizzesController do
       submission.save!
 
       get 'submission_html', params: {course_id: @course.id, quiz_id: @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
 
       expect(response).to render_template("quizzes/submission_html")
       expect(submission.reload.has_seen_results).to eq true
@@ -2273,7 +2564,24 @@ describe Quizzes::QuizzesController do
       @quiz.assignment = assignment
 
       get 'submission_versions', params: {:course_id => @course.id, :quiz_id => @quiz.id}
-      expect(response).to be_success
+      expect(response).to be_successful
+      expect(response.body).to match(/^\s?$/)
+    end
+
+    it "renders nothing when the submission is not posted" do
+      assignment = @course.assignments.create!(
+        title: "my humdrum quiz",
+        workflow_state: "available",
+        submission_types: "online_quiz"
+      )
+
+      @quiz.assignment = assignment
+      user_session(@teacher)
+
+      assignment.post_policy.update!(post_manually: true)
+      @quiz.generate_submission(@teacher)
+
+      get 'submission_versions', params: {:course_id => @course.id, :quiz_id => @quiz.id}
       expect(response.body).to match(/^\s?$/)
     end
   end

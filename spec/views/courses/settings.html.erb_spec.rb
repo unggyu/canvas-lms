@@ -20,7 +20,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 require File.expand_path(File.dirname(__FILE__) + '/../views_helper')
 
 describe "courses/settings.html.erb" do
-  before do
+  before :once do
     @subaccount = Account.default.sub_accounts.create!(:name => 'subaccount')
     course_with_teacher(:active_all => true, :account => @subaccount)
     @course.sis_source_id = "so_special_sis_id"
@@ -30,6 +30,27 @@ describe "courses/settings.html.erb" do
     assign(:user_counts, {})
     assign(:all_roles, Role.custom_roles_and_counts_for_course(@course, @user))
     assign(:course_settings_sub_navigation_tools, [])
+  end
+
+  describe "Hide sections on course users page checkbox" do
+    before :once do
+      @course.root_account.enable_feature!(:hide_course_sections_from_students)
+    end
+
+    it "should not display checkbox for teacher when there is one section" do
+      view_context(@course, @user)
+      assign(:current_user, @user)
+      render
+      expect(response).to_not have_tag("input#course_hide_sections_on_course_users_page")
+    end
+
+    it "should display checkbox for teacher when there is more than one section" do
+      @course.course_sections.create!
+      view_context(@course, @user)
+      assign(:current_user, @user)
+      render
+      expect(response).to have_tag("input#course_hide_sections_on_course_users_page")
+    end
   end
 
   describe "sis_source_id edit box" do
@@ -112,6 +133,50 @@ describe "courses/settings.html.erb" do
       it "should not show quota input box" do
         render
         expect(response).not_to have_tag "input#course_storage_quota_mb"
+      end
+    end
+  end
+
+  describe "Large Course settings" do
+    before :once do
+      @course.root_account.enable_feature!(:filter_speed_grader_by_student_group)
+    end
+
+    before :each do
+      view_context(@course, @teacher)
+    end
+
+    it "does not render when the 'Filter SpeedGrader by Student Group' feature flag is not enabled" do
+      @course.root_account.disable_feature!(:filter_speed_grader_by_student_group)
+      render
+      expect(response).not_to have_tag "input#course_filter_speed_grader_by_student_group"
+    end
+
+    it "has a Large Course label" do
+      render
+      expect(response).to have_tag("label[for=course_large_course]")
+    end
+
+    describe "filter SpeedGrader by student group" do
+      it "has a checkbox" do
+        render
+        expect(response).to have_tag "input#course_filter_speed_grader_by_student_group[type=checkbox]"
+      end
+
+      it "has a label describing it" do
+        render
+        expect(response).to have_tag("label[for=course_filter_speed_grader_by_student_group]")
+      end
+
+      it "checkbox is checked when filter_speed_grader_by_student_group is true" do
+        @course.update!(filter_speed_grader_by_student_group: true)
+        render
+        expect(response).to have_tag "input#course_filter_speed_grader_by_student_group[type=checkbox][checked=checked]"
+      end
+
+      it "checkbox is not checked when filter_speed_grader_by_student_group is false" do
+        render
+        expect(response).not_to have_tag "input#course_filter_speed_grader_by_student_group[type=checkbox][checked=checked]"
       end
     end
   end

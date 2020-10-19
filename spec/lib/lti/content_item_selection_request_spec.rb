@@ -226,6 +226,7 @@ describe Lti::ContentItemSelectionRequest do
             'iframe',
             'window'
           )
+          expect(params['accept_multiple']).to eq("true")
         end
 
         it 'adds params for the resource_selection placement' do
@@ -329,7 +330,7 @@ describe Lti::ContentItemSelectionRequest do
     end
 
     it 'adds user information when a user is provided' do
-      allow(Lti::Asset).to receive(:opaque_identifier_for).with(teacher).and_return('teacher_opaque_id')
+      allow(Lti::Asset).to receive(:opaque_identifier_for).with(teacher, context: course).and_return('teacher_opaque_id')
 
       params = described_class.default_lti_params(course, root_account, teacher)
 

@@ -32,6 +32,14 @@ const setUp = function(maxButtons) {
     getContent() {},
     selection: {
       getContent() {}
+    },
+    ui: {
+      registry: {
+        addButton: sinon.spy(),
+        addMenuButton: sinon.spy(),
+        addIcon: sinon.spy(),
+        addNestedMenuItem: sinon.spy()
+      }
     }
   }
   this.INST = INST
@@ -67,57 +75,35 @@ test('adds button to clumped buttons', function() {
   ok(this.commandSpy.notCalled)
 })
 
-QUnit.module('buttonSelected', {
+QUnit.module('with rce_enhancements', {
   setup() {
-    const fixtures = document.getElementById('fixtures')
-    fixtures.innerHTML =
-      '<a href="http://example.com" id="context_external_tool_resource_selection_url"></a>'
-    setUp.call(this, 0)
-    this.dialogCancelHandler = ExternalToolsPlugin.dialogCancelHandler
+    window.ENV.use_rce_enhancements = true
+    return setUp.call(this, 2)
   },
   teardown() {
-    $(window).off('beforeunload')
-    fixtures.innerHTML = ''
-    ExternalToolsPlugin.dialogCancelHandler = this.dialogCancelHandler
+    window.ENV.use_rce_enhancements = false
   }
 })
 
-test('it attaches the confirm unload handler', function() {
-  ExternalToolsPlugin.dialogCancelHandler = sinon.spy()
-  const $dialog = ExternalToolsPlugin.buttonSelected(this.buttonSpy, this.fakeEditor)
-  $dialog.dialog('close')
-  ok(ExternalToolsPlugin.dialogCancelHandler.called)
+test('adds MRU menu button', function() {
+  ExternalToolsPlugin.init(this.fakeEditor, undefined, this.INST)
+  ok(this.fakeEditor.ui.registry.addMenuButton.calledWith('lti_mru_button'))
 })
 
-test('it removes the confirm unload handler on externalContentReady event', function() {
-  ExternalToolsPlugin.dialogCancelHandler = sinon.spy()
-  const $dialog = ExternalToolsPlugin.buttonSelected(this.buttonSpy, this.fakeEditor)
-  $(window).trigger('externalContentReady', {
-    contentItems: [
-      {
-        '@type': 'LtiLinkItem',
-        url: 'http://canvas.instructure.com/test',
-        placementAdvice: {presentationDocumentTarget: ''}
-      }
-    ]
-  })
-  ok(ExternalToolsPlugin.dialogCancelHandler.notCalled)
+test('adds favorite buttons to the toolbar', function() {
+  this.INST.editorButtons[0].favorite = true
+  ExternalToolsPlugin.init(this.fakeEditor, undefined, this.INST)
+  ok(this.fakeEditor.ui.registry.addButton.calledWith('instructure_external_button_button_id'))
 })
 
-test('it removes the externalContentReady handler on close', function() {
-  const externalContentReadySpy = sinon.spy()
-  ExternalToolsPlugin.dialogCancelHandler = function() {}
-  const $dialog = ExternalToolsPlugin.buttonSelected(this.buttonSpy, this.fakeEditor)
-  $(window).bind('externalContentReady', externalContentReadySpy)
-  $dialog.dialog('close')
-  $(window).trigger('externalContentReady', {
-    contentItems: [
-      {
-        '@type': 'LtiLinkItem',
-        url: 'http://canvas.instructure.com/test',
-        placementAdvice: {presentationDocumentTarget: ''}
-      }
-    ]
-  })
-  ok(externalContentReadySpy.notCalled)
+test("creates the tool's icon", function() {
+  this.INST.editorButtons[0].favorite = true
+  this.INST.editorButtons[0].icon_url = 'tool_image'
+  ExternalToolsPlugin.init(this.fakeEditor, undefined, this.INST)
+  ok(this.fakeEditor.ui.registry.addIcon.calledWith('lti_tool_button_id'))
+})
+
+test('adds Apps to the Tools menubar menu', function() {
+  ExternalToolsPlugin.init(this.fakeEditor, undefined, this.INST)
+  ok(this.fakeEditor.ui.registry.addNestedMenuItem.calledWith('lti_tools_menuitem'))
 })

@@ -19,7 +19,7 @@
     <div class="ic-Form-control">
       <div class='pairing-code-text'>
         <label class="ic-Label" for="pairing_code">{{#t "labels.code"}}Student Pairing Code{{/t}}</label>
-        <a href='https://community.canvaslms.com/docs/DOC-14789' target='_blank'>{{#t "anchor.pairing_code"}}What is a pairing code?{{/t}}</a>
+        <a href='https://community.canvaslms.com/t5/Resource-Documents/Pairing-Codes-FAQ-PDF/ta-p/388738' target='_blank'>{{#t "anchor.pairing_code"}}What is a pairing code?{{/t}}</a>
       </div>
       <input class="ic-Input" type="text" id="pairing_code" name="pairing_code[code]" autocapitalize="off" autocorrect="off">
     </div>
@@ -31,9 +31,17 @@
       </label>
     </div>
     {{/if}}
+    {{#if recaptcha}}
+    <div class="control-group">
+      <div class="controls">
+        <div class="g-recaptcha"></div>
+      </div>
+    </div>
+    {{/if}}
     <div class="ic-Form-control">
       <input type="hidden" name="user[initial_enrollment_type]" value="observer" />
       <input type="hidden" name="user[skip_registration]" value="1" />
+      <input type="hidden" name="communication_channel[skip_confirmation]" value="1" />
       <div class='button-container'>
         <button class="btn btn-secondary dialog_closer">{{#t "buttons.cancel"}}Cancel{{/t}}</button>
         <button class="btn btn-primary" type="submit">{{#t "buttons.start_participating"}}Start Participating{{/t}}</button>

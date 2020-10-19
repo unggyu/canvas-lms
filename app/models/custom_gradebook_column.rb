@@ -24,9 +24,16 @@ class CustomGradebookColumn < ActiveRecord::Base
   has_many :custom_gradebook_column_data
 
   validates :title, presence: true
+
   validates :teacher_notes, inclusion: { in: [true, false], message: "teacher_notes must be true or false" }
   validates :title, length: { maximum: maximum_string_length },
+    exclusion: {
+      in: GradebookImporter::GRADEBOOK_IMPORTER_RESERVED_NAMES,
+      message: "cannot use gradebook importer reserved names"
+    },
     :allow_nil => true
+
+  before_create :set_root_account_id
 
   workflow do
     state :active
@@ -54,5 +61,11 @@ class CustomGradebookColumn < ActiveRecord::Base
   def destroy
     self.workflow_state = "deleted"
     save!
+  end
+
+  private
+
+  def set_root_account_id
+    self.root_account_id ||= course.root_account_id
   end
 end

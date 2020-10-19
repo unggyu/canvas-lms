@@ -146,19 +146,27 @@ module BlueprintCourseCommon
       wait_for_ajaximations
 
       # confirm it's open
-      expect(details_wrapper).to contain_css('.bca-table__course-row')
+      expect(details_wrapper).to contain_css('[data-testid="bca-table__course-row"]')
     end
 
-    # reutrn the <tboey> holding the list of avaiable courses
+    def term_options
+      INSTUI_Select_options('#termsFilter').map(&:text)
+    end
+
+    def sub_account_options
+      INSTUI_Select_options('#subAccountsFilter').map(&:text)
+    end
+
+    # return the <tbody> holding the list of available courses
     def available_courses_table
       f('.bca-table__content-wrapper tbody')
     end
 
     # return the <tr>s holding with the current list of available courses
     def available_courses
-      ff('.bca-table__content-wrapper tbody tr.bca-table__course-row')
+      ff('.bca-table__content-wrapper tbody tr[data-testid="bca-table__course-row"]')
     rescue
-      [] if f('.bca-table__no-results')
+      [] if f('tr[data-testid="bca-table__no-results"]')
     end
 
     # return the <tbody> holding the current associations

@@ -461,8 +461,8 @@ describe LearningOutcome do
         'n_mastery'
       ]
       invalid_values = {
-        decaying_average: [0, 100, 1000, nil],
-        n_mastery: [0, 10, nil]
+        decaying_average: [0, 100, 1000],
+        n_mastery: [0, 10]
       }.with_indifferent_access
 
       calc_method.each do |method|
@@ -489,9 +489,9 @@ describe LearningOutcome do
 
     context "should set calculation_int to default if the calculation_method is changed and calculation_int isn't set" do
       method_to_int = {
-        # "decaying_average" => { default: 75, testval: 4, altmeth: 'n_mastery' },
-        # "n_mastery" => { default: 5, testval: nil, altmeth: 'highest' },
-        "highest" => { default: nil, testval: nil, altmeth: 'latest' },
+        "decaying_average" => { default: 65, testval: nil, altmeth: 'latest' },
+        "n_mastery" => { default: 5, testval: nil, altmeth: 'highest' },
+        "highest" => { default: nil, testval: 4, altmeth: 'n_mastery' },
         "latest" => { default: nil, testval: 72, altmeth: 'decaying_average' },
       }
 
@@ -524,6 +524,11 @@ describe LearningOutcome do
       }.to change {
         @outcome.alignments.count
       }.from(1).to(0)
+    end
+
+    it "returns points possible value set through rubric_criterion assessor" do
+      @outcome.rubric_criterion[:points_possible] = 10
+      expect(@outcome.rubric_criterion[:points_possible]).to eq 10
     end
 
     it "returns #data[:rubric_criterion] when #rubric_criterion is called" do
@@ -806,9 +811,20 @@ describe LearningOutcome do
     end
 
     context "default values" do
-      it "should default calculation_method to highest" do
+      it 'should default mastery points to 3' do
         @outcome = LearningOutcome.create!(:title => 'outcome')
-        expect(@outcome.calculation_method).to eql('highest')
+        expect(@outcome.mastery_points).to be 3
+      end
+
+      it 'should default points possible to 5' do
+        @outcome = LearningOutcome.create!(:title => 'outcome')
+        expect(@outcome.points_possible).to be 5
+      end
+
+      it "should default calculation_method to decaying_average" do
+        @outcome = LearningOutcome.create!(:title => 'outcome')
+        expect(@outcome.calculation_method).to eql('decaying_average')
+        expect(@outcome.calculation_int).to be 65
       end
 
       it "should default calculation_int to nil for highest" do
@@ -831,7 +847,7 @@ describe LearningOutcome do
 
       # This is to prevent changing behavior of existing outcomes made before we added the
       # ability to set a calculation_method
-      it "should set calculation_method to highest if the record is pre-existing and nil" do
+      it "should set calculation_method to decaying_average if the record is pre-existing and nil" do
         @outcome = LearningOutcome.create!(:title => 'outcome')
         @outcome.update_column(:calculation_method, nil)
         @outcome.reload
@@ -840,7 +856,66 @@ describe LearningOutcome do
         @outcome.save!
         @outcome.reload
         expect(@outcome.description).to eq("foo bar baz qux")
-        expect(@outcome.calculation_method).to eq('highest')
+        expect(@outcome.calculation_method).to eq('decaying_average')
+      end
+    end
+  end
+
+  context "root account ids" do
+    let_once(:root_account) { account_model }
+    let_once(:subaccount) { account_model parent_account: root_account }
+    let_once(:course) { course_model account: subaccount }
+
+    context 'sets root account ids on save' do
+      it 'when context is account' do
+        outcome = LearningOutcome.create! title:'outcome', context: subaccount
+        expect(outcome.root_account_ids).to eq [root_account.id]
+      end
+
+      it 'when context is course' do
+        outcome = LearningOutcome.create! title:'outcome', context: course
+        expect(outcome.root_account_ids).to eq [root_account.id]
+      end
+    end
+
+    it 'sets empty root account ids when context is nil' do
+      outcome = LearningOutcome.create! title:'outcome', context: nil
+      expect(outcome.root_account_ids).to eq []
+    end
+
+    it 'sets multiple root account ids based on associations' do
+      second_root_account = account_model
+      outcome = LearningOutcome.create! title: 'outcome'
+      course.root_outcome_group.add_outcome(outcome)
+      second_root_account.root_outcome_group.add_outcome(outcome)
+      outcome.update! root_account_ids: nil
+      expect(outcome.root_account_ids).to match_array [root_account.id, second_root_account.id]
+    end
+
+    context 'add_root_account_id_for_context!' do
+      it 'adds root account id for account' do
+        outcome = LearningOutcome.create! title: 'outcome'
+        outcome.add_root_account_id_for_context! subaccount
+        expect(outcome.root_account_ids).to eq [root_account.id]
+      end
+
+      it 'adds root account id for course' do
+        outcome = LearningOutcome.create! title: 'outcome'
+        outcome.add_root_account_id_for_context! course
+        expect(outcome.root_account_ids).to eq [root_account.id]
+      end
+
+      it 'does not add anything for outcome group' do
+        outcome = LearningOutcome.create! title: 'outcome'
+        outcome.add_root_account_id_for_context! LearningOutcomeGroup.global_root_outcome_group
+        expect(outcome.root_account_ids).to eq []
+      end
+
+      it 'does not add anything when root accound id already present' do
+        outcome = LearningOutcome.create! title: 'outcome', context: subaccount
+        expect(outcome).not_to receive(:save)
+        outcome.add_root_account_id_for_context! course
+        expect(outcome.root_account_ids).to eq [root_account.id]
       end
     end
   end
@@ -958,11 +1033,41 @@ describe LearningOutcome do
         [c1, c2].each { |c| outcome.align(nil, c, :mastery_type => "points") }
         assess_with.call(outcome, c1)
 
-        expect(outcome.alignments.length).to eq(3)
         expect(outcome).to be_assessed
         expect(outcome).to be_assessed(c1)
         expect(outcome).not_to be_assessed(c2)
       end
+    end
+
+    describe '#ensure_presence_in_context' do
+      it 'adds active outcomes to a context if they are not present' do
+        account = Account.default
+        course_factory
+        3.times do |i|
+          LearningOutcome.create!(
+            context: account,
+            title: "outcome_#{i}",
+            calculation_method: 'highest',
+            workflow_state: i == 0 ? 'deleted' : 'active'
+          )
+        end
+        outcome_ids = account.created_learning_outcomes.pluck(:id)
+        LearningOutcome.ensure_presence_in_context(outcome_ids, @course)
+        expect(@course.linked_learning_outcomes.count).to eq(2)
+      end
+    end
+
+    it 'should de-dup outcomes linked multiple times' do
+      account = Account.default
+      course_factory
+      lo = LearningOutcome.create!(context: @course, title: "outcome",
+        calculation_method: 'highest', workflow_state: 'active')
+      3.times do |i|
+        group = @course.learning_outcome_groups.create!(:title => "groupage_#{i}")
+        group.add_outcome(lo)
+      end
+      expect(@course.learning_outcome_links.count).to eq(3)
+      expect(@course.linked_learning_outcomes.count).to eq(1) # not 3
     end
 
     describe '#align' do
@@ -1003,41 +1108,6 @@ describe LearningOutcome do
           expect(account1.learning_outcome_links).to be_empty
         end
       end
-    end
-  end
-
-  context 'enable new guid columns' do
-    before :once do
-      assignment_model
-      @outcome = @course.created_learning_outcomes.create!(:title => 'outcome')
-    end
-
-    it "should read vendor_guid_2" do
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@outcome.vendor_guid).to be_nil
-      @outcome.vendor_guid = "GUID-XXXX"
-      @outcome.save!
-      expect(@outcome.vendor_guid).to eql "GUID-XXXX"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(true)
-      expect(@outcome.vendor_guid).to eql "GUID-XXXX"
-      @outcome.write_attribute('vendor_guid_2', "GUID-YYYY")
-      expect(@outcome.vendor_guid).to eql "GUID-YYYY"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@outcome.vendor_guid).to eql "GUID-XXXX"
-    end
-
-    it "should read migration_id_2" do
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@outcome.migration_id).to be_nil
-      @outcome.migration_id = "GUID-XXXX"
-      @outcome.save!
-      expect(@outcome.migration_id).to eql "GUID-XXXX"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(true)
-      expect(@outcome.migration_id).to eql "GUID-XXXX"
-      @outcome.write_attribute('migration_id_2', "GUID-YYYY")
-      expect(@outcome.migration_id).to eql "GUID-YYYY"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@outcome.migration_id).to eql "GUID-XXXX"
     end
   end
 

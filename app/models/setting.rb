@@ -21,10 +21,41 @@ class Setting < ActiveRecord::Base
 
   self.shard_category = :unsharded if self.respond_to?(:shard_category=)
 
-  def self.get(name, default, cache_options: nil)
+  def self.skip_cache
+    @skip_cache, old_enabled = true, @skip_cache
+    yield
+  ensure
+    @skip_cache = old_enabled
+  end
+
+  def self.get(name, default, expires_in: nil, set_if_nx: false)
     begin
-      cache.fetch(name, cache_options) do
-        Setting.where(name: name).first&.value || default&.to_s
+      cache.fetch(name, expires_in: expires_in) do
+        if @skip_cache && expires_in
+          obj = Setting.find_by(name: name)
+          Setting.set(name, default) if !obj && set_if_nx
+          next obj ? obj.value&.to_s : default&.to_s
+        end
+
+        fetch = Proc.new { Setting.pluck(:name, :value).to_h }
+        all_settings = if @skip_cache
+          # we want to skip talking to redis, but it's okay to use the in-proc cache
+          @all_settings ||= fetch.call
+        elsif expires_in
+          # ignore the in-proc cache, but check redis; it will have been properly
+          # cleared by whoever set it, they just have no way to clear the in-proc cache
+          @all_settings = MultiCache.fetch("all_settings", &fetch)
+        else
+          # use both caches
+          @all_settings ||= MultiCache.fetch("all_settings", &fetch)
+        end
+
+        if all_settings.key?(name)
+          all_settings[name]&.to_s
+        else
+          Setting.set(name, default) if set_if_nx
+          default&.to_s
+        end
       end
     rescue ActiveRecord::StatementInvalid, ActiveRecord::ConnectionNotEstablished => e
       # the db may not exist yet
@@ -35,14 +66,12 @@ class Setting < ActiveRecord::Base
 
   # Note that after calling this, you should send SIGHUP to all running Canvas processes
   def self.set(name, value)
-    cache.delete(name)
     s = Setting.where(name: name).first_or_initialize
-    s.value = value.try(:to_s)
+    s.value = value&.to_s
     s.save!
-  end
-
-  def self.get_or_set(name, new_val)
-    Setting.where(name: name).first_or_create(value: new_val).value
+    cache.delete(name)
+    @all_settings = nil
+    MultiCache.delete("all_settings")
   end
 
   # this cache doesn't get invalidated by other rails processes, obviously, so
@@ -52,11 +81,14 @@ class Setting < ActiveRecord::Base
   end
 
   def self.reset_cache!
+    @all_settings = nil
     cache.clear
   end
 
   def self.remove(name)
     cache.delete(name)
     Setting.where(name: name).delete_all
+    @all_settings = nil
+    MultiCache.delete("all_settings")
   end
 end

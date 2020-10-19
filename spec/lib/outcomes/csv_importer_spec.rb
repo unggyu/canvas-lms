@@ -157,7 +157,8 @@ describe Outcomes::CsvImporter do
     it 'works when no ratings are present' do
       expect_ok_import(csv_file('no-ratings'))
 
-      expect(by_guid['c'].rubric_criterion).to eq(nil)
+      expect(by_guid['c'].data).not_to be_nil
+      expect(by_guid['c'].rubric_criterion).not_to be_nil
     end
 
     it 'properly sets scoring types' do
@@ -165,10 +166,10 @@ describe Outcomes::CsvImporter do
 
       by_method = LearningOutcome.all.to_a.group_by(&:calculation_method)
 
-      methods = LearningOutcome::CALCULATION_METHODS.keys.sort
+      methods = OutcomeCalculationMethod::CALCULATION_METHODS.sort
       expect(by_method.keys.sort).to eq(methods)
 
-      expect(by_method['decaying_average'][0].calculation_int).to eq(40)
+      expect(by_method['decaying_average'].map(&:calculation_int)).to include(40)
       expect(by_method['n_mastery'][0].calculation_int).to eq(3)
     end
 
@@ -423,6 +424,18 @@ describe Outcomes::CsvImporter do
         ],
         [
           [2, "Calculation method calculation_method must be one of the following: #{methods}"],
+        ]
+      )
+    end
+
+    it 'raises a line error when vendor_guid is too long' do
+      expect_import_error(
+        [
+          headers,
+          outcome_row(vendor_guid: 'long-' * 200),
+        ],
+        [
+          [2, "Vendor guid is too long (maximum is 255 characters)"],
         ]
       )
     end

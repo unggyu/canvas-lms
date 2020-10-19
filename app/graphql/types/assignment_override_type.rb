@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #
 # Copyright (C) 2018 - present Instructure, Inc.
 #
@@ -17,69 +18,81 @@
 #
 
 module Types
-  AssignmentOverrideType = GraphQL::ObjectType.define do
-    name "AssignmentOverride"
-
-    interfaces [Interfaces::TimestampInterface]
-
-    field :_id, !types.ID, "legacy canvas id", property: :id
-
-    field :assignment, AssignmentType, resolve: ->(override, _, _) {
-      Loaders::AssociationLoader.for(AssignmentOverride, :assignment)
-        .load(override)
-        .then { override.assignment }
-    }
-
-    field :title, types.String
-
-    field :set, AssignmentOverrideSetUnion do
-      description "This object specifies what students this override applies to"
-
-      resolve ->(override, _, _) {
-        if override.set_type == "ADHOC"
-          # AdhocStudentsType will load the actual students
-          override
-        else
-          Loaders::AssociationLoader.for(AssignmentOverride, :set)
-            .load(override)
-            .then { override.set }
-        end
-      }
-    end
-
-    field :dueAt, DateTimeType, property: :due_at
-    field :lockAt, DateTimeType, property: :lock_at
-    field :unlockAt, DateTimeType, property: :unlock_at
-    field :allDay, types.Boolean, property: :all_day
-  end
-
-  AssignmentOverrideSetUnion = GraphQL::UnionType.define do
-    name "AssignmentOverrideSet"
-
-    description "Objects that can be assigned overridden dates"
-
-    possible_types [SectionType, GroupType, AdhocStudentsType]
-
-    resolve_type ->(obj, _) {
-      case obj
-      when CourseSection then SectionType
-      when Group then GroupType
-      when AssignmentOverride then AdhocStudentsType
-      end
-    }
-  end
-
-  AdhocStudentsType = GraphQL::ObjectType.define do
-    name "AdhocStudents"
+  class AdhocStudentsType < ApplicationObjectType
+    graphql_name "AdhocStudents"
 
     description "A list of students that an `AssignmentOverride` applies to"
 
-    field :students, types[UserType], resolve: ->(override, _, _) {
-      Loaders::AssociationLoader.for(AssignmentOverride,
-                                     assignment_override_students: :user)
-      .load(override)
-      .then { override.assignment_override_students.map(&:user) }
-    }
+    alias override object
 
+    field :students, [UserType], null: true
+
+    def students
+      load_association(:assignment_override_students).then do |override_students|
+        Loaders::AssociationLoader.for(AssignmentOverrideStudent, :user).load_many(override_students)
+      end
+    end
+  end
+
+  Noop = Struct.new(:id)
+
+  class NoopType < ApplicationObjectType
+    graphql_name "Noop"
+
+    description "A descriptive tag that doesn't link the assignment to a set"
+
+    field :_id, ID, method: :id, null: false
+  end
+
+  class AssignmentOverrideSetUnion < BaseUnion
+    graphql_name "AssignmentOverrideSet"
+
+    description "Objects that can be assigned overridden dates"
+
+    possible_types SectionType, GroupType, AdhocStudentsType, NoopType
+
+    def self.resolve_type(obj, _)
+      case obj
+      when CourseSection then SectionType
+      when Group then GroupType
+      when Noop then NoopType
+      when AssignmentOverride then AdhocStudentsType
+      end
+    end
+  end
+
+  class AssignmentOverrideType < ApplicationObjectType
+    graphql_name "AssignmentOverride"
+
+    implements GraphQL::Types::Relay::Node
+    implements Interfaces::TimestampInterface
+    implements Interfaces::LegacyIDInterface
+
+    alias :override :object
+
+    field :assignment, AssignmentType, null: true
+    def assignment
+      load_association(:assignment)
+    end
+
+    field :title, String, null: true
+
+    field :set, AssignmentOverrideSetUnion,
+      "This object specifies what students this override applies to",
+      null: true
+    def set
+      if override.set_type == "ADHOC"
+        override
+      elsif override.set_type == 'Noop'
+        Noop.new(override.set_id)
+      else
+        load_association(:set)
+      end
+    end
+
+    field :due_at, DateTimeType, null: true
+    field :lock_at, DateTimeType, null: true
+    field :unlock_at, DateTimeType, null: true
+    field :all_day, Boolean, null: true
   end
 end

@@ -59,17 +59,22 @@ class QuestionBanksController < ApplicationController
 
   def show
     @bank = @context.assessment_question_banks.find(params[:id])
-    js_env({
+    js_env(
       :CONTEXT_URL_ROOT => polymorphic_path([@context]),
       :ROOT_OUTCOME_GROUP => outcome_group_json(@context.root_outcome_group, @current_user, session)
-    })
-    rce_js_env(:highrisk)
+    )
+    mastery_scales_js_env
+    rce_js_env
 
     add_crumb(@bank.title)
     if authorized_action(@bank, @current_user, :read)
       @alignments = Canvas::ICU.collate_by(@bank.learning_outcome_alignments) { |a| a.learning_outcome.short_description }
       @questions = @bank.assessment_questions.active.paginate(:per_page => 50, :page => 1)
     end
+
+    js_bundle :quizzes_bundle, :question_bank
+    css_bundle :quizzes, :learning_outcomes, :tinymce, :question_bank
+    @page_title = @bank.title
   end
 
   def move_questions
@@ -130,7 +135,7 @@ class QuestionBanksController < ApplicationController
   def update
     @bank = @context.assessment_question_banks.find(params[:id])
     if authorized_action(@bank, @current_user, :update)
-      if @bank.update_attributes(bank_params)
+      if @bank.update(bank_params)
         @bank.reload
         render :json => @bank.as_json(:include => {:learning_outcome_alignments => {:include => {:learning_outcome => {:include_root => false}}}})
       else

@@ -17,22 +17,25 @@
 
 require_relative "../../common"
 require_relative "../../helpers/speed_grader_common"
+require_relative '../pages/moderate_page'
 require_relative "../pages/speedgrader_page"
 
 describe "SpeedGrader" do
   include_context "in-process server selenium tests"
   include SpeedGraderCommon
 
-  before(:each) do
+  before(:once) do
     # a course with 1 teacher
-    course_with_teacher_logged_in
+    @teacher1 = course_with_teacher(name: 'Teacher1', active_all: true).user
+    @teacher2 = course_with_teacher(course: @course, name: 'Teacher2', active_all: true).user
+    @teacher3 = course_with_teacher(course: @course, name: 'Teacher3', active_all: true).user
 
     # enroll two students
-    @student1 = User.create!(name: 'Student1')
+    @student1 = User.create!(name: 'First Student')
     @student1.register!
     @course.enroll_student(@student1, enrollment_state: 'active')
 
-    @student2 = User.create!(name: 'Student2')
+    @student2 = User.create!(name: 'Second Student')
     @student2.register!
     @course.enroll_student(@student2, enrollment_state: 'active')
   end
@@ -43,10 +46,22 @@ describe "SpeedGrader" do
       @assignment = @course.assignments.create!(
         name: 'anonymous assignment',
         points_possible: 10,
-        submission_types: 'text',
+        submission_types: 'online_text_entry,online_upload',
         anonymous_grading: true
       )
 
+      # Student1 & Student2 submit homework and a comment
+      file_attachment = attachment_model(content_type: 'application/pdf', context: @student1)
+      @submission1 = @assignment.submit_homework(@student1,
+                                  submission_type: 'online_upload',
+                                  attachments: [file_attachment],
+                                  comment: "This is Student One's comment")
+
+      file_attachment = attachment_model(content_type: 'application/pdf', context: @student2)
+      @submission1 = @assignment.submit_homework(@student2,
+                                                 submission_type: 'online_upload',
+                                                 attachments: [file_attachment],
+                                                 comment: "This is Student Two's comment")
       user_session(@teacher)
       Speedgrader.visit(@course.id, @assignment.id)
     end
@@ -54,7 +69,7 @@ describe "SpeedGrader" do
     it "student names are anonymous", priority: "1", test_id: 3481048 do
       Speedgrader.students_dropdown_button.click
       student_names = Speedgrader.students_select_menu_list.map(&:text)
-      expect(student_names).to eql ['Student 1', 'Student 2']
+      expect(student_names).to eql ["Student 1", "Student 2"]
     end
 
     context "given a specific student" do
@@ -68,14 +83,17 @@ describe "SpeedGrader" do
         expect { refresh_page }.not_to change { Speedgrader.selected_student.text }.from('Student 2')
       end
     end
+
+    context "given student comment and file submission" do
+      it 'author of comment is anonymous', priority: 2, test_id: 3496274 do
+        expect(Speedgrader.comment_citation.first.text).not_to match(/(First|Second) Student/)
+        expect(Speedgrader.comment_citation.first.text).to match(/Student (1|2)/)
+      end
+    end
   end
 
   context 'with a moderated assignment' do
     before(:each) do
-      @teacher1 = @teacher
-      @teacher2 = course_with_teacher(course: @course, name: 'Teacher2', active_all: true).user
-      @teacher3 = course_with_teacher(course: @course, name: 'Teacher3', active_all: true).user
-
       @moderated_assignment = @course.assignments.create!(
         title: 'Moderated Assignment1',
         grader_count: 2,
@@ -87,20 +105,36 @@ describe "SpeedGrader" do
       )
     end
 
-    it 'prevents unmuting the assignment before grades are posted', priority: '2', test_id: 3493531 do
-      user_session(@teacher2)
+    it 'prevents posting grades before they are released', priority: '2', test_id: 3493531 do
+      @moderated_assignment.grade_student(@student1, grade: '2', grader: @teacher2, provisional: true).first
+      @moderated_assignment.grade_student(@student1, grade: '3', grader: @teacher3, provisional: true)
+
+      user_session(@teacher1)
+      ModeratePage.visit(@course.id, @moderated_assignment.id)
+      ModeratePage.select_provisional_grade_for_student_by_position(@student1, 1)
+
       Speedgrader.visit(@course.id, @moderated_assignment.id)
 
-      expect(Speedgrader.mute_button.attribute('data-muted')).to eq 'true'
-      expect(Speedgrader.mute_button.attribute('class')).to include 'disabled'
+      Speedgrader.click_post_or_hide_grades_button
+      expect(Speedgrader.no_grades_to_post_button).to be_displayed
     end
 
-    it 'allows unmuting the assignment after grades are posted', priority: '2', test_id: 3493531 do
-      user_session(@teacher2)
-      @moderated_assignment.update!(grades_published_at: Time.zone.now)
+    it 'allows posting grades after they are released', priority: '2', test_id: 3493531 do
+      @moderated_assignment.grade_student(@student1, grade: '2', grader: @teacher2, provisional: true).first
+      @moderated_assignment.grade_student(@student1, grade: '3', grader: @teacher3, provisional: true)
+
+      user_session(@teacher1)
+      ModeratePage.visit(@course.id, @moderated_assignment.id)
+      ModeratePage.select_provisional_grade_for_student_by_position(@student1, 1)
+
+      ModeratePage.click_release_grades_button
+      driver.switch_to.alert.accept
+      wait_for_ajaximations
+
       Speedgrader.visit(@course.id, @moderated_assignment.id)
 
-      expect(Speedgrader.mute_button.attribute('class')).not_to include 'disabled'
+      Speedgrader.click_post_or_hide_grades_button
+      expect(Speedgrader.post_grades_link).to be_displayed
     end
 
     it 'allows adding provisional grades', priority: '2', test_id: 3505172 do
@@ -143,12 +177,112 @@ describe "SpeedGrader" do
     end
   end
 
-  context 'with a moderated anonymous assignment' do
-    before(:each) do
-      @teacher1 = @teacher
-      @teacher2 = course_with_teacher(course: @course, name: 'Teacher2', active_all: true).user
-      @teacher3 = course_with_teacher(course: @course, name: 'Teacher3', active_all: true).user
+  context 'with an anonymous moderated assignment and provisional comments' do
+    before(:once) do
+      @moderated_assignment = @course.assignments.create!(
+        title: 'Moderated Assignment1',
+        grader_count: 2,
+        final_grader_id: @teacher1.id,
+        grading_type: 'points',
+        points_possible: 15,
+        submission_types: 'online_text_entry',
+        moderated_grading: true
+      )
+      @moderated_assignment.update_submission(
+        @student1,
+        author: @teacher2,
+        comment: 'Some comment text by non-final grader',
+        provisional: true
+      )
+      @moderated_assignment.update_submission(
+        @student1,
+        author: @teacher3,
+        comment: 'Some comment text by another non-final grader',
+        provisional: true
+      )
+      @moderated_assignment.update_submission(
+        @student2,
+        author: @teacher2,
+        comment: 'Some comment text by non-final grader',
+        provisional: true
+      )
+      @moderated_assignment.update_submission(
+        @student2,
+        author: @teacher3,
+        comment: 'Some comment text by another non-final grader',
+        provisional: true
+      )
+      ModerationGrader.find_by(user: @teacher2, assignment: @moderated_assignment).update!(anonymous_id: 'AAAAA')
+      ModerationGrader.find_by(user: @teacher3, assignment: @moderated_assignment).update!(anonymous_id: 'BBBBB')
+    end
 
+    it "graders cannot view other grader's comments when `grader_comments_visible_to_graders = false`",
+       priority: 1, test_id: 3512445 do
+
+      @moderated_assignment.update!(grader_comments_visible_to_graders: false)
+      user_session(@teacher3)
+      Speedgrader.visit(@course.id, @moderated_assignment.id)
+
+      # dont see Teacher2's comment
+      expect(Speedgrader.comments.first.text).not_to include 'Some comment text by non-final grader'
+      expect(Speedgrader.comment_citation.first.text).not_to eq 'Teacher2'
+
+      # see comment made by self
+      expect(Speedgrader.comments.first.text).to include 'Some comment text by another non-final grader'
+      expect(Speedgrader.comment_citation.first.text).to eq 'Teacher3'
+    end
+
+    it "graders can view other grader's comments when `grader_comments_visible_to_graders = true`" do # test_id: 3512445
+
+      @moderated_assignment.update!(grader_comments_visible_to_graders: true)
+      user_session(@teacher3)
+      Speedgrader.visit(@course.id, @moderated_assignment.id)
+
+      expect(Speedgrader.comments.first.text).to include 'Some comment text by non-final grader'
+      expect(Speedgrader.comment_citation.first.text).to eq 'Teacher2'
+    end
+
+    it "final-grader can view other grader's comments by default", priority: 1, test_id: 3512445 do
+      user_session(@teacher1)
+      Speedgrader.visit(@course.id, @moderated_assignment.id)
+
+      expect(Speedgrader.comments.first.text).to include 'Some comment text by non-final grader'
+      expect(Speedgrader.comment_citation.first.text).to eq 'Teacher2'
+    end
+
+    it "final-grader cannot view other grader's name with `grader_names_visible_to_final_grader = false`" do
+      @moderated_assignment.update!(
+        anonymous_grading: true,
+        graders_anonymous_to_graders: true,
+        grader_names_visible_to_final_grader: false
+      )
+      user_session(@teacher1)
+      Speedgrader.visit(@course.id, @moderated_assignment.id)
+
+      expect(Speedgrader.comments.first.text).to include 'Some comment text by non-final grader'
+      expect(Speedgrader.comment_citation.first.text).to eq 'Grader 1'
+    end
+
+    it "anonymizes grader comments for other non-final graders when `graders_anonymous_to_graders = true`",
+       priority: 1, test_id: 3505165 do
+      @moderated_assignment.update!(
+        grader_comments_visible_to_graders: true,
+        anonymous_grading: true,
+        graders_anonymous_to_graders: true,
+        grader_names_visible_to_final_grader: false
+      )
+      user_session(@teacher3)
+      Speedgrader.visit(@course.id, @moderated_assignment.id)
+      Speedgrader.click_next_student_btn
+
+      expect(Speedgrader.comments.length).to eq 2
+      expect(Speedgrader.comments.first.text).to include 'Some comment text by non-final grader'
+      expect(Speedgrader.comment_citation.first.text).to eq 'Grader 1'
+    end
+  end
+
+  context 'with a moderated anonymous assignment' do
+    before(:once) do
       @moderated_anonymous_assignment = @course.assignments.create!(
         title: 'Moderated Anonymous Assignment1',
         grader_count: 2,
@@ -161,27 +295,7 @@ describe "SpeedGrader" do
       )
     end
 
-    it 'anonymizes grader comments', priority: '1', test_id: 3505165 do
-      skip 'fixed with GRADE-1126'
-
-      user_session(@teacher2)
-      Speedgrader.visit(@course.id, @moderated_anonymous_assignment.id)
-
-      Speedgrader.enter_grade(15)
-      Speedgrader.add_comment_and_submit('Some comment text')
-      wait_for_ajaximations
-
-      user_session(@teacher3)
-      Speedgrader.visit(@course.id, @moderated_anonymous_assignment.id)
-
-      expect(Speedgrader.comments.length).to eq 1
-      comment_text = Speedgrader.comments.first.text
-      expect(comment_text).to include 'Some comment text'
-      expect(comment_text).not_to include 'Teacher2'
-      expect(comment_text).to include 'Grader 1'
-    end
-
-    it 'anonymizes graders for provisional grades', priority: '2', test_id: 3505172 do
+    it 'anonymizes grader names in provisional grade details', priority: '2', test_id: 3505172 do
       @moderated_anonymous_assignment.grade_student(@student1, grade: '2', grader: @teacher2, provisional: true)
       @moderated_anonymous_assignment.grade_student(@student1, grade: '3', grader: @teacher3, provisional: true)
 

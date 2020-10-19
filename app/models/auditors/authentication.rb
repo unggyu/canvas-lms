@@ -55,6 +55,9 @@ class Auditors::Authentication
   end
 
   Stream = Auditors.stream do
+    auth_ar_type = Auditors::ActiveRecord::AuthenticationRecord
+    backend_strategy -> { Auditors.backend_strategy }
+    active_record_type auth_ar_type
     database -> { Canvas::Cassandra::DatabaseBuilder.from_config(:auditors) }
     table :authentications
     record_type Auditors::Authentication::Record
@@ -64,38 +67,44 @@ class Auditors::Authentication
       table :authentications_by_pseudonym
       entry_proc lambda{ |record| record.pseudonym }
       key_proc lambda{ |pseudonym| pseudonym.global_id }
+      ar_scope_proc lambda { |pseudonym| auth_ar_type.where(pseudonym_id: pseudonym.id) }
     end
 
     add_index :user do
       table :authentications_by_user
       entry_proc lambda{ |record| record.user }
       key_proc lambda{ |user| user.global_id }
+      ar_scope_proc lambda { |user| auth_ar_type.where(user_id: user.id) }
     end
 
     add_index :account do
       table :authentications_by_account
       entry_proc lambda{ |record| record.account }
       key_proc lambda{ |account| account.global_id }
+      ar_scope_proc lambda { |account| auth_ar_type.where(account_id: account.id) }
     end
   end
 
   def self.record(pseudonym, event_type)
     return unless pseudonym
+    event_record = nil
     pseudonym.shard.activate do
-      record = Auditors::Authentication::Record.generate(pseudonym, event_type)
-      Auditors::Authentication::Stream.insert(record)
+      event_record = Auditors::Authentication::Record.generate(pseudonym, event_type)
+      Auditors::Authentication::Stream.insert(event_record, {backend_strategy: :cassandra}) if Auditors.write_to_cassandra?
+      Auditors::Authentication::Stream.insert(event_record, {backend_strategy: :active_record}) if Auditors.write_to_postgres?
     end
+    event_record
   end
 
   def self.for_account(account, options={})
     account.shard.activate do
-      Auditors::Authentication::Stream.for_account(account, options)
+      Auditors::Authentication::Stream.for_account(account, Auditors.read_stream_options(options))
     end
   end
 
   def self.for_pseudonym(pseudonym, options={})
     pseudonym.shard.activate do
-      Auditors::Authentication::Stream.for_pseudonym(pseudonym, options)
+      Auditors::Authentication::Stream.for_pseudonym(pseudonym, Auditors.read_stream_options(options))
     end
   end
 
@@ -105,7 +114,7 @@ class Auditors::Authentication
     # shard-thrashing)
     collections = Shard.partition_by_shard(pseudonyms) do |shard_pseudonyms|
       shard_pseudonyms.map do |pseudonym|
-        [pseudonym.global_id, Auditors::Authentication.for_pseudonym(pseudonym, options)]
+        [pseudonym.global_id, Auditors::Authentication.for_pseudonym(pseudonym, Auditors.read_stream_options(options))]
       end
     end
     BookmarkedCollection.merge(*collections)
@@ -117,15 +126,15 @@ class Auditors::Authentication
     Shard.with_each_shard(user.associated_shards) do
       # EventStream is shard-sensitive, but multiple shards may share
       # a database. if so, we only need to query from it once
-      db = Auditors::Authentication::Stream.database
-      next if dbs_seen.include?(db)
-      dbs_seen << db
+      db_fingerprint = Auditors::Authentication::Stream.database_fingerprint
+      next if dbs_seen.include?(db_fingerprint)
+      dbs_seen << db_fingerprint
 
       # query from that database, and label it with the database server's id
       # for merge
       collections << [
-        db.fingerprint,
-        Auditors::Authentication::Stream.for_user(user, options)
+        db_fingerprint,
+        Auditors::Authentication::Stream.for_user(user, Auditors.read_stream_options(options))
       ]
     end
     BookmarkedCollection.merge(*collections)

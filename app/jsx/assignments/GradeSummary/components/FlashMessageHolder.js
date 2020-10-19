@@ -32,22 +32,22 @@ function enumeratedStatuses(actions) {
 
 const assignmentStatuses = [
   AssignmentActions.FAILURE,
-  AssignmentActions.GRADES_ALREADY_PUBLISHED,
+  AssignmentActions.GRADES_ALREADY_RELEASED,
   AssignmentActions.NOT_ALL_SUBMISSIONS_HAVE_SELECTED_GRADE,
   AssignmentActions.STARTED,
   AssignmentActions.SUCCESS
 ]
 
-function announcePublishGradesStatus(status) {
+function announceReleaseGradesStatus(status) {
   let message, type
 
   switch (status) {
     case AssignmentActions.SUCCESS:
-      message = I18n.t('Grades were successfully published to the gradebook.')
+      message = I18n.t('Grades were successfully released to the gradebook.')
       type = 'success'
       break
-    case AssignmentActions.GRADES_ALREADY_PUBLISHED:
-      message = I18n.t('Assignment grades have already been published.')
+    case AssignmentActions.GRADES_ALREADY_RELEASED:
+      message = I18n.t('Assignment grades have already been released.')
       type = 'error'
       break
     case AssignmentActions.NOT_ALL_SUBMISSIONS_HAVE_SELECTED_GRADE:
@@ -55,7 +55,7 @@ function announcePublishGradesStatus(status) {
       type = 'error'
       break
     case AssignmentActions.FAILURE:
-      message = I18n.t('There was a problem publishing grades.')
+      message = I18n.t('There was a problem releasing grades.')
       type = 'error'
       break
     default:
@@ -81,8 +81,9 @@ function announceUnmuteAssignmentStatus(status) {
 
 class FlashMessageHolder extends Component {
   static propTypes = {
+    bulkSelectProvisionalGradeStatuses: shape({}).isRequired,
     loadStudentsStatus: oneOf(enumeratedStatuses(StudentActions)),
-    publishGradesStatus: oneOf(assignmentStatuses),
+    releaseGradesStatus: oneOf(assignmentStatuses),
     selectProvisionalGradeStatuses: shape({}).isRequired,
     unmuteAssignmentStatus: oneOf(enumeratedStatuses(AssignmentActions)),
     updateGradeStatuses: arrayOf(
@@ -98,7 +99,7 @@ class FlashMessageHolder extends Component {
 
   static defaultProps = {
     loadStudentsStatus: null,
-    publishGradesStatus: null,
+    releaseGradesStatus: null,
     unmuteAssignmentStatus: null
   }
 
@@ -139,6 +140,28 @@ class FlashMessageHolder extends Component {
       })
     }
 
+    if (changes.bulkSelectProvisionalGradeStatuses) {
+      Object.keys(nextProps.bulkSelectProvisionalGradeStatuses).forEach(graderId => {
+        if (
+          nextProps.bulkSelectProvisionalGradeStatuses[graderId] !==
+          this.props.bulkSelectProvisionalGradeStatuses[graderId]
+        ) {
+          const status = nextProps.bulkSelectProvisionalGradeStatuses[graderId]
+          if (status === GradeActions.SUCCESS) {
+            showFlashAlert({
+              message: I18n.t('Grades saved.'),
+              type: 'success'
+            })
+          } else if (status === GradeActions.FAILURE) {
+            showFlashAlert({
+              message: I18n.t('There was a problem saving the grades.'),
+              type: 'error'
+            })
+          }
+        }
+      })
+    }
+
     if (changes.updateGradeStatuses) {
       const newStatuses = nextProps.updateGradeStatuses.filter(
         statusInfo => this.props.updateGradeStatuses.indexOf(statusInfo) === -1
@@ -158,8 +181,8 @@ class FlashMessageHolder extends Component {
       })
     }
 
-    if (changes.publishGradesStatus) {
-      announcePublishGradesStatus(nextProps.publishGradesStatus)
+    if (changes.releaseGradesStatus) {
+      announceReleaseGradesStatus(nextProps.releaseGradesStatus)
     }
 
     if (changes.unmuteAssignmentStatus) {
@@ -174,8 +197,9 @@ class FlashMessageHolder extends Component {
 
 function mapStateToProps(state) {
   return {
+    bulkSelectProvisionalGradeStatuses: state.grades.bulkSelectProvisionalGradeStatuses,
     loadStudentsStatus: state.students.loadStudentsStatus,
-    publishGradesStatus: state.assignment.publishGradesStatus,
+    releaseGradesStatus: state.assignment.releaseGradesStatus,
     selectProvisionalGradeStatuses: state.grades.selectProvisionalGradeStatuses,
     unmuteAssignmentStatus: state.assignment.unmuteAssignmentStatus,
     updateGradeStatuses: state.grades.updateGradeStatuses

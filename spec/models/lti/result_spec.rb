@@ -26,7 +26,7 @@ RSpec.describe Lti::Result, type: :model do
 
     it 'requires "line_item"' do
       expect do
-        result.update_attributes!(line_item: nil)
+        result.update!(line_item: nil)
       end.to raise_error(
         ActiveRecord::RecordInvalid,
         "Validation failed: Line item can't be blank"
@@ -35,7 +35,7 @@ RSpec.describe Lti::Result, type: :model do
 
     it 'requires "user"' do
       expect do
-        result.update_attributes!(user: nil)
+        result.update!(user: nil)
       end.to raise_error(
         ActiveRecord::RecordInvalid,
         "Validation failed: User can't be blank"
@@ -44,7 +44,7 @@ RSpec.describe Lti::Result, type: :model do
 
     it 'requires the "activity_progress" be valid' do
       expect do
-        result.update_attributes!(activity_progress: 'Banana')
+        result.update!(activity_progress: 'Banana')
       end.to raise_error(
         ActiveRecord::RecordInvalid,
         "Validation failed: Activity progress is not included in the list"
@@ -53,7 +53,7 @@ RSpec.describe Lti::Result, type: :model do
 
     it 'requires the "grading_progress" be valid' do
       expect do
-        result.update_attributes!(grading_progress: 'Banana')
+        result.update!(grading_progress: 'Banana')
       end.to raise_error(
         ActiveRecord::RecordInvalid,
         "Validation failed: Grading progress is not included in the list"
@@ -127,6 +127,44 @@ RSpec.describe Lti::Result, type: :model do
           )
         end
       end
+    end
+
+    it_behaves_like "soft deletion" do
+      let(:user) { user_model }
+      let(:line_item) { line_item_model }
+      let(:second_line_item) { line_item_model }
+      let(:creation_arguments) do
+        [
+          {
+            line_item: line_item,
+            user: user,
+            created_at: Time.zone.now,
+            updated_at: Time.zone.now
+          },
+          {
+            line_item: second_line_item,
+            user: user,
+            created_at: Time.zone.now,
+            updated_at: Time.zone.now
+          }
+        ]
+      end
+      subject { Lti::Result }
+    end
+  end
+
+  context 'after saving' do
+    let(:result) { lti_result_model assignment: assignment }
+
+    it 'sets root_account_id using submission' do
+      expect(result.root_account_id).to eq assignment.root_account_id
+    end
+
+    it 'sets root_account_id using line_item' do
+      submission = graded_submission_model({ assignment: assignment_model, user: user_model })
+      submission.assignment.root_account_id = nil
+      result = Lti::Result.create!(line_item: line_item_model, user: user_model, created_at: Time.zone.now, updated_at: Time.zone.now, submission: submission)
+      expect(result.root_account_id).to eq result.line_item.root_account_id
     end
   end
 end

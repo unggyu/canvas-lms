@@ -53,6 +53,14 @@ describe Conversation do
       expect(Conversation.initiate(users, nil, :subject => 'lunch').subject).to eq 'lunch'
     end
 
+    it 'should set the root account ids even for root accounts' do
+      account = Account.create!
+      users = create_users(2, return_type: :record)
+      expect(
+        Conversation.initiate(users, nil, context_type: 'Account', context_id: account.id).root_account_ids
+      ).to eq [account.id]
+    end
+
     context "sharding" do
       specs_require_sharding
 
@@ -101,6 +109,21 @@ describe Conversation do
         @shard2.activate do
           expect(Conversation.initiate(users, true)).to eq conversation
         end
+      end
+
+      it "should keep the counts from double-incrementing" do
+        @user1 = user_factory(:name => 'a')
+        @shard1.activate { @user2 = user_factory(:name => 'b') }
+        conversation = Conversation.initiate([@user1, @user2], false)
+        message1 = conversation.add_message(@user1, 'first message')
+        cp1 = conversation.conversation_participants.where(:user_id => @user1).first
+        cp2 = conversation.conversation_participants.where(:user_id => @user2).first
+        cs_cp = conversation.conversation_participants.shard(@shard1).where(:user_id => @user2).first
+        cp2.process_new_message([@user2, "reply1"], [@user1, @user2], [message1.id], [])
+        @shard1.activate do
+          cs_cp.process_new_message([@user1, "reply2"], [@user1, @user2], [message1.id], [])
+        end
+        [cp1, cp2, cs_cp].each{|p| expect(p.reload.message_count).to eq 3}
       end
     end
   end
@@ -266,7 +289,7 @@ describe Conversation do
         @subscribed_guy.conversations.first.update_attribute(:workflow_state, "read")
         expect(@subscribed_guy.reload.unread_conversations_count).to eql 0
         expect(@subscribed_guy.conversations.unread.size).to eql 0
-        @unsubscribed_guy.conversations.first.update_attributes(:subscribed => false)
+        @unsubscribed_guy.conversations.first.update(:subscribed => false)
         expect(@unsubscribed_guy.reload.unread_conversations_count).to eql 0
         expect(@unsubscribed_guy.conversations.unread.size).to eql 0
 
@@ -346,11 +369,11 @@ describe Conversation do
       expect(subscription_guy.reload.unread_conversations_count).to eql 1
       expect(subscription_guy.conversations.unread.size).to eql 1
 
-      subscription_guy.conversations.first.update_attributes(:subscribed => false)
+      subscription_guy.conversations.first.update(:subscribed => false)
       expect(subscription_guy.reload.unread_conversations_count).to eql 0
       expect(subscription_guy.conversations.unread.size).to eql 0
 
-      archive_guy.conversations.first.update_attributes(:workflow_state => "archived", :subscribed => false)
+      archive_guy.conversations.first.update(:workflow_state => "archived", :subscribed => false)
       expect(archive_guy.conversations.archived.size).to eql 1
     end
 
@@ -361,23 +384,23 @@ describe Conversation do
       root_convo = Conversation.initiate([sender, flip_flopper_guy, archive_guy, subscription_guy], false)
       root_convo.add_message(sender, 'test')
 
-      flip_flopper_guy.conversations.first.update_attributes(:subscribed => false)
+      flip_flopper_guy.conversations.first.update(:subscribed => false)
       expect(flip_flopper_guy.reload.unread_conversations_count).to eql 0
       expect(flip_flopper_guy.conversations.unread.size).to eql 0
       # no new messages in the interim, he should stay "marked-as-read"
-      flip_flopper_guy.conversations.first.update_attributes(:subscribed => true)
+      flip_flopper_guy.conversations.first.update(:subscribed => true)
       expect(flip_flopper_guy.reload.unread_conversations_count).to eql 0
       expect(flip_flopper_guy.conversations.unread.size).to eql 0
 
-      subscription_guy.conversations.first.update_attributes(:subscribed => false)
-      archive_guy.conversations.first.update_attributes(:workflow_state => "archived", :subscribed => false)
+      subscription_guy.conversations.first.update(:subscribed => false)
+      archive_guy.conversations.first.update(:workflow_state => "archived", :subscribed => false)
 
       message = root_convo.add_message(sender, 'you wish you were subscribed!')
       message.update_attribute(:created_at, Time.now.utc + 1.minute)
       last_message_at = message.reload.created_at
 
-      subscription_guy.conversations.first.update_attributes(:subscribed => true)
-      archive_guy.conversations.first.update_attributes(:subscribed => true)
+      subscription_guy.conversations.first.update(:subscribed => true)
+      archive_guy.conversations.first.update(:subscribed => true)
 
       expect(subscription_guy.reload.unread_conversations_count).to eql 1
       expect(subscription_guy.conversations.unread.size).to eql 1
@@ -427,8 +450,7 @@ describe Conversation do
       n2 = Notification.create(:name => "Conversation Created", :category => "TestImmediately")
 
       [sender].each do |user|
-        channel = user.communication_channels.create(:path => "test_channel_email_#{user.id}", :path_type => "email")
-        channel.confirm
+        channel = communication_channel(user, {username: "test_channel_email_#{user.id}@test.com", active_cc: true})
 
         NotificationPolicy.create(:notification => n2, :communication_channel => channel, :frequency => "immediately")
       end
@@ -506,7 +528,7 @@ describe Conversation do
       recipient = recipients.last
       rconvo = recipient.conversations.first
       expect(rconvo.unread?).to be_truthy
-      rconvo.update_attributes(:subscribed => false)
+      rconvo.update(:subscribed => false)
       expect(rconvo.unread?).to be_falsey
 
       convo = sender.conversations.first
@@ -514,7 +536,7 @@ describe Conversation do
       message.update_attribute(:created_at, Time.now.utc + 1.minute)
 
       expect(rconvo.reload.unread?).to be_falsey
-      rconvo.update_attributes(:subscribed => true)
+      rconvo.update(:subscribed => true)
       expect(rconvo.unread?).to be_truthy
     end
 
@@ -988,16 +1010,59 @@ describe Conversation do
     it "should be saved on the conversation when adding a message" do
       u1 = user_factory
       u2 = user_factory
+      a1 = account_model
+      a2 = account_model
       conversation = Conversation.initiate([u1, u2], true)
-      conversation.add_message(u1, 'ohai', :root_account_id => 1)
-      conversation.add_message(u2, 'ohai yourself', :root_account_id => 2)
-      expect(conversation.root_account_ids).to eql [1, 2]
+      conversation.add_message(u1, 'ohai', :root_account_id => a1.id)
+      conversation.add_message(u2, 'ohai yourself', :root_account_id => a2.id)
+      expect(conversation.root_account_ids).to eql [a1.id, a2.id]
     end
 
     it "includes the context's root account when initiating" do
       new_course = course_factory
       conversation = Conversation.initiate([], false, context_type: 'Course', context_id: new_course.id)
       expect(conversation.root_account_ids).to eql [new_course.root_account_id]
+    end
+
+    it 'should update conversation participants root account ids when changed' do
+      a1 = Account.create!
+      a2 = Account.create!
+      users = create_users(2, return_type: :record)
+      conversation = Conversation.initiate(users, false)
+
+      conversation.root_account_ids = [a1.id, a2.id]
+      conversation.save!
+      expect(
+        conversation.reload.conversation_participants.first.root_account_ids
+      ).to eq [a1.id, a2.id].sort
+    end
+
+    it 'should update conversation messages root account ids when changed' do
+      a1 = Account.create!
+      a2 = Account.create!
+      users = create_users(2, return_type: :record)
+      conversation = Conversation.initiate(users, false)
+      conversation.add_message(users[0], 'howdy partner')
+
+      conversation.root_account_ids = [a1.id, a2.id]
+      conversation.save!
+      expect(
+        conversation.reload.conversation_messages.first.root_account_ids
+      ).to eq [a1.id, a2.id].sort
+    end
+
+    it 'should update conversation message participants root account ids when changed' do
+      a1 = Account.create!
+      a2 = Account.create!
+      users = create_users(2, return_type: :record)
+      conversation = Conversation.initiate(users, false)
+      conversation.add_message(users[0], 'howdy partner')
+
+      conversation.root_account_ids = [a1.id, a2.id]
+      conversation.save!
+      expect(
+        conversation.reload.conversation_message_participants.first.root_account_ids
+      ).to eq [a1.id, a2.id].sort
     end
 
     context "sharding" do
@@ -1014,7 +1079,7 @@ describe Conversation do
 
           conversation.add_message(u1, 'ohai')
           admin = account_admin_user(:account => @account, :active_all => true)
-          expect(u1.conversations.for_masquerading_user(admin).first).to be_present
+          expect(u1.conversations.for_masquerading_user(admin, u1).first).to be_present
         end
       end
     end

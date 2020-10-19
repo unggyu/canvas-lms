@@ -19,13 +19,13 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper.rb')
 
 describe 'RequestThrottle' do
-  let(:base_req) { { 'QUERY_STRING' => '', 'PATH_INFO' => '/' } }
+  let(:base_req) { { 'QUERY_STRING' => '', 'PATH_INFO' => '/', 'REQUEST_METHOD' => 'GET' } }
   let(:request_user_1) { base_req.merge({ 'REMOTE_ADDR' => '1.2.3.4', 'rack.session' => { user_id: 1 } }) }
   let(:request_user_2) { base_req.merge({ 'REMOTE_ADDR' => '4.3.2.1', 'rack.session' => { user_id: 2 } }) }
   let(:token1) { AccessToken.create!(user: user_factory) }
   let(:token2) { AccessToken.create!(user: user_factory) }
-  let(:request_query_token) { base_req.merge({ 'REMOTE_ADDR' => '1.2.3.4', 'QUERY_STRING' => "access_token=#{token1.full_token}" }) }
-  let(:request_header_token) { base_req.merge({ 'REMOTE_ADDR' => '4.3.2.1', 'HTTP_AUTHORIZATION' => "Bearer #{token2.full_token}" }) }
+  let(:request_query_token) { request_user_1.merge({ 'REMOTE_ADDR' => '1.2.3.4', 'QUERY_STRING' => "access_token=#{token1.full_token}" }) }
+  let(:request_header_token) { request_user_2.merge({ 'REMOTE_ADDR' => '4.3.2.1', 'HTTP_AUTHORIZATION' => "Bearer #{token2.full_token}" }) }
   let(:request_logged_out) { base_req.merge({ 'REMOTE_ADDR' => '1.2.3.4', 'rack.session.options' => { id: 'sess1' } }) }
   let(:request_no_session) { base_req.merge({ 'REMOTE_ADDR' => '1.2.3.4' }) }
 
@@ -61,12 +61,41 @@ describe 'RequestThrottle' do
       expect(throttler.client_identifier(req request_logged_out)).to eq 'session:sess1'
     end
 
-    it "should fall back to nil" do
-      expect(throttler.client_identifier(req request_no_session)).to eq nil
+    it "should fall back to ip" do
+      expect(throttler.client_identifier(req(request_no_session))).to eq "ip:#{request_no_session['REMOTE_ADDR']}"
+    end
+
+    it "can find tool ids" do
+      tool = ContextExternalTool.create!(domain: 'domain', context: Account.default, consumer_key: 'key', shared_secret: 'secret', name: 'tool')
+      request_grade_passback = base_req.merge('REQUEST_METHOD' => 'POST', 'PATH_INFO' => "/api/lti/v1/tools/#{tool.id}/grade_passback")
+      expect(throttler.client_identifier(req(request_grade_passback))).to eq "tool:domain"
+    end
+
+    it "ignores non-ID tools" do
+      request_grade_passback = base_req.merge('REQUEST_METHOD' => 'POST', 'PATH_INFO' => "/api/lti/v1/tools/garbage/grade_passback")
+      expect(ContextExternalTool).to receive(:find_by).never
+      expect(throttler.client_identifier(req(request_grade_passback))).to eq nil
+    end
+
+    it "ignores non-existent tools" do
+      request_grade_passback = base_req.merge('REQUEST_METHOD' => 'POST', 'PATH_INFO' => "/api/lti/v1/tools/5/grade_passback")
+      expect(ContextExternalTool).to receive(:find_by).once.with(id: "5")
+      expect(throttler.client_identifier(req(request_grade_passback))).to eq nil
+    end
+
+    it "ignores non-POST to tools" do
+      tool = ContextExternalTool.create!(domain: 'domain', context: Account.default, consumer_key: 'key', shared_secret: 'secret', name: 'tool')
+      request_grade_passback = base_req.merge('REQUEST_METHOD' => 'GET', 'PATH_INFO' => "/api/lti/v1/tools/#{tool.id}/grade_passback")
+      expect(ContextExternalTool).to receive(:find_by).never
+      expect(throttler.client_identifier(req(request_grade_passback))).to eq nil
     end
   end
 
   describe "#call" do
+    after(:each) do
+      Setting.remove("request_throttle.enabled")
+    end
+
     def set_blacklist(val)
       Setting.set('request_throttle.blacklist', val)
       RequestThrottle.reload!
@@ -78,7 +107,7 @@ describe 'RequestThrottle' do
       expect(strip_variable_headers(throttler.call(request_user_1))).to eq response
     end
 
-    it "should have headers even when disabled" do
+    it "should have headers even when disabled including cost tracking" do
       allow(RequestThrottle).to receive(:enabled?).and_return(false)
       allow(throttler).to receive(:calculate_cost).and_return(30)
 
@@ -86,7 +115,11 @@ describe 'RequestThrottle' do
       expected[1]['X-Request-Cost'] = '30'
       # hwm of 600 - cost of the request
       expected[1]['X-Rate-Limit-Remaining'] = '570.0'
-      expect(throttler.call(request_user_1)).to eq expected
+      output = throttler.call(request_user_1)
+      expect(output[1]['X-Request-Cost']).to eq('30')
+      remaining = output[1]['X-Rate-Limit-Remaining'].to_f
+      expect(remaining > 570.0).to be_truthy
+      expect(remaining < 580.0).to be_truthy
     end
 
     it "should blacklist based on ip" do
@@ -103,12 +136,25 @@ describe 'RequestThrottle' do
       expect(throttler.call(request_user_2)).to eq rate_limit_exceeded
     end
 
+    it "still gets blacklisted if throttling disabled" do
+      Setting.set("request_throttle.enabled", "false")
+      expect(RequestThrottle.enabled?).to eq(false)
+      set_blacklist('user:2')
+      expect(strip_variable_headers(throttler.call(request_user_1))).to eq response
+      expect(throttler.call(request_user_2)).to eq rate_limit_exceeded
+    end
+
     it "should blacklist based on access token" do
       set_blacklist("token:#{AccessToken.hashed_token(token2.full_token)}")
       expect(strip_variable_headers(throttler.call(request_query_token))).to eq response
       expect(throttler.call(request_header_token)).to eq rate_limit_exceeded
       set_blacklist("token:#{AccessToken.hashed_token(token1.full_token)},token:#{AccessToken.hashed_token(token2.full_token)}")
       expect(throttler.call(request_query_token)).to eq rate_limit_exceeded
+      expect(throttler.call(request_header_token)).to eq rate_limit_exceeded
+    end
+
+    it "blacklists users even when using access tokens" do
+      set_blacklist('user:2')
       expect(throttler.call(request_header_token)).to eq rate_limit_exceeded
     end
   end
@@ -148,6 +194,13 @@ describe 'RequestThrottle' do
         cost = throttle.calculate_cost(40, 2, {'extra-request-cost' => -100})
         expect(cost).to eq(42)
       end
+
+      it "weights the cost by settings" do
+        cpu_cost = Setting.set("request_throttle.cpu_cost_weight", "2.0")
+        db_cost = Setting.set("request_throttle.db_cost_weight", "0.5")
+        cost = throttle.calculate_cost(20, 4, {})
+        expect(cost).to eq(42)
+      end
     end
 
     before do
@@ -163,11 +216,13 @@ describe 'RequestThrottle' do
       expect(strip_variable_headers(throttler.call(request_user_1))).to eq response
     end
 
-    it "should skip if no client_identifier found" do
-      if Canvas.redis_enabled?
-        expect_any_instance_of(Redis::Scripting::Module).to receive(:run).never
+    if Canvas.redis_enabled?
+      it "should not skip if no client_identifier found" do
+        expect(strip_variable_headers(throttler.call(request_no_session))).to eq response
+        bucket = RequestThrottle::LeakyBucket.new("ip:#{request_no_session['REMOTE_ADDR']}")
+        count, last_touched = bucket.redis.hmget(bucket.cache_key, 'count', 'last_touched')
+        expect(last_touched.to_f).to be > 0.0
       end
-      expect(throttler.call(request_no_session)).to eq response
     end
 
     def throttled_request
@@ -183,6 +238,7 @@ describe 'RequestThrottle' do
 
     it "should throttle if bucket is full" do
       bucket = throttled_request
+      expect(bucket).to receive(:get_up_front_cost_for_path).with(base_req['PATH_INFO']).and_return(1)
       expect(bucket).to receive(:remaining).and_return(-2)
       expected = rate_limit_exceeded
       expected[1]['X-Rate-Limit-Remaining'] = "-2"
@@ -193,6 +249,7 @@ describe 'RequestThrottle' do
       allow(RequestThrottle).to receive(:enabled?).and_return(false)
       bucket = double('Bucket')
       expect(RequestThrottle::LeakyBucket).to receive(:new).with("user:1").and_return(bucket)
+      expect(bucket).to receive(:get_up_front_cost_for_path).with(base_req['PATH_INFO']).and_return(1)
       expect(bucket).to receive(:reserve_capacity).and_yield.and_return(1)
       expect(bucket).to receive(:remaining).and_return(1)
       # the cost is still returned anyway
@@ -206,6 +263,7 @@ describe 'RequestThrottle' do
     it "should not throttle, but update, if bucket is not full" do
       bucket = double('Bucket')
       expect(RequestThrottle::LeakyBucket).to receive(:new).with("user:1").and_return(bucket)
+      expect(bucket).to receive(:get_up_front_cost_for_path).with(base_req['PATH_INFO']).and_return(1)
       expect(bucket).to receive(:reserve_capacity).and_yield.and_return(1)
       expect(bucket).to receive(:full?).and_return(false)
       expect(bucket).to receive(:remaining).and_return(599)
@@ -317,6 +375,16 @@ describe 'RequestThrottle' do
           end
         end
 
+        it "does no reserving if status decided" do
+          Timecop.freeze('2012-01-29 12:00:00 UTC') do
+            @bucket.increment(0, 0, @current_time)
+            @bucket.reserve_capacity(20, request_prejudged: true) do
+              expect(@bucket.redis.hget(@bucket.cache_key, 'count').to_f).to be_within(0.1).of(0)
+            end
+            expect(@bucket.redis.hget(@bucket.cache_key, 'count').to_f).to be_within(0.1).of(0)
+          end
+        end
+
         it "should still decrement when an error is thrown" do
           Timecop.freeze('2012-01-29 12:00:00 UTC') do
             @bucket.increment(0, 0, @current_time)
@@ -355,10 +423,31 @@ describe 'RequestThrottle' do
           end
         end
 
-        it "does nothing if disabled" do
-          expect(RequestThrottle).to receive(:enabled?).twice.and_return(false)
-          expect(@bucket).to receive(:increment).never
+        it "uses regexes to predict up front costs by path if set" do
+          hash = {
+            /\A\/files\/\d+\/download/ => 1,
+            "equation_images\/" => 2
+          }
+          expect(RequestThrottle).to receive(:dynamic_settings).and_return({'up_front_cost_by_path_regex' => hash})
+
+          expect(@bucket.get_up_front_cost_for_path("/files/1/download?frd=1")).to eq 1
+          expect(@bucket.get_up_front_cost_for_path("/equation_images/stuff")).to eq 2
+          expect(@bucket.get_up_front_cost_for_path("/somethingelse")).to eq @bucket.up_front_cost
+        end
+
+        it "still tracks cost when disabled (for debugging)" do
+          allow(RequestThrottle).to receive(:enabled?).and_return(false)
+          expect(@bucket).to receive(:increment).twice
           @bucket.reserve_capacity {}
+        end
+
+        it "will always be allowed when disabled, even with full bucket" do
+          allow(RequestThrottle).to receive(:enabled?).and_return(false)
+          req = request_logged_out
+          allow(req).to receive(:fullpath).and_return("/")
+          allow(req).to receive(:env).and_return({'canvas.request_throttle.user_id' => ['123']})
+          allow(@bucket).to receive(:full?).and_return(true)
+          expect(throttler.allowed?(request_logged_out, @bucket)).to be_truthy
         end
 
         after do

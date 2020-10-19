@@ -19,6 +19,24 @@
 require 'spec_helper'
 
 describe CanvasSanitize do
+  describe "#clean" do
+    subject { Sanitize.clean(html_string, CanvasSanitize::SANITIZE) }
+
+    context "when the HTML string contains anchor tags" do
+      context "and the href uses the 'tel' protocol" do
+        let(:html_string) { '<a href="tel:+14123815500">Call Number</a>' }
+
+        it { is_expected.to eq html_string }
+      end
+
+      context "and the href uses the 'skype' protocol" do
+        let(:html_string) { '<a href="skype:inst-support?call">Call Support</a>' }
+
+        it { is_expected.to eq html_string }
+      end
+    end
+  end
+
   it "shouldnt strip lang attributes by default" do
     cleaned = Sanitize.clean("<p lang='es'>Hola</p>", CanvasSanitize::SANITIZE)
     expect(cleaned).to eq("<p lang=\"es\">Hola</p>")
@@ -47,5 +65,15 @@ describe CanvasSanitize do
   it "allows abbr elements" do
     cleaned = Sanitize.clean("<abbr title=\"Internationalization\">I18N</abbr>", CanvasSanitize::SANITIZE)
     expect(cleaned).to eq("<abbr title=\"Internationalization\">I18N</abbr>")
+  end
+
+  it "sanitizes javascript protocol in data-url" do
+    cleaned = Sanitize.clean("<a data-url=\"javascript:alert('bad')\">Link</a>", CanvasSanitize::SANITIZE)
+    expect(cleaned).to eq("<a>Link</a>")
+  end
+
+  it "sanitizes javascript protocol in data-item-href" do
+    cleaned = Sanitize.clean("<a data-item-href=\"javascript:alert('bad')\">Link</a>", CanvasSanitize::SANITIZE)
+    expect(cleaned).to eq("<a>Link</a>")
   end
 end

@@ -24,7 +24,7 @@ describe "course syllabus" do
   include FilesCommon
 
   def add_assignment(title, points)
-    #assignment data
+    # assignment data
     assignment = assignment_model({
                                       :course => @course,
                                       :title => title,
@@ -40,7 +40,8 @@ describe "course syllabus" do
 
   context "as a teacher" do
 
-    before (:each) do
+    before(:each) do
+      stub_rcs_config
       course_with_teacher_logged_in
       @group = @course.assignment_groups.create!(:name => 'first assignment group')
       @assignment_1 = add_assignment('first assignment title', 50)
@@ -51,17 +52,19 @@ describe "course syllabus" do
     end
 
     it "should confirm existing assignments and dates are correct", priority:"1", test_id: 237016 do
-      assignment_details = ff('td.name')
-      expect(assignment_details[0].text).to eq @assignment_1.title
-      expect(assignment_details[1].text).to eq @assignment_2.title
+      assignment_details = ff('.name')
+      expect(assignment_details[0].text.strip).to eq "Assignment\n" + @assignment_1.title
+      expect(assignment_details[1].text.strip).to eq "Assignment\n" + @assignment_2.title
     end
 
     it "should edit the description", priority:"1", test_id: 237017 do
+      skip_if_firefox('known issue with firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1335085')
       new_description = "new syllabus description"
-      f('.edit_syllabus_link').click
+      wait_for_new_page_load { f('.edit_syllabus_link').click }
       # check that the wiki sidebar is visible
       wait_for_ajaximations
-      expect(f('#editor_tabs .wiki-sidebar-header')).to include_text("Insert Content into the Page")
+      expect(f('#editor_tabs')).to include_text("Link to other content in the course.")
+
       edit_form = f('#edit_course_syllabus_form')
       wait_for_tiny(f('#edit_course_syllabus_form'))
       type_in_tiny('#course_syllabus_body', new_description)
@@ -82,7 +85,7 @@ describe "course syllabus" do
     it "should validate Jump to Today works on the mini calendar", priority:"1", test_id: 237017 do
       2.times { f('.next_month_link').click }
       f('.jump_to_today_link').click
-      expect(f('.mini_month .today')).to have_attribute('id', "mini_day_#{Time.now.strftime('%Y_%m_%d')}")
+      expect(f('.mini_month .today')).to have_attribute('id', "mini_day_#{Time.zone.now.strftime('%Y_%m_%d')}")
     end
 
     describe "Accessibility" do

@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2018 - present Instructure, Inc.
+ *
+ * This file is part of Canvas.
+ *
+ * Canvas is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3 of the License.
+ *
+ * Canvas is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// this is because we have a ton of places where people spy/stub es modules
+// using sinon and that is not allowed for "real" es modules. you can ony do it
+// with babel transpiled stuff
+process.env.USE_ES_MODULES = false
+
 const karmaConfig = {
   basePath: '',
 
@@ -19,12 +42,12 @@ const karmaConfig = {
   junitReporter: {
     outputDir: 'coverage-js/junit-reports',
     outputFile: `karma-${process.env.JSPEC_GROUP || 'all'}.xml`,
-    useBrowserName: false, // don't add browser name to report and classes names
+    useBrowserName: false // don't add browser name to report and classes names
   },
   specReporter: {
     maxLogLines: 50, // limit number of lines logged per test
     suppressErrorSummary: false, // print error summary
-    showSpecTiming: true, // print the time elapsed for each spec
+    showSpecTiming: true // print the time elapsed for each spec
   },
 
   port: 9876,
@@ -41,13 +64,23 @@ const karmaConfig = {
   // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
   // - PhantomJS (has to be installed with `npm install karma-phantomjs-launcher`))
   // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-  browsers: ['Chrome'],
+  browsers: ['ChromeWithoutBackground'],
 
-  // Run headless chrome with `karma start --browsers ChromeHeadlessNoSandbox`
   customLaunchers: {
+    // Chrome will sometimes be in the background when specs are running,
+    // leading to different behavior with things like event propagation, which
+    // leads easily to bugs in production and/or spec code. To decrease the
+    // chances of this, render backgrounding must be disabled when launching
+    // Chrome.
+    ChromeWithoutBackground: {
+      base: 'Chrome',
+      flags: ['--disable-renderer-backgrounding']
+    },
+
+    // Run headless chrome with `karma start --browsers ChromeHeadlessNoSandbox`
     ChromeHeadlessNoSandbox: {
       base: 'ChromeHeadless',
-      flags: ['--no-sandbox'] // needed for running tests in local docker
+      flags: ['--no-sandbox', '--disable-renderer-backgrounding'] // needed for running tests in local docker
     }
   },
 
@@ -71,37 +104,43 @@ const karmaConfig = {
   files: [
     {pattern: 'spec/javascripts/webpack_spec_index.js', included: true, served: true},
     {pattern: 'spec/javascripts/fixtures/*', included: false, served: true},
-    {pattern: 'public/dist/brandable_css/**/*.css', included: false, served: true},
+    {pattern: 'public/dist/brandable_css/**/*.css', included: false, served: true}
   ],
 
   preprocessors: {
     'spec/javascripts/webpack_spec_index.js': ['webpack']
   },
 
-  webpack: require('./webpack.test.config'),
+  webpack: require('./webpack.test.config')
 }
 
 // For faster local debugging in karma, only add istanbul cruft you've explicity set the "COVERAGE" environment variable
 if (process.env.COVERAGE) {
   karmaConfig.reporters.push('coverage-istanbul')
   karmaConfig.coverageIstanbulReporter = {
-    reports: ['html'],
-    dir: 'coverage-js/',
+    reports: ['html', 'json'],
+    dir: 'coverage-karma/',
     fixWebpackSourcePaths: true
   }
   karmaConfig.webpack.module.rules.unshift({
     test: /\.(js|coffee)$/,
     use: {
       loader: 'istanbul-instrumenter-loader',
-      options: { esModules: true }
+      options: {esModules: true, produceSourceMap: true}
     },
     enforce: 'post',
-    exclude: /(node_modules|spec|public\/javascripts\/(bower|client_apps|translations|vendor|custom_moment_locales|custom_timezone_locales))/,
+    exclude: /(node_modules|spec|public\/javascripts\/(bower|client_apps|translations|vendor|custom_moment_locales|custom_timezone_locales))/
   })
 }
 
-module.exports = function (config) {
+module.exports = function(config) {
   // config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
   karmaConfig.logLevel = config.LOG_INFO
   config.set(karmaConfig)
+  // Allow passing in FORCED_FAILURE=true env variable to force failures in karma specs
+  config.set({
+    client: {
+      args: process.env.FORCE_FAILURE === '1' ? ['FORCE_FAILURE'] : []
+    }
+  })
 }

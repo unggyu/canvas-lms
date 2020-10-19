@@ -17,13 +17,13 @@
 module QuizzesNext
   class Service
     def self.enabled_in_context?(context)
-      context&.feature_enabled?(:quizzes_next)
+      context&.feature_enabled?(:quizzes_next) || context&.root_account&.feature_allowed?(:quizzes_next)
     end
 
-    def self.active_lti_assignments_for_course(course)
-      course.assignments.map do |assignment|
-        assignment if assignment.active? && assignment.quiz_lti?
-      end.compact
+    def self.active_lti_assignments_for_course(course, selected_assignment_ids: nil)
+      scope = course.assignments.active.type_quiz_lti
+      scope = scope.where(:id => selected_assignment_ids) if selected_assignment_ids
+      scope.to_a
     end
 
     def self.assignment_duplicated?(assignment_hash)

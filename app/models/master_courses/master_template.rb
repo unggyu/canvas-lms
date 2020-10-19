@@ -20,6 +20,7 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
   # instead of the entire course, but for now that's what we'll roll with
 
   belongs_to :course
+  belongs_to :root_account, :class_name => 'Account'
   has_many :master_content_tags, :class_name => "MasterCourses::MasterContentTag", :inverse_of => :master_template
   has_many :child_subscriptions, :class_name => "MasterCourses::ChildSubscription", :inverse_of => :master_template
   has_many :master_migrations, :class_name => "MasterCourses::MasterMigration", :inverse_of => :master_template
@@ -41,6 +42,7 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
   scope :for_full_course, -> { where(:full_course => true) }
 
   before_create :set_defaults
+  before_create :set_root_account_id
 
   after_save :invalidate_course_cache
   after_update :sync_default_restrictions
@@ -51,6 +53,10 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
     unless self.default_restrictions.present?
       self.default_restrictions = {:content => true}
     end
+  end
+
+  def set_root_account_id
+    self.root_account_id = self.course.root_account_id
   end
 
   def invalidate_course_cache
@@ -86,7 +92,10 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
   end
 
   def destroy_subscriptions_later
-    self.send_later_if_production(:destroy_subscriptions)
+    self.send_later_if_production_enqueue_args(:destroy_subscriptions, {
+      :n_strand => ["master_courses_destroy_subscriptions", self.course.global_root_account_id],
+      :priority => Delayed::LOW_PRIORITY
+    })
   end
 
   def destroy_subscriptions
@@ -162,7 +171,7 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
     child_counts = MasterCourses::ChildSubscription.active.where(:master_template_id => templates).
       joins(:child_course).where.not(:courses => {:workflow_state => "deleted"}).group(:master_template_id).count
     last_export_times = Hash[MasterCourses::MasterMigration.where(:master_template_id => templates, :workflow_state => "completed").
-      order("master_template_id, id DESC").pluck("DISTINCT ON (master_template_id) master_template_id, imports_completed_at")]
+      order(:master_template_id, id: :desc).pluck(Arel.sql("DISTINCT ON (master_template_id) master_template_id, imports_completed_at"))]
 
     templates.each do |template|
       template.child_course_count = child_counts[template.id] || 0
@@ -222,7 +231,6 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
     # even if there are no default restrictions we should still create the tags initially so know to touch the content if we lock it later
     load_tags! # does nothing if already loaded
     content_tag_for(obj)
-    # TODO: make a thing if we change the defaults at some point and want to force them on all the existing tags
   end
 
   def preload_restrictions!
@@ -242,7 +250,7 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
   def deletions_since_last_export
     return {} unless last_export_started_at
     deletions_by_type = {}
-    MasterCourses::ALLOWED_CONTENT_TYPES.each do |klass|
+    MasterCourses::CONTENT_TYPES_FOR_DELETIONS.each do |klass|
       item_scope = case klass
       when 'Attachment'
         course.attachments.where(:file_state => 'deleted')
@@ -275,30 +283,37 @@ class MasterCourses::MasterTemplate < ActiveRecord::Base
     associations.keys.each_slice(50) do |master_sis_ids|
       templates = self.active.for_full_course.joins(:course).
         where(:courses => {:root_account_id => root_account, :sis_source_id => master_sis_ids}).
-        select("#{self.table_name}.*, courses.sis_source_id AS sis_source_id").to_a
+        select("#{self.table_name}.*, courses.sis_source_id AS sis_source_id, courses.account_id AS account_id").to_a
       if templates.count != master_sis_ids.count
         (master_sis_ids - templates.map(&:sis_source_id)).each do |missing_id|
-          messages << "Unknown blueprint course \"#{missing_id}\""
+          associations[missing_id].each do |target_course_id|
+            messages << "Unknown blueprint course \"#{missing_id}\" for course \"#{target_course_id}\""
+          end
         end
       end
+
 
       templates.each do |template|
         needs_migration = false
         associations[template.sis_source_id].each_slice(50) do |associated_sis_ids|
           data = root_account.all_courses.where(:sis_source_id => associated_sis_ids).not_master_courses.
             joins("LEFT OUTER JOIN #{MasterCourses::ChildSubscription.quoted_table_name} AS mcs ON mcs.child_course_id=courses.id AND mcs.workflow_state<>'deleted'").
-            pluck(:id, :sis_source_id, "mcs.master_template_id")
+            joins(sanitize_sql(["LEFT OUTER JOIN #{CourseAccountAssociation.quoted_table_name} AS caa ON
+              caa.course_id=courses.id AND caa.account_id = ?", template.account_id])).
+            pluck(:id, :sis_source_id, "mcs.master_template_id", "caa.id")
 
           if data.count != associated_sis_ids
-            (associated_sis_ids - data.map{|id, sis_id, t_id| sis_id}).each do |invalid_id|
+            (associated_sis_ids - data.map{|r| r[1]}).each do |invalid_id|
               messages << "Cannot associate course \"#{invalid_id}\" - is a blueprint course"
             end
           end
-          data.each do |id, associated_sis_id, master_template_id|
+          data.each do |id, associated_sis_id, master_template_id, course_association_id|
             if master_template_id
               if master_template_id != template.id
                 messages << "Cannot associate course \"#{associated_sis_id}\" - is associated to another blueprint course"
               end # otherwise we don't need to do anything - it's already associated
+            elsif course_association_id.nil?
+              messages << "Cannot associate course \"#{associated_sis_id}\" - is not in the same or lower account as the blueprint course"
             else
               needs_migration = true
               template.add_child_course!(id)

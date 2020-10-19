@@ -113,9 +113,27 @@ describe OutcomeProficiencyApiController, type: :request do
       it 'creates proficiency on account' do
         expect(@account.reload.outcome_proficiency).not_to be_nil
       end
+
+      context 'restores a soft deleted outcome_proficiency' do
+        before :once do
+          @proficiency = outcome_proficiency_model(@account)
+          @proficiency.destroy
+        end
+
+        it 'updates ratings and restores the soft deleted record' do
+          expect(@proficiency.reload.workflow_state).to eq 'active'
+        end
+      end
     end
 
     context 'update proficiencies' do
+      let(:ratings) do
+        [
+          { description: '1', points: 1, mastery: true, color: '0000ff' },
+          { description: '0', points: 0, mastery: false, color: 'ff0000' },
+        ]
+      end
+
       before do
         @proficiency = @account.outcome_proficiency
         api_call(:post,
@@ -172,17 +190,43 @@ describe OutcomeProficiencyApiController, type: :request do
         include_examples 'update ratings'
       end
 
+      context 'remove top rating' do
+        let(:updated_ratings) do
+          [ { description: '0', points: 0, mastery: true, color: 'ff0000' } ]
+        end
+
+        include_examples 'update ratings'
+      end
+
       context 'empty ratings' do
         let(:updated_ratings) { [] }
 
         it 'does not delete previous ratings' do
-          expect(@proficiency.outcome_proficiency_ratings.length).to eq 1
+          expect(@proficiency.outcome_proficiency_ratings.length).to eq 2
         end
       end
     end
   end
 
   describe '.show' do
+    context 'missing permissions' do
+      before do
+        user_model
+        @json = api_call_as_user(@user, :get,
+          "/api/v1/accounts/#{@account.id}/outcome_proficiency",
+          { :controller => 'outcome_proficiency_api', :action => 'show',
+            :format => 'json', :account_id => @account.id.to_s })
+      end
+
+      it 'returns 401 status' do
+        assert_status(401)
+      end
+
+      it 'returns unauthorized message' do
+        expect(@json.dig('errors', 0, 'message')).to eq 'user not authorized to perform that action'
+      end
+    end
+
     context 'no outcome proficiency' do
       it 'returns 404 status' do
         raw_api_call(:get,
@@ -198,19 +242,18 @@ describe OutcomeProficiencyApiController, type: :request do
         @proficiency = outcome_proficiency_model(@account)
       end
 
-      it 'returns proficiency' do
-        json = api_call(:get,
+      before do
+        @json = api_call(:get,
           "/api/v1/accounts/#{@account.id}/outcome_proficiency",
           { :controller => 'outcome_proficiency_api', :action => 'show',
             :format => 'json', :account_id => @account.id.to_s })
-        expect(json).to eq(@proficiency.as_json)
+      end
+
+      it 'returns proficiency' do
+        expect(@json).to eq(@proficiency.as_json)
       end
 
       it "returns 200 status" do
-        raw_api_call(:get,
-          "/api/v1/accounts/#{@account.id}/outcome_proficiency",
-          { :controller => 'outcome_proficiency_api', :action => 'show',
-            :format => 'json', :account_id => @account.id.to_s })
         assert_status(200)
       end
     end

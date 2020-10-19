@@ -33,11 +33,11 @@ shared_context "blueprint sidebar context" do
   end
 
   def sync_modal_send_notification_checkbox
-    fj("span:contains('Send Notification')", f('.bcs__modal-content-wrapper'))
+    fj("label span:contains('Send Notification')", f('.bcs__modal-content-wrapper .bcs__history'))
   end
 
   def sync_modal_add_message_checkbox
-    fj("span:contains('Add a Message')", f('.bcs__modal-content-wrapper'))
+    fj("label span:contains('Add a Message')", f('.bcs__modal-content-wrapper .bcs__history'))
   end
 
   def sync_modal_message_text_box
@@ -45,23 +45,20 @@ shared_context "blueprint sidebar context" do
   end
 
   def send_notification_checkbox
-    f('.bcs__history-settings')
+    f('.bcs__body fieldset')
       .find_element(:xpath, "//span[text()[contains(., 'Send Notification')]]")
   end
 
   def add_message_checkbox
-    f('.bcs__history-notification__add-message')
-      .find_element(:xpath, "//label/span/span[text()[contains(., 'Add a Message')]]")
+    f('.bcs__history-notification__add-message label')
   end
 
   def notification_message_text_box
-    f('.bcs__history-notification__add-message')
-      .find_element(:xpath, "//label/span/span/span/textarea")
+    f('.bcs__history-notification__message textarea')
   end
 
   def character_count
-    f('.bcs__history-notification__add-message')
-      .find_element(:xpath, "span")
+    f('.bcs__history-notification__add-message span[aria-label]')
   end
 
   def modal_sync_button
@@ -86,7 +83,6 @@ describe "master courses sidebar" do
 
 
   before :once do
-    Account.default.enable_feature!(:master_courses)
     @master = course_factory(active_all: true)
     @master_teacher = @teacher
     @template = MasterCourses::MasterTemplate.set_as_master_course(@master)
@@ -225,6 +221,7 @@ describe "master courses sidebar" do
     end
 
     it "issues screenreader alert when message is full" do
+      skip("broken - LA-979")
       msg = '1234567890123456789012345678901234567890123456789012345678901234567890'
       open_blueprint_sidebar
       send_notification_checkbox.click

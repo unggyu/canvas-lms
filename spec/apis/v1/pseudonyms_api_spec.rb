@@ -44,7 +44,8 @@ describe PseudonymsController, type: :request do
             'id' => p.id,
             'sis_user_id' => p.sis_user_id,
             'unique_id' => p.unique_id,
-            'user_id' => p.user_id
+            'user_id' => p.user_id,
+            'created_at' => p.created_at
           }
         end)
       end
@@ -141,7 +142,8 @@ describe PseudonymsController, type: :request do
           'sis_user_id' => '12345',
           'integration_id' => nil,
           'unique_id'   => 'test@example.com',
-          'user_id'     => @student.id
+          'user_id'     => @student.id,
+          'created_at' => json['created_at']
         })
       end
 
@@ -224,8 +226,15 @@ describe PseudonymsController, type: :request do
       @admin.pseudonyms.create!(:unique_id => 'admin@example.com')
       @teacher.pseudonyms.create!(:unique_id => 'teacher@example.com')
       @path = "/api/v1/accounts/#{@account.id}/logins/#{@student.pseudonym.id}"
-      @path_options = { :controller => 'pseudonyms', :format => 'json', :action => 'update', :account_id => @account.id.to_param, :id => @student.pseudonym.id.to_param }
+      @path_options = {
+        controller: 'pseudonyms',
+        format: 'json',
+        action: 'update',
+        account_id: @account.id.to_param,
+        id: @student.pseudonym.id.to_param
+      }
       a = Account.find(Account.default.id)
+      account_with_saml({ account: a })
       a.settings[:admins_can_change_passwords] = true
       a.save!
     end
@@ -246,7 +255,8 @@ describe PseudonymsController, type: :request do
           'sis_user_id' => 'new-12345',
           'integration_id' => nil,
           'unique_id' => 'student+new@example.com',
-          'user_id' => @student.id
+          'user_id' => @student.id,
+          'created_at' => @student.pseudonym.created_at.iso8601
         })
         expect(@student.pseudonym.reload.valid_password?('password123')).to be_truthy
       end
@@ -285,6 +295,50 @@ describe PseudonymsController, type: :request do
         expect(json['sis_user_id']).to eql 'old-12345'
       end
 
+      it "should allow updating an auth provider by ID" do
+        auth_provider =
+          @account.authentication_providers.active.where(auth_type: 'canvas').first
+
+          json = api_call(:put, @path, @path_options, {
+          login: { authentication_provider_id: auth_provider.id.to_s }
+        })
+        expect(json['authentication_provider_id']).to eql auth_provider.id
+        expect(json['authentication_provider_type']).to eql auth_provider.auth_type
+      end
+
+      it "should allow updating an auth provider by type" do
+        auth_provider =
+          @account.authentication_providers.active.where(auth_type: 'saml').first
+
+          json = api_call(:put, @path, @path_options, {
+          login: { authentication_provider_id: auth_provider.auth_type.to_s }
+        })
+        expect(json['authentication_provider_id']).to eql auth_provider.id
+        expect(json['authentication_provider_type']).to eql auth_provider.auth_type
+      end
+
+      it "should not allow updating an auth provider from another account by ID" do
+        unpermitted_account = account_with_cas
+        auth_provider =
+          unpermitted_account.authentication_providers.active.where(auth_type: 'cas').first
+
+        raw_api_call(:put, @path, @path_options, {
+          login: { authentication_provider_id: auth_provider.id.to_s }
+        })
+        expect(response.code).to eql '404'
+      end
+
+      it "should not allow updating an auth provider from another account by type" do
+        unpermitted_account = account_with_cas
+        auth_provider =
+          unpermitted_account.authentication_providers.active.where(auth_type: 'cas').first
+
+        raw_api_call(:put, @path, @path_options, {
+          login: { authentication_provider_id: auth_provider.auth_type.to_s }
+        })
+        expect(response.code).to eql '404'
+      end
+
       it "should not allow updating a deleted pseudonym" do
         to_delete = @student.pseudonyms.first
         @student.pseudonyms.create!(:unique_id => 'other@example.com')
@@ -305,6 +359,19 @@ describe PseudonymsController, type: :request do
         @user = @student
         raw_api_call(:put, @path, @path_options.merge({ :id => @teacher.pseudonym.id.to_param }), {
           :login => { :unique_id => 'teacher+new@example.com' }
+        })
+        expect(response.code).to eql '401'
+      end
+
+      it "should not be able to update an authentication provider" do
+        @path = "/api/v1/accounts/#{@account.id}/logins/#{@student.pseudonym.id}"
+        @user = @teacher
+        auth_provider = Account.default.authentication_providers.create!(
+          auth_type: 'canvas',
+          workflow_state: 'active'
+        )
+        raw_api_call(:put, @path, @path_options.merge({ id: @student.pseudonym.id.to_param }), {
+          login: { authentication_provider_id: auth_provider.id.to_s }
         })
         expect(response.code).to eql '401'
       end
@@ -333,7 +400,8 @@ describe PseudonymsController, type: :request do
           'account_id' => Account.default.id,
           "authentication_provider_id" => nil,
           'id' => pseudonym.id,
-          'user_id' => @student.id
+          'user_id' => @student.id,
+          'created_at' => pseudonym.created_at.iso8601
         })
       end
 

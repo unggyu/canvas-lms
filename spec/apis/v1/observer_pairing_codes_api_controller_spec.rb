@@ -32,7 +32,7 @@ describe ObserverPairingCodesApiController, type: :request do
     it 'students can create pairing codes for themselves' do
       json = api_call_as_user(@student, :post, @path, @params)
       expect(json['user_id']).to eq @student.id
-      expect(json['expires_at']).not_to be nil
+      expect(json['expires_at'] >= 6.days.from_now && json['expires_at'] <= 7.days.from_now).to eq true
       expect(json['workflow_state']).to eq 'active'
       expect(json['code'].length).to eq 6
     end
@@ -52,6 +52,30 @@ describe ObserverPairingCodesApiController, type: :request do
       expect(json['code']).to eq nil
     end
 
+    it 'works for teachers in courses that are not published yet' do
+      course_factory
+      course_with_teacher(course: @course)
+      course_with_student(course: @course)
+      @course.account.role_overrides.create!(:permission => :generate_observer_pairing_code, :enabled => true, :role => teacher_role)
+
+      path = "/api/v1/users/#{@student.id}/observer_pairing_codes"
+      params = @params.merge(user_id: @student.to_param)
+      api_call_as_user(@teacher, :post, path, params)
+      expect(response.code).to eq "200"
+    end
+
+    it 'does not work for deleted courses' do
+      course_factory
+      course_with_teacher(course: @course)
+      course_with_student(course: @course)
+      @course.destroy
+
+      path = "/api/v1/users/#{@student.id}/observer_pairing_codes"
+      params = @params.merge(user_id: @student.to_param)
+      api_call_as_user(@teacher, :post, path, params)
+      expect(response.code).to eq "401"
+    end
+
     it 'admin can generate code' do
       admin = account_admin_user(account: Account.default)
       json = api_call_as_user(admin, :post, @path, @params)
@@ -62,6 +86,33 @@ describe ObserverPairingCodesApiController, type: :request do
     it 'errors if current_user isnt the student or a teacher/admin' do
       api_call_as_user(user_model, :post, @path, @params)
       expect(response.code).to eq "401"
+    end
+
+    describe 'sub_accounts' do
+      before :once do
+        @sub_account = Account.create! root_account: Account.default
+        @student = course_with_student(account: @sub_account, active_all: true).user
+        @sub_admin = account_admin_user(account: @sub_account)
+        @path = "/api/v1/users/#{@student.id}/observer_pairing_codes"
+        @params = {user_id: @student.to_param,
+          controller: 'observer_pairing_codes_api', action: 'create', format: 'json'}
+      end
+
+      it 'sub_account admin can generate code' do
+        json = api_call_as_user(@sub_admin, :post, @path, @params)
+        expect(response.code).to eq "200"
+        expect(json['code']).not_to be nil
+      end
+
+      it "sub_account admin cant generate code for students in other sub accounts" do
+        other_sub_account = Account.create! root_account: Account.default
+        other_student = course_with_student(account: other_sub_account, active_all: true).user
+        path = "/api/v1/users/#{other_student.id}/observer_pairing_codes"
+        params = {user_id: other_student.to_param,
+          controller: 'observer_pairing_codes_api', action: 'create', format: 'json'}
+        api_call_as_user(@sub_admin, :post, path, params)
+        expect(response.code).to eq "401"
+      end
     end
   end
 end

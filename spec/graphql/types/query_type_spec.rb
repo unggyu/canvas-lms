@@ -17,31 +17,90 @@
 #
 
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
-require File.expand_path(File.dirname(__FILE__) + '/../../helpers/graphql_type_tester')
+require_relative "../graphql_spec_helper"
 
 describe Types::QueryType do
-  let(:query_type) { GraphQLTypeTester.new(Types::QueryType, nil) }
-
   it "works" do
     # set up courses, teacher, and enrollments
     test_course_1 = Course.create! name: "TEST"
     test_course_2 = Course.create! name: "TEST2"
     test_course_3 = Course.create! name: "TEST3"
-    test_course_4 = Course.create! name: "TEST4"
+
     teacher = user_factory(name: 'Coolguy Mcgee')
-    random_guy = user_factory(name:"Random McGraw")
     test_course_1.enroll_user(teacher, 'TeacherEnrollment')
     test_course_2.enroll_user(teacher, 'TeacherEnrollment')
-    test_course_3.enroll_user(teacher, 'TeacherEnrollment')
-    test_course_4.enroll_user(random_guy, 'StudentEnrollment')
+
     # this is a set of course ids to check against
-    check_set = [test_course_1.id, test_course_2.id, test_course_3.id].to_set
 
     # get query_type.allCourses
-    query_set = Set.new
-    query_type.allCourses(current_user: teacher).each {|course_obj| query_set.add(course_obj.id)}
+    expect(
+      CanvasSchema.execute(
+        "{ allCourses { _id } }",
+        context: {current_user: teacher}
+      ).dig("data", "allCourses").map { |c| c["_id"] }
+    ).to match_array [test_course_1, test_course_2].map(&:to_param)
+  end
 
-    # Validate the courses returned by the queries
-    expect(check_set == query_set).to be true
+  context "OutcomeCalculationMethod" do
+    it "works" do
+      @course = Course.create! name: "TEST"
+      @admin = account_admin_user(account: @course.account)
+      @calc_method = outcome_calculation_method_model(@course.account)
+
+      expect(
+        CanvasSchema.execute(
+          "{ outcomeCalculationMethod(id: #{@calc_method.id}) { _id } }",
+          context: {current_user: @admin}
+        ).dig("data", "outcomeCalculationMethod", "_id")
+      ).to eq @calc_method.id.to_s
+    end
+  end
+
+  context "OutcomeProficiency" do
+    it "works" do
+      @course = Course.create! name: "TEST"
+      @admin = account_admin_user(account: @course.account)
+      @proficiency = outcome_proficiency_model(@course.account)
+
+      expect(
+        CanvasSchema.execute(
+          "{ outcomeProficiency(id: #{@proficiency.id}) { _id } }",
+          context: {current_user: @admin}
+        ).dig("data", "outcomeProficiency", "_id")
+      ).to eq @proficiency.id.to_s
+    end
+  end
+
+  context "sisId" do
+    let_once(:generic_sis_id) { "di_ecruos_sis" }
+    let_once(:course) { Course.create!(name: "TEST", sis_source_id: generic_sis_id, account: account) }
+    let_once(:account) do
+      acct = Account.default.sub_accounts.create!(name: 'sub')
+      acct.update!(sis_source_id: generic_sis_id)
+      acct
+    end
+    let_once(:assignment) { course.assignments.create!(name: "test", sis_source_id: generic_sis_id) }
+    let_once(:assignmentGroup) do
+      assignment.assignment_group.update!(sis_source_id: generic_sis_id)
+      assignment.assignment_group
+    end
+    let_once(:term) { course.enrollment_term.update!(sis_source_id: generic_sis_id); course.enrollment_term }
+    let_once(:admin) { account_admin_user(account: Account.default) }
+
+    %w/account course assignment assignmentGroup term/.each do |type|
+      it "doesn't allow searching #{type} when given both types of ids" do
+        expect(
+          CanvasSchema.execute("{#{type}(id: \"123\", sisId: \"123\") { id }}").dig("errors", 0, "message")
+        ).to eq("Must specify exactly one of id or sisId")
+      end
+
+      it "allows searching #{type} by sisId" do
+        original_object = send(type)
+        expect(
+          CanvasSchema.execute(%/{#{type}(sisId: "#{generic_sis_id}") { _id }}/, context: { current_user: admin }).
+          dig("data", type, "_id")
+        ).to eq(original_object.id.to_s)
+      end
+    end
   end
 end

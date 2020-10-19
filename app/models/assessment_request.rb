@@ -19,10 +19,11 @@
 class AssessmentRequest < ActiveRecord::Base
   include Workflow
   include SendToStream
+  include Plannable
 
   belongs_to :user
   belongs_to :asset, polymorphic: [:submission]
-  belongs_to :assessor_asset, polymorphic: [:submission, :user], polymorphic_prefix: true
+  belongs_to :assessor_asset, polymorphic: [:submission], polymorphic_prefix: true
   belongs_to :assessor, :class_name => 'User'
   belongs_to :rubric_association
   has_many :submission_comments, -> { published }
@@ -32,6 +33,7 @@ class AssessmentRequest < ActiveRecord::Base
 
   before_save :infer_uuid
   after_save :delete_ignores
+  after_save :update_planner_override
   has_a_broadcast_policy
 
   def infer_uuid
@@ -46,27 +48,38 @@ class AssessmentRequest < ActiveRecord::Base
     true
   end
 
+  def course_broadcast_data
+    context&.broadcast_data
+  end
+
   set_broadcast_policy do |p|
     p.dispatch :rubric_assessment_submission_reminder
     p.to { self.assessor }
     p.whenever { |record|
       record.assigned? && @send_reminder && rubric_association
     }
+    p.data { course_broadcast_data }
 
     p.dispatch :peer_review_invitation
     p.to { self.assessor }
     p.whenever { |record|
-      record.assigned? && @send_reminder && !rubric_association
+      send_notification = record.assigned? && @send_reminder && !rubric_association
+      # Do not send notifications if the context is an unpublished course
+      # or if the asset is a submission and the assignment is unpublished
+      send_notification = false if self.context.is_a?(Course) && !self.context.workflow_state.in?(['available', 'completed'])
+      send_notification = false if self.asset.is_a?(Submission) && self.asset.assignment.workflow_state != "published"
+      send_notification
     }
+    p.data { course_broadcast_data }
   end
 
   scope :incomplete, -> { where(:workflow_state => 'assigned') }
+  scope :complete, -> { where(:workflow_state => 'completed') }
   scope :for_assessee, lambda { |user_id| where(:user_id => user_id) }
   scope :for_assessor, lambda { |assessor_id| where(:assessor_id => assessor_id) }
   scope :for_asset, lambda { |asset_id| where(:asset_id => asset_id)}
   scope :for_assignment, lambda { |assignment_id| eager_load(:submission).where(:submissions => { :assignment_id => assignment_id})}
-  scope :for_course, lambda { |course_id| eager_load(:submission).where(:submissions => { :context_code => "course_#{course_id}"})}
-  scope :for_context_codes, lambda { |context_codes| eager_load(:submission).where(:submissions => { :context_code =>context_codes })}
+  scope :for_courses, lambda { |courses| eager_load(:submission).where(:submissions => { :course_id => courses})}
 
   scope :not_ignored_by, lambda { |user, purpose|
     where("NOT EXISTS (?)",
@@ -140,4 +153,11 @@ class AssessmentRequest < ActiveRecord::Base
   end
 
   def self.serialization_excludes; [:uuid]; end
+
+  def update_planner_override
+    if saved_change_to_workflow_state? && workflow_state_before_last_save == 'assigned' && workflow_state == 'completed'
+      override = PlannerOverride.find_by(plannable_id: self.id, plannable_type: 'AssessmentRequest', user: assessor)
+      override.update(marked_complete: true) if override.present?
+    end
+  end
 end

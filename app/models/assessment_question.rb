@@ -17,6 +17,7 @@
 #
 
 class AssessmentQuestion < ActiveRecord::Base
+  extend RootAccountResolver
   include Workflow
 
   has_many :quiz_questions, :class_name => 'Quizzes::QuizQuestion'
@@ -30,6 +31,8 @@ class AssessmentQuestion < ActiveRecord::Base
   after_save :translate_links_if_changed
   validates_length_of :name, :maximum => maximum_string_length, :allow_nil => true
   validates_presence_of :workflow_state, :assessment_question_bank_id
+  resolves_root_account through: :context
+
 
   ALL_QUESTION_TYPES = ["multiple_answers_question", "fill_in_multiple_blanks_question",
                         "matching_question", "missing_word_question",
@@ -47,6 +50,14 @@ class AssessmentQuestion < ActiveRecord::Base
   set_policy do
     given{|user, session| self.context.grants_right?(user, session, :manage_assignments) }
     can :read and can :create and can :update and can :delete
+  end
+
+  def user_can_see_through_quiz_question?(user, session=nil)
+    self.shard.activate do
+      quiz_ids = self.quiz_questions.distinct.pluck(:quiz_id)
+      quiz_ids.any? && Quizzes::Quiz.where(:id => quiz_ids, :context_type => "Course",
+        :context_id => Enrollment.where(user_id: user).active.select(:course_id)).to_a.any?{|q| q.grants_right?(user, session, :read)}
+    end
   end
 
   def infer_defaults

@@ -23,6 +23,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../cassandra_spec_helper'
 describe "AuthenticationAudit API", type: :request do
   context "not configured" do
     before do
+      allow(Canvas::Cassandra::DatabaseBuilder).to receive(:configured?).and_call_original
       allow(Canvas::Cassandra::DatabaseBuilder).to receive(:configured?).with('auditors').and_return(false)
       site_admin_user(user: user_with_pseudonym(account: Account.site_admin))
     end
@@ -156,6 +157,7 @@ describe "AuthenticationAudit API", type: :request do
         it "should be formatted as an array of Pseudonym objects" do
           expect(@json).to eq [{
             "id" => @pseudonym.id,
+            "created_at" => @pseudonym.created_at.iso8601,
             "account_id" => @account.id,
             "user_id" => @user.id,
             "unique_id" => @pseudonym.unique_id,
@@ -195,6 +197,7 @@ describe "AuthenticationAudit API", type: :request do
         it "should be formatted as an array of User objects" do
           expect(@json).to eq [{
             "id" => @user.id,
+            "created_at" => @user.created_at.iso8601,
             "name" => @user.name,
             "sortable_name" => @user.sortable_name,
             "short_name" => @user.short_name,

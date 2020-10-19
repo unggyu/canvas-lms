@@ -23,6 +23,22 @@
   <div class="mobileLogin-Header">
     <span class="screenreader-only">
       <%= t 'Canvas by Instructure' %>
+      <script type="text/javascript">
+        window.onload = function() {
+          var msg
+          var email = document.querySelector('[placeholder="Email"]')
+          function showMessage() {
+            var elt = document.querySelector('span#screenreader-errormsg')
+            if (elt) elt.innerText = msg
+          }
+          <% if request.post? && flash[:error] %>
+            msg = '<%= t "Error logging in: %{error_msg}", error_msg: flash[:error] %>'
+            setTimeout(showMessage, 1500)
+            if (email) email.focus()
+          <% end %>
+        }
+      </script>
+      <span aria-live="assertive" id="screenreader-errormsg"></span>
     </span>
   </div>
 <%= form_for :pseudonym_session, :url => url_for({ action: :create }.merge(params.slice(:id).to_unsafe_h)), :html => {:id => "login_form", :class => "front face", :novalidate => 'novalidate', :autocomplete => "off" } do |f| %>
@@ -35,7 +51,7 @@
       placeholder="<%= @login_handle_name%>"
       type="<%= @login_handle_is_email ? 'email' : 'text' %>"
       name="pseudonym_session[unique_id]"
-      value="<%= params[:pseudonym_session].try(:[], :unique_id) %>" >
+      value="<%= params[:pseudonym_session].try(:[], :unique_id) %>" />
   </div>
   <div class="ic-Form-control">
     <input
@@ -52,14 +68,14 @@
   </button>
 
   <% if request.post? && flash[:error] %>
-    <div class="error"><%= flash[:error] %></div>
+    <div aria-hidden="true" class="error"><%= flash[:error] %></div>
   <% end %>
 
   <div class="forgotBlock">
     <% if url = params[:canvas_login].blank? && @domain_root_account.try(:forgot_password_external_url) %>
       <%= link_to t('dont_know_password', "Forgot Password?"), url, :class => 'forgot-password' %>
     <% else %>
-      <a class="forgot-password flip-to-back"><%= t('dont_know_password', "Forgot Password?") %></a>
+      <a tabindex="0" role="link" class="forgot-password flip-to-back"><%= t('dont_know_password', "Forgot Password?") %></a>
     <% end %>
   </div>
 <% end %>
@@ -72,17 +88,21 @@
       autocorrect="off"
       type="<%= @login_handle_is_email ? 'email' : 'text' %>"
       name="pseudonym_session[unique_id_forgot]"
-      value="<%= @unauthorized_user.try :email %>"
+      value=""
       placeholder="<%= @login_handle_name %>"
       id="pseudonym_session_unique_id_forgot" />
   </div>
   <button
     type="submit"
-    class="Button Button--primary Button--block"
-    data-text-while-loading="<%= t :sending, "Sending..." %>" class="request-password-button"><%= t('buttons.request_password', 'Request Password') %>
+    class="Button Button--primary Button--block request-password-button"
+    data-text-while-loading="<%= t(:sending, "Sending...") %>"
+    data-text-when-loaded="<%= t(:sent, "Sent!") %>"
+    data-text-on-error="<%= t(:error, "An error occurred, please try again later.") %>"
+  >
+    <%= t('buttons.request_password', 'Request Password') %>
   </button>
   <div class="forgotBlock">
-    <a class="flip-to-front"><%= t('back_to_login', "Back to Login") %></a>
+    <a tabindex="0" role="link" class="flip-to-front"><%= t('back_to_login', "Back to Login") %></a>
   </div>
 <% end %>
 
@@ -90,18 +110,28 @@
   <% if @domain_root_account.self_registration_type == 'observer' %>
     <% js_env :ACCOUNT => account_json(@domain_root_account, nil, session, ['registration_settings']),
               :PASSWORD_POLICY => @domain_root_account.password_policy %>
-    <div id='coenrollment_link'>
+    <div id='coenrollment_link' class='enrollment_link'>
       <div class="ic-Login__banner-title">
         <%= t('Parent of a Canvas User?') %>
       </div>
       <%= link_to '#',
           :class => "ic-Login__link ic-Login__register-banner ic-Login__banner-subtitle",
-          data: reg_link_data(@domain_root_account.parent_auth_type)  do %>
+          data: reg_link_data(nil)  do %>
         <%= t('Create Account') %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class='enrollment_link'>
+      <%= link_to Setting.get("registration_link", "/register_from_website"),
+                  :id => 'register_link',
+                  :class => "ic-Login__link ic-Login__register-banner" do %>
+        <div class="ic-Login__banner-title">
+          <%= t('Need a Canvas Account?') %>
+        </div>
+        <div class="ic-Login__banner-subtitle">
+          <%= t("Click Here, It's Free!") %>
+        </div>
       <% end %>
     </div>
   <% end %>
 <% end %>
-
-<%= # for plugin use
-  render "shared/login_trailer" %>

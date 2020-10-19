@@ -17,15 +17,14 @@
  */
 
 import React from 'react'
-import { shallow } from 'enzyme'
+import {shallow, mount} from 'enzyme'
 import ActAsModal from '../ActAsModal'
 import ActAsMask from '../ActAsMask'
 import ActAsPanda from '../ActAsPanda'
-import Text from '@instructure/ui-elements/lib/components/Text'
-import Button from '@instructure/ui-buttons/lib/components/Button'
-import Avatar from '@instructure/ui-elements/lib/components/Avatar'
-import Spinner from '@instructure/ui-elements/lib/components/Spinner'
-import Table from '@instructure/ui-elements/lib/components/Table'
+import {Text, Avatar} from '@instructure/ui-elements'
+import {Table} from '@instructure/ui-table'
+import {Spinner} from '@instructure/ui-spinner'
+import {Button} from '@instructure/ui-buttons'
 
 const props = {
   user: {
@@ -35,21 +34,24 @@ const props = {
     avatar_image_url: 'testImageUrl',
     sortable_name: 'bar, baz',
     email: 'testUser@test.com',
-    pseudonyms: [{
-      login_id: 'qux',
-      sis_id: 555,
-      integration_id: 222
-    }, {
-      login_id: 'tic',
-      sis_id: 777,
-      integration_id: 888
-    }]
+    pseudonyms: [
+      {
+        login_id: 'qux',
+        sis_id: 555,
+        integration_id: 222
+      },
+      {
+        login_id: 'tic',
+        sis_id: 777,
+        integration_id: 888
+      }
+    ]
   }
 }
-describe('ActAsModal',  () => {
+describe('ActAsModal', () => {
   it('renders with panda svgs, user avatar, table, and proceed button present', () => {
     const wrapper = shallow(<ActAsModal {...props} />)
-    // expect(wrapper).toMatchSnapshot() // Coming soon.... (need to get enzyme upgraded to 3.x first)
+    expect(wrapper).toMatchSnapshot()
 
     const mask = wrapper.find(ActAsMask)
     const panda = wrapper.find(ActAsPanda)
@@ -68,7 +70,7 @@ describe('ActAsModal',  () => {
   })
 
   test('it renders the table with correct user information', () => {
-    const wrapper = shallow(<ActAsModal {...props} />)
+    const wrapper = mount(<ActAsModal {...props} />)
     const tables = wrapper.find(Table)
 
     expect(tables).toHaveLength(3)
@@ -86,7 +88,7 @@ describe('ActAsModal',  () => {
     expect(tableText).toContain(user.short_name)
     expect(tableText).toContain(user.sortable_name)
     expect(tableText).toContain(user.email)
-    user.pseudonyms.forEach((pseudonym) => {
+    user.pseudonyms.forEach(pseudonym => {
       expect(tableText).toContain(pseudonym.login_id)
       expect(tableText).toContain(pseudonym.sis_id)
       expect(tableText).toContain(pseudonym.integration_id)

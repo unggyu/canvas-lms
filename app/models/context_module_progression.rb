@@ -21,7 +21,10 @@ class ContextModuleProgression < ActiveRecord::Base
 
   belongs_to :context_module
   belongs_to :user
+  belongs_to :root_account, class_name: 'Account'
+
   before_save :set_completed_at
+  before_create :set_root_account_id
 
   after_save :touch_user
 
@@ -41,6 +44,10 @@ class ContextModuleProgression < ActiveRecord::Base
     else
       self.completed_at = nil
     end
+  end
+
+  def set_root_account_id
+    self.root_account_id = self.context_module.root_account_id
   end
 
   def finished_item?(item)
@@ -235,10 +242,16 @@ class ContextModuleProgression < ActiveRecord::Base
   def evaluate_score_requirement_met(requirement, subs, tag)
     return unless requirement[:type] == "min_score"
     remove_incomplete_requirement(requirement[:id]) # start from a fresh slate so we don't hold onto a max score that doesn't exist anymore
-    return unless subs && subs.any?
+    return if subs.blank?
 
-    if tag.assignment && tag.assignment.muted?
-      if subs.any?{|sub| sub.is_a?(Submission) && !sub.unsubmitted? }
+    if tag.course.post_policies_enabled?
+      if unposted_sub = subs.detect { |sub| sub.is_a?(Submission) && !sub.posted? }
+        # don't mark the progress as in-progress if they haven't submitted
+        self.update_incomplete_requirement!(requirement, nil) unless unposted_sub.unsubmitted?
+        return
+      end
+    elsif tag.assignment&.muted?
+      if subs.any? { |sub| sub.is_a?(Submission) && !sub.unsubmitted? }
         self.update_incomplete_requirement!(requirement, nil)
       end
       return

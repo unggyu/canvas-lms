@@ -18,17 +18,20 @@
 
 import I18n from 'i18n!discussions_v2'
 import React, {Component} from 'react'
-import {func, bool, string} from 'prop-types'
+import {func, bool, string, shape, arrayOf, oneOf} from 'prop-types'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
 import {DragDropContext} from 'react-dnd'
 import HTML5Backend from 'react-dnd-html5-backend'
 
-import View from '@instructure/ui-layout/lib/components/View'
-import ScreenReaderContent from '@instructure/ui-a11y/lib/components/ScreenReaderContent'
-import Spinner from '@instructure/ui-elements/lib/components/Spinner'
-import Heading from '@instructure/ui-elements/lib/components/Heading'
-import Text from '@instructure/ui-elements/lib/components/Text'
+import {View} from '@instructure/ui-layout'
+import {ScreenReaderContent} from '@instructure/ui-a11y'
+import {Heading, Text} from '@instructure/ui-elements'
+import {Spinner} from '@instructure/ui-spinner'
+
+import DirectShareCourseTray from 'jsx/shared/direct_share/DirectShareCourseTray'
+import DirectShareUserModal from 'jsx/shared/direct_share/DirectShareUserModal'
+
 import {
   ConnectedDiscussionsContainer,
   DroppableConnectedDiscussionsContainer
@@ -48,6 +51,7 @@ import {discussionList} from '../../shared/proptypes/discussion'
 import propTypes from '../propTypes'
 import actions from '../actions'
 import {reorderDiscussionsURL} from '../utils'
+import {CONTENT_SHARE_TYPES} from 'jsx/shared/proptypes/contentShare'
 
 export default class DiscussionsIndex extends Component {
   static propTypes = {
@@ -57,11 +61,22 @@ export default class DiscussionsIndex extends Component {
     contextType: string.isRequired,
     deleteDiscussion: func.isRequired,
     getDiscussions: func.isRequired,
+    setCopyToOpen: func.isRequired,
+    setSendToOpen: func.isRequired,
     hasLoadedDiscussions: bool.isRequired,
     isLoadingDiscussions: bool.isRequired,
     permissions: propTypes.permissions.isRequired,
     pinnedDiscussions: discussionList.isRequired,
     unpinnedDiscussions: discussionList.isRequired,
+    copyToOpen: bool.isRequired,
+    copyToSelection: shape({discussion_topics: arrayOf(string)}),
+    sendToOpen: bool.isRequired,
+    sendToSelection: shape({
+      content_id: string,
+      content_type: oneOf(CONTENT_SHARE_TYPES)
+    }),
+    DIRECT_SHARE_ENABLED: bool.isRequired,
+    COURSE_ID: string
   }
 
   state = {
@@ -80,7 +95,7 @@ export default class DiscussionsIndex extends Component {
   //      can interact with this from the connected store instaed of passing
   //      it down as a nested prop through multiple components
   onDeleteConfirm = (discussion, isConfirm) => {
-    if(isConfirm) {
+    if (isConfirm) {
       this.props.deleteDiscussion(discussion)
     }
     this.setState({showDelete: false, deleteFunction: () => {}})
@@ -91,14 +106,14 @@ export default class DiscussionsIndex extends Component {
   }
 
   openDeleteDiscussionsModal = discussion => {
-    const deleteFunction = ({ isConfirm }) => this.onDeleteConfirm(discussion, isConfirm)
+    const deleteFunction = ({isConfirm}) => this.onDeleteConfirm(discussion, isConfirm)
     this.setState({showDelete: true, deleteFunction})
   }
 
   renderSpinner(title) {
     return (
       <div className="discussions-v2__spinnerWrapper">
-        <Spinner size="large" title={title} />
+        <Spinner size="large" renderTitle={title} />
         <Text size="small" as="p">
           {title}
         </Text>
@@ -139,6 +154,7 @@ export default class DiscussionsIndex extends Component {
               title={I18n.t('Pinned Discussions')}
               discussions={this.props.pinnedDiscussions}
               deleteDiscussion={this.openDeleteDiscussionsModal}
+              pinned
               renderContainerBackground={() =>
                 pinnedDiscussionBackground({
                   permissions: this.props.permissions
@@ -173,11 +189,13 @@ export default class DiscussionsIndex extends Component {
             }
           />
         </div>
-        {this.state.showDelete && (<DiscussionsDeleteModal
-          onSubmit={this.state.deleteFunction}
-          defaultOpen
-          selectedCount={1}
-        />)}
+        {this.state.showDelete && (
+          <DiscussionsDeleteModal
+            onSubmit={this.state.deleteFunction}
+            defaultOpen
+            selectedCount={1}
+          />
+        )}
       </View>
     )
   }
@@ -194,7 +212,7 @@ export default class DiscussionsIndex extends Component {
             pinned
             renderContainerBackground={() =>
               pinnedDiscussionBackground({
-                permissions: this.props.permissions,
+                permissions: this.props.permissions
               })
             }
           />
@@ -204,7 +222,6 @@ export default class DiscussionsIndex extends Component {
             title={I18n.t('Discussions')}
             discussions={this.props.unpinnedDiscussions}
             deleteDiscussion={this.openDeleteDiscussionsModal}
-            pinned={false}
             closedState={false}
             renderContainerBackground={() =>
               unpinnedDiscussionsBackground({
@@ -220,7 +237,6 @@ export default class DiscussionsIndex extends Component {
             title={I18n.t('Closed for Comments')}
             discussions={this.props.closedForCommentsDiscussions}
             deleteDiscussion={this.openDeleteDiscussionsModal}
-            pinned={false}
             closedState
             renderContainerBackground={() =>
               closedDiscussionBackground({
@@ -229,11 +245,30 @@ export default class DiscussionsIndex extends Component {
             }
           />
         </div>
-        {this.state.showDelete && (<DiscussionsDeleteModal
-          onSubmit={this.state.deleteFunction}
-          defaultOpen
-          selectedCount={1}
-        />)} </View>
+        {this.state.showDelete && (
+          <DiscussionsDeleteModal
+            onSubmit={this.state.deleteFunction}
+            defaultOpen
+            selectedCount={1}
+          />
+        )}
+        {this.props.DIRECT_SHARE_ENABLED && (
+          <DirectShareCourseTray
+            sourceCourseId={this.props.COURSE_ID}
+            contentSelection={this.props.copyToSelection}
+            open={this.props.copyToOpen}
+            onDismiss={() => this.props.setCopyToOpen(false)}
+          />
+        )}
+        {this.props.DIRECT_SHARE_ENABLED && (
+          <DirectShareUserModal
+            courseId={this.props.COURSE_ID}
+            open={this.props.sendToOpen}
+            contentShare={this.props.sendToSelection}
+            onDismiss={() => this.props.setSendToOpen(false)}
+          />
+        )}{' '}
+      </View>
     )
   }
 
@@ -244,20 +279,24 @@ export default class DiscussionsIndex extends Component {
           <Heading level="h1">{I18n.t('Discussions')}</Heading>
         </ScreenReaderContent>
         <ConnectedIndexHeader />
-        {this.props.isLoadingDiscussions ?
-            this.renderSpinner(I18n.t('Loading Discussions')) :
-            this.props.permissions.moderate ? this.renderTeacherView() : this.renderStudentView()
-        }
+        {this.props.isLoadingDiscussions
+          ? this.renderSpinner(I18n.t('Loading Discussions'))
+          : this.props.permissions.moderate
+          ? this.renderTeacherView()
+          : this.renderStudentView()}
       </div>
     )
   }
 }
 
-
 const connectState = (state, ownProps) => {
   const fromPagination = selectPaginationState(state, 'discussions')
-  const { allDiscussions, closedForCommentsDiscussionIds, pinnedDiscussionIds,
-          unpinnedDiscussionIds } = state
+  const {
+    allDiscussions,
+    closedForCommentsDiscussionIds,
+    pinnedDiscussionIds,
+    unpinnedDiscussionIds
+  } = state
 
   const fromState = {
     closedForCommentsDiscussions: closedForCommentsDiscussionIds.map(id => allDiscussions[id]),
@@ -266,8 +305,14 @@ const connectState = (state, ownProps) => {
     permissions: state.permissions,
     pinnedDiscussions: pinnedDiscussionIds.map(id => allDiscussions[id]),
     unpinnedDiscussions: unpinnedDiscussionIds.map(id => allDiscussions[id]),
+    copyToOpen: state.copyTo.open,
+    copyToSelection: state.copyTo.selection,
+    sendToOpen: state.sendTo.open,
+    sendToSelection: state.sendTo.selection,
+    DIRECT_SHARE_ENABLED: state.DIRECT_SHARE_ENABLED,
+    COURSE_ID: state.COURSE_ID
   }
-  return Object.assign({}, ownProps, fromPagination, fromState)
+  return {...ownProps, ...fromPagination, ...fromState}
 }
 const connectActions = dispatch =>
   bindActionCreators(
@@ -276,6 +321,8 @@ const connectActions = dispatch =>
       'deleteDiscussion',
       'deleteFocusDone',
       'getDiscussions',
+      'setCopyToOpen',
+      'setSendToOpen'
     ]),
     dispatch
   )

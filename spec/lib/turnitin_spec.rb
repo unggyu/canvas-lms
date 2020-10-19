@@ -131,7 +131,7 @@ describe Turnitin::Client do
         :exclude_type => '1',
         :exclude_value => '5'
       }
-      @assignment.update_attributes(:turnitin_settings => @sample_turnitin_settings)
+      @assignment.update(:turnitin_settings => @sample_turnitin_settings)
     end
 
     it "marks assignment as created and current on success" do
@@ -171,7 +171,7 @@ describe Turnitin::Client do
 
     it "sets s_view_report to 0 if originality_report_visibility is 'never'" do
       @sample_turnitin_settings[:originality_report_visibility] = 'never'
-      @assignment.update_attributes(:turnitin_settings => @sample_turnitin_settings)
+      @assignment.update(:turnitin_settings => @sample_turnitin_settings)
       stub_net_http_to_return('<assignmentid>12345</assignmentid>')
       @assignment.create_in_turnitin
 
@@ -187,6 +187,7 @@ describe Turnitin::Client do
       @turnitin_api = Turnitin::Client.new('test_account', 'sekret')
 
       expect(@submission.context).to receive(:turnitin_settings).at_least(1).and_return([:placeholder])
+      expect(@submission.assignment.context).to receive(:turnitin_settings).at_least(1).and_return([:placeholder])
       expect(Turnitin::Client).to receive(:new).at_least(1).with(:placeholder).and_return(@turnitin_api)
       expect(@turnitin_api).to receive(:enrollStudent).with(@course, @user).and_return(double(:success? => true))
       expect(@turnitin_api).to receive(:createOrUpdateAssignment).with(@assignment, @assignment.turnitin_settings).and_return({ :assignment_id => "1234" })

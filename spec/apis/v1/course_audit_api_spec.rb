@@ -22,6 +22,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../cassandra_spec_helper'
 describe "CourseAudit API", type: :request do
   context "not configured" do
     before do
+      allow(Canvas::Cassandra::DatabaseBuilder).to receive(:configured?).and_call_original
       allow(Canvas::Cassandra::DatabaseBuilder).to receive(:configured?).with('auditors').and_return(false)
       course_factory
     end
@@ -103,12 +104,15 @@ describe "CourseAudit API", type: :request do
     context "nominal cases" do
       it "should include events at context endpoint" do
         expect_event_for_context(@course, @event)
+        expect_event_for_context(@domain_root_account, @event)
 
         @event = Auditors::Course.record_created(@course, @teacher, @course.changes)
         expect_event_for_context(@course, @event)
+        expect_event_for_context(@domain_root_account, @event)
 
         @event = Auditors::Course.record_concluded(@course, @teacher)
         expect_event_for_context(@course, @event)
+        expect_event_for_context(@domain_root_account, @event)
       end
     end
 
@@ -147,12 +151,14 @@ describe "CourseAudit API", type: :request do
         @user, @viewing_user = @user, user_model
 
         fetch_for_context(@course, expected_status: 401)
+        fetch_for_context(@domain_root_account, expected_status: 401)
       end
 
       it "should not authorize the endpoints with revoking the :view_course_changes permission" do
         RoleOverride.manage_role_override(@account_user.account, @account_user.role, :view_course_changes.to_s, :override => false)
 
         fetch_for_context(@course, expected_status: 401)
+        fetch_for_context(@domain_root_account, expected_status: 401)
       end
 
       it "should not allow other account models" do

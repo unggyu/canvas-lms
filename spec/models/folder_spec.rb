@@ -107,9 +107,42 @@ describe Folder do
   it "should not allow root folders to have their names changed" do
     f1 = Folder.root_folders(@course).first
     f1.reload
-    f1.update_attributes(:name => "something")
+    f1.update(:name => "something")
     expect(f1.save).to eq false
     expect(f1.errors.detect { |e| e.first.to_s == 'name' }).to be_present
+  end
+
+  describe "set folder root account id" do
+    before(:once) do
+      student_in_course
+      group_model(:context => @course)
+    end
+
+    it "when context is group" do
+      folder = @group.folders.create!
+      expect(folder.root_account_id).to eq @group.root_account_id
+    end
+
+    it "when context is account" do
+      account = @course.account.root_account.manually_created_courses_account
+      folder = account.folders.create!
+      expect(folder.root_account_id).to eq account.root_account_id
+    end
+
+    it "when context is a root account" do
+      folder = @course.root_account.folders.create!
+      expect(folder.root_account_id).to eq @course.root_account_id
+    end
+
+    it "when context is course" do
+      folder = @course.folders.create!
+      expect(folder.root_account_id).to eq @course.root_account_id
+    end
+
+    it "shouldn't happen when context is user" do
+      folder = @user.folders.create!
+      expect(folder.root_account_id).to eq 0
+    end
   end
 
   it "files without an explicit folder_id should be inferred" do
@@ -119,7 +152,7 @@ describe Folder do
     a.uploaded_data = default_uploaded_data
     a.save!
     nil_a = @course.attachments.new
-    nil_a.update_attributes(:uploaded_data => default_uploaded_data)
+    nil_a.update(:uploaded_data => default_uploaded_data)
     expect(nil_a.folder_id).not_to be_nil
     expect(f.active_file_attachments).to be_include(a)
     # f.active_file_attachments.should be_include(nil_a)
@@ -131,7 +164,7 @@ describe Folder do
     a.uploaded_data = default_uploaded_data
     a.save!
     nil_a = @course.attachments.new
-    nil_a.update_attributes(:uploaded_data => default_uploaded_data)
+    nil_a.update(:uploaded_data => default_uploaded_data)
     expect(f.active_file_attachments).to be_include(a)
     expect(f.active_file_attachments).to be_include(nil_a)
   end

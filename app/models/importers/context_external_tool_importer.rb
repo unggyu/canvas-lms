@@ -34,13 +34,13 @@ module Importers
         end
       end
       migration.imported_migration_items_by_class(ContextExternalTool).each do |tool|
-        if tool.consumer_key == 'fake' || tool.shared_secret == 'fake'
+        if (tool.consumer_key == 'fake' || tool.shared_secret == 'fake') && !tool.use_1_3?
           migration.add_warning(t('external_tool_attention_needed', 'The security parameters for the external tool "%{tool_name}" need to be set in Course Settings.', :tool_name => tool.name))
         end
       end
     end
 
-    def self.import_from_migration(hash, context, migration, item=nil)
+    def self.import_from_migration(hash, context, migration, item=nil, persist = true)
       hash = hash.with_indifferent_access
       return nil if hash[:migration_id] && hash[:external_tools_to_import] && !hash[:external_tools_to_import][hash[:migration_id]]
 
@@ -66,13 +66,14 @@ module Importers
       item.not_selectable = hash[:not_selectable] if hash[:not_selectable]
       item.consumer_key ||= hash[:consumer_key] || 'fake'
       item.shared_secret ||= hash[:shared_secret] || 'fake'
+      item.developer_key_id ||= hash.dig(:settings, :client_id)
       item.settings = create_tool_settings(hash)
       if hash[:custom_fields].is_a? Hash
         item.settings[:custom_fields] ||= {}
         item.settings[:custom_fields].merge! hash[:custom_fields]
       end
 
-      item.save!
+      item.save! if persist
       migration.add_imported_item(item) if migration
       item
     end
@@ -116,7 +117,7 @@ module Importers
       return unless url || domain
 
       migration.imported_migration_items_by_class(ContextExternalTool).each do |tool|
-        next unless matching_settings?(hash, tool, settings)
+        next unless matching_settings?(migration, hash, tool, settings)
 
         if tool.url.blank? && tool.domain.present?
           match_domain = tool.domain
@@ -164,7 +165,7 @@ module Importers
 
       tools.each do |tool|
         # check if tool is compatible
-        next unless self.matching_settings?(hash, tool, settings, true)
+        next unless self.matching_settings?(migration, hash, tool, settings, true)
 
         if tool.url.blank? && tool.domain.present?
           if domain && domain == tool.domain
@@ -200,8 +201,9 @@ module Importers
       end
     end
 
-    def self.matching_settings?(hash, tool, settings, preexisting_tool=false)
+    def self.matching_settings?(migration, hash, tool, settings, preexisting_tool=false)
       return if hash[:privacy_level] && tool.privacy_level != hash[:privacy_level]
+      return if migration.migration_type == "canvas_cartridge_importer" && hash[:title] && tool.name != hash[:title]
 
       if preexisting_tool
         # we're matching to existing tools; go with their config if we don't have a real one

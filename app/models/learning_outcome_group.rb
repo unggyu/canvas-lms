@@ -18,9 +18,11 @@
 
 class LearningOutcomeGroup < ActiveRecord::Base
   include Workflow
-  include OutcomeAttributes
   include MasterCourses::Restrictor
+  extend RootAccountResolver
+
   restrict_columns :state, [:workflow_state]
+  self.ignored_columns = %i[migration_id_2 vendor_guid_2]
 
   belongs_to :learning_outcome_group
   has_many :child_outcome_groups, :class_name => 'LearningOutcomeGroup', :foreign_key => "learning_outcome_group_id"
@@ -28,6 +30,8 @@ class LearningOutcomeGroup < ActiveRecord::Base
   belongs_to :context, polymorphic: [:account, :course]
 
   before_save :infer_defaults
+  resolves_root_account through: -> (group) { group.context_id ? group.context.resolved_root_account_id : 0 }
+  validates :vendor_guid, length: { maximum: maximum_string_length, allow_nil: true }
   validates_length_of :description, :maximum => maximum_text_length, :allow_nil => true, :allow_blank => true
   validates_length_of :title, :maximum => maximum_string_length, :allow_nil => true, :allow_blank => true
   validates_presence_of :title, :workflow_state
@@ -58,7 +62,7 @@ class LearningOutcomeGroup < ActiveRecord::Base
   # adds a new link to an outcome to this group. does nothing if a link already
   # exists (an outcome can be linked into a context multiple times by multiple
   # groups, but only once per group).
-  def add_outcome(outcome)
+  def add_outcome(outcome, skip_touch: false, migration_id: nil)
     # no-op if the outcome is already linked under this group
     outcome_link = child_outcome_links.active.where(content_id: outcome).first
     return outcome_link if outcome_link
@@ -66,8 +70,11 @@ class LearningOutcomeGroup < ActiveRecord::Base
     # create new link and in this group
     touch_parent_group
     child_outcome_links.create(
-      :content => outcome,
-      :context => self.context || self)
+      content: outcome,
+      context: self.context || self,
+      skip_touch: skip_touch,
+      migration_id: migration_id
+    )
   end
 
   # copies an existing outcome group, form this context or another, into this
@@ -79,27 +86,33 @@ class LearningOutcomeGroup < ActiveRecord::Base
   # commit!
   def add_outcome_group(original, opts={})
     # copy group into this group
-    copy = child_outcome_groups.build
-    copy.title = original.title
-    copy.description = original.description
-    copy.vendor_guid = original.vendor_guid
-    copy.context = self.context
-    copy.save!
+    transaction do
+      copy = child_outcome_groups.build
+      copy.title = original.title
+      copy.description = original.description
+      copy.vendor_guid = original.vendor_guid
+      copy.context = self.context
+      copy.skip_parent_group_touch = true
+      copy.save!
 
-    # copy the group contents
-    original.child_outcome_groups.active.each do |group|
-      next if opts[:only] && opts[:only][group.asset_string] != "1"
-      copy.add_outcome_group(group, opts)
+      # copy the group contents
+      copy_opts = opts.reverse_merge(skip_touch: true)
+      original.child_outcome_groups.active.each do |group|
+        next if opts[:only] && opts[:only][group.asset_string] != "1"
+        copy.add_outcome_group(group, copy_opts)
+      end
+
+      original.child_outcome_links.active.each do |link|
+        next if opts[:only] && opts[:only][link.asset_string] != "1"
+        copy.add_outcome(link.content, skip_touch: true)
+      end
+
+      self.context&.touch unless opts[:skip_touch]
+      touch_parent_group
+
+      # done
+      copy
     end
-
-    original.child_outcome_links.active.each do |link|
-      next if opts[:only] && opts[:only][link.asset_string] != "1"
-      copy.add_outcome(link.content)
-    end
-
-    touch_parent_group
-    # done
-    copy
   end
 
   # moves an existing outcome link from the same context to be under this
@@ -153,6 +166,7 @@ class LearningOutcomeGroup < ActiveRecord::Base
   end
 
   scope :active, -> { where("learning_outcome_groups.workflow_state<>'deleted'") }
+  scope :active_first, -> { order(Arel.sql("CASE WHEN workflow_state = 'active' THEN 0 ELSE 1 END")) }
 
   scope :global, -> { where(:context_id => nil) }
 
@@ -167,11 +181,17 @@ class LearningOutcomeGroup < ActiveRecord::Base
     # do this in a transaction, so parallel calls don't create multiple roots
     # TODO: clean up contexts that already have multiple root outcome groups
     transaction do
-      group = scope.active.root.first
+      group = scope.active.root.take
       if !group && force
         group = scope.build :title => context.try(:name) || 'ROOT'
         group.building_default = true
-        group.save!
+        Shackles.activate(:master) do
+          # during course copies/imports, observe may be disabled but import job will
+          # not be aware of this lazy object creation
+          ActiveRecord::Base.observers.enable LiveEventsObserver do
+            group.save!
+          end
+        end
       end
       group
     end

@@ -95,24 +95,46 @@ describe Quizzes::QuizSubmissionsController do
   end
 
   describe "PUT 'update'" do
-    before(:once) { quiz_with_submission }
-    it "should require authentication" do
-      put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id}
-      assert_unauthorized
+    context 'quiz with submission' do
+      before(:once) { quiz_with_submission }
+
+      it "should require authentication" do
+        put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id}
+        assert_unauthorized
+      end
+
+      it "should allow updating scores if the teacher is logged in" do
+        user_session(@teacher)
+        put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id, "question_score_128" => "2"}
+        expect(response).to be_redirect
+        expect(assigns[:submission]).not_to be_nil
+        expect(assigns[:submission].submission_data[0][:points]).to eq 2
+      end
+
+      it "should not allow updating if the course is concluded" do
+        @teacher_enrollment.conclude
+        put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id}
+        assert_unauthorized
+      end
+
+      it "should not allow updating if the student is not assigned the quiz" do
+        user_session(@teacher)
+        allow_any_instance_of(Quizzes::Quiz).to receive(:visible_to_user?).and_return(false)
+        put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id}
+        assert_forbidden
+      end
     end
 
-    it "should allow updating scores if the teacher is logged in" do
-      user_session(@teacher)
-      put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id, "question_score_128" => "2"}
-      expect(response).to be_redirect
-      expect(assigns[:submission]).not_to be_nil
-      expect(assigns[:submission].submission_data[0][:points]).to eq 2
-    end
+    context 'practice quiz with submission' do
+      before(:once) { practice_quiz_with_submission }
 
-    it "should not allow updating if the course is concluded" do
-      @teacher_enrollment.conclude
-      put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id}
-      assert_unauthorized
+      it "should allow updating scores for a practice quiz" do
+        user_session(@teacher)
+        put 'update', params: {:course_id => @quiz.context_id, :quiz_id => @quiz.id, :id => @qsub.id, "question_score_128" => "2"}
+        expect(response).to be_redirect
+        expect(assigns[:submission]).not_to be_nil
+        expect(assigns[:submission].submission_data[0][:points]).to eq 2
+      end
     end
   end
 
@@ -136,7 +158,7 @@ describe Quizzes::QuizSubmissionsController do
       Quizzes::QuizSubmission.where(:id => @qs).update_all(:updated_at => 1.hour.ago)
 
       put 'backup', params: {:quiz_id => @quiz.id, :course_id => @course.id, :a => 'test', :validation_token => @qs.validation_token}
-      expect(response).to be_success
+      expect(response).to be_successful
 
       expect(@qs.reload.submission_data[:a]).to eq 'test'
     end
@@ -152,6 +174,8 @@ describe Quizzes::QuizSubmissionsController do
 
       expect(json).to have_key('time_left')
       expect(json['time_left']).to be_within(5.0).of(60 * 60)
+      expect(json).to have_key('end_at')
+      expect(json).to have_key('end_at_without_time_limit')
     end
 
     it "should not backup if no submission can be found" do
@@ -205,6 +229,18 @@ describe Quizzes::QuizSubmissionsController do
           {priority: Delayed::LOW_PRIORITY, max_attempts: 1}, anything)
         get 'index', params: {quiz_id: quiz.id, zip: '1', course_id: @course}
       end
+
+      it "still works even after the teacher can't actively grade anymore" do
+        @course.enrollment_term.enrollment_dates_overrides.create!(:enrollment_type => "TeacherEnrollment",
+          :start_at => 2.days.ago, :end_at => 1.day.ago)
+        user_session(@teacher)
+        quiz = course_quiz !!:active
+        expect(quiz.grants_right?(@teacher, :grade)).to eq false
+        expect(quiz.grants_right?(@teacher, :review_grades)).to eq true
+        expect(ContentZipper).to receive(:send_later_enqueue_args).with(:process_attachment,
+          {priority: Delayed::LOW_PRIORITY, max_attempts: 1}, anything)
+        get 'index', params: {quiz_id: quiz.id, zip: '1', course_id: @course}
+      end
     end
   end
 
@@ -215,7 +251,7 @@ describe Quizzes::QuizSubmissionsController do
         user_session(@teacher)
         request.accept = "application/json"
         post 'extensions', params: {quiz_id: quiz.id, course_id: @course, user_id: @teacher.id, extra_attempts: 1}
-        expect(response).to be_success
+        expect(response).to be_successful
         json = JSON.parse(response.body)
         expect(json).to have_key('extra_attempts')
         expect(json['extra_attempts']).to eq 1
@@ -225,10 +261,28 @@ describe Quizzes::QuizSubmissionsController do
         user_session(@teacher)
         request.accept = "application/json"
         post 'extensions', params: {quiz_id: quiz.id, course_id: @course, user_id: @teacher.id, reset_has_seen_results: 1}
-        expect(response).to be_success
+        expect(response).to be_successful
         json = JSON.parse(response.body)
         expect(json).to have_key('has_seen_results')
         expect(json['has_seen_results']).to eq false
+      end
+
+      it "should require a valid user id" do
+        user_session(@teacher)
+        request.accept = "application/json"
+        post 'extensions', params: {quiz_id: quiz.id, course_id: @course, user_id: 'foo', extra_attempts: 12}
+        expect(response).to be_not_found
+      end
+
+      it "should allow updating inactive students" do
+        user_session(@teacher)
+        @student.enrollments.last.deactivate
+        request.accept = "application/json"
+        post 'extensions', params: {quiz_id: quiz.id, course_id: @course, user_id: @student.id, extra_attempts: 12}
+        expect(response).to be_successful
+        json = JSON.parse(response.body)
+        expect(json).to have_key('extra_attempts')
+        expect(json['extra_attempts']).to eq 12
       end
     end
   end

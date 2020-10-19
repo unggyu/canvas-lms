@@ -24,18 +24,23 @@ import DeveloperKeysApp from './App'
 import actions from './actions/developerKeysActions'
 import store from './store/store'
 
-let state = store.getState()
 /**
  * Route Handlers
  */
 // ctx is context
 function renderShowDeveloperKeys(ctx) {
-  if (ctx.hash === 'key_modal_opened') {
-    store.dispatch(actions.developerKeysModalOpen())
+  if (ctx.hash === 'api_key_modal_opened') {
+    store.dispatch(actions.developerKeysModalOpen('api'))
+  } else if (ctx.hash === 'lti_key_modal_opened') {
+    store.dispatch(actions.developerKeysModalOpen('lti'))
+    store.dispatch(actions.ltiKeysSetLtiKey(true))
   } else {
     store.dispatch(actions.developerKeysModalClose())
     store.dispatch(actions.editDeveloperKey())
+    store.dispatch(actions.ltiKeysSetLtiKey(false))
   }
+
+  const state = store.getState()
 
   if (!state.listDeveloperKeys.listDeveloperKeysSuccessful) {
     store.dispatch(
@@ -47,9 +52,14 @@ function renderShowDeveloperKeys(ctx) {
     }
 
     const view = () => {
-      state = store.getState()
+      const currentState = store.getState()
       ReactDOM.render(
-        <DeveloperKeysApp applicationState={state} actions={actions} store={store} ctx={ctx} />,
+        <DeveloperKeysApp
+          applicationState={currentState}
+          actions={actions}
+          store={store}
+          ctx={ctx}
+        />,
         document.getElementById('reactContent')
       )
     }

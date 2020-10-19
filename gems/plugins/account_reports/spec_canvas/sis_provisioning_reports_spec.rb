@@ -298,6 +298,18 @@ describe "Default Account Reports" do
     @gm4.destroy
   end
 
+  def create_some_blueprint_course_stuff
+    @bc1 = Course.create!(:name => 'bc1', :account => @account, :sis_source_id => "SIS_BLUEPRINT_1")
+    @template1 = MasterCourses::MasterTemplate.set_as_master_course(@bc1)
+    @bc2 = Course.create!(:name => 'bc2', :account => @account, :sis_source_id => "SIS_BLUEPRINT_2")
+    @template2 = MasterCourses::MasterTemplate.set_as_master_course(@bc2)
+    @ac1_a = Course.create!(:name => 'ac1 a', :account => @account, :sis_source_id => "SIS_CHILD_BC1_A")
+    @ac1_b = Course.create!(:name => 'ac1 b', :account => @account, :sis_source_id => "SIS_CHILD_BC1_B")
+    [@ac1_a, @ac1_b].each{|ac| @template1.add_child_course!(ac)}
+    @ac2 = Course.create!(:name => 'ac2', :account => @account, :sis_source_id => "SIS_CHILD_BC2")
+    @template2.add_child_course!(@ac2)
+  end
+
   describe "SIS export and Provisioning reports" do
     before(:once) do
       Notification.where(name: "Report Generated").first_or_create
@@ -574,10 +586,10 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 3
         expect(parsed).to match_array [[@course1.sis_source_id, nil, @course1.course_code, @course1.name,
                                         @sub_account.sis_source_id, @term1.sis_source_id, "active",
-                                        @course1.start_at.iso8601, @course1.end_at.iso8601, @course1.course_format],
+                                        @course1.start_at.iso8601, @course1.end_at.iso8601, @course1.course_format, nil],
                                        ["SIS_COURSE_ID_2", nil, "MAT101", "Math 101", nil, nil,
-                                        "active", nil, @course2.end_at.iso8601, @course2.course_format],
-                                       ["SIS_COURSE_ID_3", nil, "SCI101", "Science 101", nil, nil, "active", nil, nil, nil]]
+                                        "active", nil, @course2.end_at.iso8601, @course2.course_format, nil],
+                                       ["SIS_COURSE_ID_3", nil, "SCI101", "Science 101", nil, nil, "active", nil, nil, nil, nil]]
       end
 
       it "should run the SIS report with sis term and deleted courses" do
@@ -591,9 +603,9 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 2
         expect(parsed).to match_array [[@course1.sis_source_id, nil, @course1.course_code, @course1.name,
                                         @sub_account.sis_source_id, @term1.sis_source_id, "completed",
-                                        @course1.start_at.iso8601, @course1.conclude_at.iso8601, @course1.course_format],
+                                        @course1.start_at.iso8601, @course1.conclude_at.iso8601, @course1.course_format, nil],
                                        ["SIS_COURSE_ID_5", nil, "ENG101", "Sd Math 100", "sub1",
-                                        "fall12", "deleted", nil, nil, nil]]
+                                        "fall12", "deleted", nil, nil, nil, nil]]
       end
 
       it "should run the provisioning report" do
@@ -608,24 +620,24 @@ describe "Default Account Reports" do
         expect(parsed).to match_array [[@course5.id.to_s, @course5.sis_source_id, nil,
                                         @course5.course_code, @course5.name,
                                         @sub_account.id.to_s, "sub1", @term1.id.to_s,
-                                        "fall12", "deleted", nil, nil, nil, "true"],
+                                        "fall12", "deleted", nil, nil, nil, nil, "true"],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", nil, "ENG101",
                                         "English 101", @course1.account_id.to_s,
                                         @sub_account.sis_source_id, @term1.id.to_s,
                                         @term1.sis_source_id, "active",
                                         @course1.start_at.iso8601,
-                                        @course1.conclude_at.iso8601, @course1.course_format, "true"],
+                                        @course1.conclude_at.iso8601, @course1.course_format, nil, "true"],
                                        [@course2.id.to_s, "SIS_COURSE_ID_2", nil, "MAT101",
                                         "Math 101", @course2.account_id.to_s, nil,
                                         @default_term.id.to_s, nil, "active", nil,
-                                        @course2.conclude_at.iso8601, @course2.course_format, "true"],
+                                        @course2.conclude_at.iso8601, @course2.course_format, nil, "true"],
                                        [@course3.id.to_s, "SIS_COURSE_ID_3", nil, "SCI101",
                                         "Science 101", @course3.account_id.to_s, nil,
                                         @default_term.id.to_s, nil, "active", nil, nil, nil,
-                                        "true"],
+                                        nil, "true"],
                                        [@course4.id.to_s, nil, nil, "self", "self help",
                                         @course4.account_id.to_s, nil, @default_term.id.to_s,
-                                        nil, "deleted", nil, nil, nil, "false"]]
+                                        nil, "deleted", nil, nil, nil, nil, "false"]]
         expect(parsed.length).to eq 5
       end
 
@@ -649,7 +661,7 @@ describe "Default Account Reports" do
                                         @sub_account.id.to_s, @sub_account.sis_source_id,
                                         @term1.id.to_s, @term1.sis_source_id, "active",
                                         @course1.start_at.iso8601,
-                                        @course1.conclude_at.iso8601, @course1.course_format, "true"]]
+                                        @course1.conclude_at.iso8601, @course1.course_format, nil, "true"]]
       end
 
       it "should run the sis report with the default term" do
@@ -660,8 +672,26 @@ describe "Default Account Reports" do
 
         expect(parsed.length).to eq 2
         expect(parsed).to match_array [["SIS_COURSE_ID_2", nil, "MAT101", "Math 101", nil,
-                                        nil, "active", nil, @course2.end_at.iso8601, @course2.course_format],
-                                       ["SIS_COURSE_ID_3", nil, "SCI101", "Science 101", nil, nil, "active", nil, nil, nil]]
+                                        nil, "active", nil, @course2.end_at.iso8601, @course2.course_format, nil],
+                                       ["SIS_COURSE_ID_3", nil, "SCI101", "Science 101", nil, nil, "active", nil, nil, nil, nil]]
+      end
+
+      it "should export blueprint course stuff for sis export" do
+        create_some_blueprint_course_stuff
+        parsed = read_report("sis_export_csv",
+          {params: {"enrollment_term_id" => @default_term.id, "courses" => true}, order: 0, parse_header: true})
+        expect(parsed.detect{|r| r["course_id"] == @ac1_a.sis_source_id}["blueprint_course_id"]).to eq @bc1.sis_source_id
+        expect(parsed.detect{|r| r["course_id"] == @ac1_b.sis_source_id}["blueprint_course_id"]).to eq @bc1.sis_source_id
+        expect(parsed.detect{|r| r["course_id"] == @ac2.sis_source_id}["blueprint_course_id"]).to eq @bc2.sis_source_id
+      end
+
+      it "should export blueprint course stuff for provisioning csv" do
+        create_some_blueprint_course_stuff
+        parsed = read_report("provisioning_csv",
+          {params: {"enrollment_term_id" => @default_term.id, "courses" => true}, order: 0, parse_header: true})
+        expect(parsed.detect{|r| r["course_id"] == @ac1_a.sis_source_id}["blueprint_course_id"]).to eq @bc1.sis_source_id
+        expect(parsed.detect{|r| r["course_id"] == @ac1_b.sis_source_id}["blueprint_course_id"]).to eq @bc1.sis_source_id
+        expect(parsed.detect{|r| r["course_id"] == @ac2.sis_source_id}["blueprint_course_id"]).to eq @bc2.sis_source_id
       end
     end
 
@@ -706,11 +736,11 @@ describe "Default Account Reports" do
         parsed = read_report("provisioning_csv", {params: parameters, order: 4})
         expect(parsed.length).to eq 4
         expect(parsed).to match_array [[@section1.id.to_s, @section1.sis_source_id,
-                                        @course1.id.to_s, @course1.sis_source_id, nil,
+                                        @course2.id.to_s, @course2.sis_source_id, nil,
                                         @section1.name, "active",
-                                        @course1.start_at.iso8601,
-                                        @course1.conclude_at.iso8601, @sub_account.id.to_s,
-                                        "sub1", "true"],
+                                        @section1.start_at.iso8601,
+                                        @section1.end_at.iso8601, @account.id.to_s,
+                                        nil, "true"],
                                        [@section4.id.to_s, nil, @course2.id.to_s,
                                         @course2.sis_source_id, nil, @section4.name,
                                         "active", nil, nil, @account.id.to_s, nil,
@@ -792,25 +822,25 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 8
 
         expect(parsed).to match_array [["SIS_COURSE_ID_1", "user_sis_id_01", "observer",
-                                        observer_role.id.to_s, nil, "active", nil,
+                                        observer_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_2", "user_sis_id_01", "observer",
-                                        observer_role.id.to_s, nil,
+                                        observer_role(root_account_id: @account.id).id.to_s, nil,
                                         "active", "user_sis_id_03", "false"],
                                        ["SIS_COURSE_ID_1", "user_sis_id_02", "ta",
-                                        ta_role.id.to_s, nil, "active", nil,
+                                        ta_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_3", "user_sis_id_02", "student",
-                                        student_role.id.to_s, nil, "active", nil,
+                                        student_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_1", "user_sis_id_03", "student",
-                                        student_role.id.to_s, nil, "active", nil,
+                                        student_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_2", "user_sis_id_03", "student",
-                                        student_role.id.to_s, nil, "active", nil,
+                                        student_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_1", "user_sis_id_04", "teacher",
-                                        teacher_role.id.to_s,
+                                        teacher_role(root_account_id: @account.id).id.to_s,
                                         "english_section_1", "active", nil, "false"],
                                        ["SIS_COURSE_ID_2", "user_sis_id_04", "Pixel Engineer",
                                         @role.id.to_s, nil, "active", nil, "false"]]
@@ -826,13 +856,13 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 4
 
         expect(parsed).to match_array [["SIS_COURSE_ID_2", "user_sis_id_01", "observer",
-                                        observer_role.id.to_s, nil, "active",
+                                        observer_role(root_account_id: @account.id).id.to_s, nil, "active",
                                         "user_sis_id_03", "false"],
                                        ["SIS_COURSE_ID_3", "user_sis_id_02", "student",
-                                        student_role.id.to_s, nil, "active", nil,
+                                        student_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_2", "user_sis_id_03", "student",
-                                        student_role.id.to_s, nil, "active", nil,
+                                        student_role(root_account_id: @account.id).id.to_s, nil, "active", nil,
                                         "false"],
                                        ["SIS_COURSE_ID_2", "user_sis_id_04", "Pixel Engineer",
                                         @role.id.to_s, nil, "active", nil, "false"]]
@@ -847,40 +877,40 @@ describe "Default Account Reports" do
         parameters["include_deleted"] = true
         parsed = read_report("provisioning_csv", {params: parameters, order: "skip"})
         expect(parsed).to match_array [[@course1.id.to_s, "SIS_COURSE_ID_1", @user6.id.to_s, nil,
-                                        "teacher", teacher_role.id.to_s, @enrollment10.course_section_id.to_s,
+                                        "teacher", teacher_role(root_account_id: @account.id).id.to_s, @enrollment10.course_section_id.to_s,
                                         nil, "concluded", nil, nil, "false", 'TeacherEnrollment', 'false',
                                         @enrollment10.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user1.id.to_s, "user_sis_id_01",
-                                        "observer", observer_role.id.to_s,
+                                        "observer", observer_role(root_account_id: @account.id).id.to_s,
                                         @enrollment1.course_section_id.to_s, nil, "active", nil, nil, "true",
                                         'ObserverEnrollment', 'false', @enrollment1.id.to_s],
                                        [@course2.id.to_s, "SIS_COURSE_ID_2", @user1.id.to_s, "user_sis_id_01",
-                                        "observer", observer_role.id.to_s,
+                                        "observer", observer_role(root_account_id: @account.id).id.to_s,
                                         @enrollment7.course_section_id.to_s, nil, "deleted",
                                         @user3.id.to_s, "user_sis_id_03", "true", 'ObserverEnrollment', 'false',
                                         @enrollment7.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user2.id.to_s, "user_sis_id_02",
-                                        "ta", ta_role.id.to_s,
+                                        "ta", ta_role(root_account_id: @account.id).id.to_s,
                                         @enrollment3.course_section_id.to_s, nil, "active", nil, nil, "true",
                                         'TaEnrollment', 'false', @enrollment3.id.to_s],
                                        [@course3.id.to_s, "SIS_COURSE_ID_3", @user2.id.to_s, "user_sis_id_02",
-                                        "student", student_role.id.to_s,
+                                        "student", student_role(root_account_id: @account.id).id.to_s,
                                         @enrollment2.course_section_id.to_s, nil, "active", nil, nil, "true",
                                         'StudentEnrollment', 'false', @enrollment2.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user3.id.to_s, "user_sis_id_03",
-                                        "student", student_role.id.to_s,
+                                        "student", student_role(root_account_id: @account.id).id.to_s,
                                         @enrollment4.course_section_id.to_s, nil, "active", nil, nil, "true",
                                         'StudentEnrollment', 'false', @enrollment4.id.to_s],
                                        [@course2.id.to_s, "SIS_COURSE_ID_2", @user3.id.to_s, "user_sis_id_03",
-                                        "student", student_role.id.to_s,
+                                        "student", student_role(root_account_id: @account.id).id.to_s,
                                         @enrollment5.course_section_id.to_s, nil, "deleted", nil, nil, "true",
                                         'StudentEnrollment', 'false', @enrollment5.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user4.id.to_s, "user_sis_id_04",
-                                        "teacher", teacher_role.id.to_s, @enrollment9.course_section_id.to_s,
+                                        "teacher", teacher_role(root_account_id: @account.id).id.to_s, @enrollment9.course_section_id.to_s,
                                         "english_section_1", "active", nil, nil, "true",
                                         'TeacherEnrollment', 'false', @enrollment9.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user4.id.to_s, "user_sis_id_04",
-                                        "teacher", teacher_role.id.to_s,
+                                        "teacher", teacher_role(root_account_id: @account.id).id.to_s,
                                         @enrollment6.course_section_id.to_s, nil, "deleted", nil, nil, "true",
                                         'TeacherEnrollment', 'false', @enrollment6.id.to_s],
                                        [@course2.id.to_s, "SIS_COURSE_ID_2", @user4.id.to_s, "user_sis_id_04",
@@ -889,11 +919,11 @@ describe "Default Account Reports" do
                                         @enrollment11.id.to_s],
                                        [@course4.id.to_s, nil, @user4.id.to_s,
                                         "user_sis_id_04", "student",
-                                        student_role.id.to_s,
+                                        student_role(root_account_id: @account.id).id.to_s,
                                         @enrollment12.course_section_id.to_s, nil,
                                         "invited", nil, nil, "false", 'StudentEnrollment', 'false', @enrollment12.id.to_s],
                                        [@course4.id.to_s, nil, @user5.id.to_s,
-                                        "user_sis_id_05", "teacher", teacher_role.id.to_s,
+                                        "user_sis_id_05", "teacher", teacher_role(root_account_id: @account.id).id.to_s,
                                         @enrollment8.course_section_id.to_s, nil, "active", nil, nil, "false",
                                         'TeacherEnrollment', 'false', @enrollment8.id.to_s]]
       end
@@ -910,27 +940,27 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 6
 
         expect(parsed).to match_array [[@course1.id.to_s, "SIS_COURSE_ID_1", @user6.id.to_s, nil, "teacher",
-                                        teacher_role.id.to_s, @enrollment10.course_section_id.to_s,
+                                        teacher_role(root_account_id: @account.id).id.to_s, @enrollment10.course_section_id.to_s,
                                         nil, "concluded", nil, nil, "false", 'TeacherEnrollment', 'false',
                                         @enrollment10.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user1.id.to_s, "user_sis_id_01",
-                                        "observer", observer_role.id.to_s, @enrollment1.course_section_id.to_s,
+                                        "observer", observer_role(root_account_id: @account.id).id.to_s, @enrollment1.course_section_id.to_s,
                                         nil, "active", nil, nil, "true", 'ObserverEnrollment', 'false',
                                         @enrollment1.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user2.id.to_s, "user_sis_id_02",
-                                        "ta", ta_role.id.to_s, @enrollment3.course_section_id.to_s,
+                                        "ta", ta_role(root_account_id: @account.id).id.to_s, @enrollment3.course_section_id.to_s,
                                         nil, "active", nil, nil, "true", 'TaEnrollment', 'false',
                                         @enrollment3.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user3.id.to_s, "user_sis_id_03",
-                                        "student", student_role.id.to_s,
+                                        "student", student_role(root_account_id: @account.id).id.to_s,
                                         @enrollment4.course_section_id.to_s, nil, "active", nil, nil, "true",
                                         'StudentEnrollment', 'false', @enrollment4.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user4.id.to_s, "user_sis_id_04",
-                                        "teacher", teacher_role.id.to_s, @enrollment9.course_section_id.to_s,
+                                        "teacher", teacher_role(root_account_id: @account.id).id.to_s, @enrollment9.course_section_id.to_s,
                                         "english_section_1", "active", nil, nil, "true", 'TeacherEnrollment',
                                         'false', @enrollment9.id.to_s],
                                        [@course1.id.to_s, "SIS_COURSE_ID_1", @user4.id.to_s, "user_sis_id_04",
-                                        "teacher", teacher_role.id.to_s, @enrollment6.course_section_id.to_s,
+                                        "teacher", teacher_role(root_account_id: @account.id).id.to_s, @enrollment6.course_section_id.to_s,
                                         nil, "deleted", nil, nil, "true", 'TeacherEnrollment', 'false',
                                         @enrollment6.id.to_s]]
       end
@@ -941,7 +971,7 @@ describe "Default Account Reports" do
         @section1.crosslist_to_course(course)
         parsed = read_report("provisioning_csv", {params: {'enrollments' => true}, account: sub, order: 0})
         expect(parsed).to eq [[course.id.to_s, "sis1", @user4.id.to_s, "user_sis_id_04",
-                               "teacher", teacher_role.id.to_s, @enrollment9.course_section_id.to_s,
+                               "teacher", teacher_role(root_account_id: @account.id).id.to_s, @enrollment9.course_section_id.to_s,
                                "english_section_1", "active", nil, nil, "true", 'TeacherEnrollment',
                                'false', @enrollment9.id.to_s]]
       end
@@ -968,7 +998,7 @@ describe "Default Account Reports" do
           expect(parsed.length).to eq 11
 
           expect(parsed[0]).to eq [@course1.id.to_s, "SIS_COURSE_ID_1", @user1.id.to_s,
-                                   'other_shard', "student", student_role.id.to_s,
+                                   'other_shard', "student", student_role(root_account_id: @account.id).id.to_s,
                                    @course1.enrollments.where(user_id: @user1).take.course_section_id.to_s,
                                    nil, "invited", nil, nil, "false", 'StudentEnrollment',
                                    "false", @e1.id.to_s, HostUrl.context_host(@root)]
@@ -1013,17 +1043,17 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 4
         expect(parsed).to match_array [[@group1.id.to_s, "group1sis", @group1.group_category_id.to_s, nil,
                                         @account.id.to_s, nil, nil, nil, "group1name", "available", "true",
-                                        @account.id.to_s, 'Account', @group1.group_category.id.to_s, nil],
+                                        @account.id.to_s, 'Account', nil],
                                        [@group2.id.to_s, "group2sis", @group2.group_category_id.to_s, nil,
                                         @sub_account.id.to_s, "sub1", nil, nil, "group2name", "available",
-                                        "true", @sub_account.id.to_s, 'Account', @group2.group_category.id.to_s, "2"],
+                                        "true", @sub_account.id.to_s, 'Account', "2"],
                                        [@group3.id.to_s, nil, nil, nil, @sub_account.id.to_s, "sub1", nil,
                                         nil, "group3name", "available", "false", @sub_account.id.to_s,
-                                        'Account', nil, nil],
+                                        'Account', nil],
                                        [@group5.id.to_s, "group5sis", @group5.group_category_id.to_s, nil,
                                         nil, nil,
                                         @course1.id.to_s, "SIS_COURSE_ID_1", "group5name", "available", "true",
-                                        @course1.id.to_s, 'Course', @group5.group_category.id.to_s, nil]]
+                                        @course1.id.to_s, 'Course', nil]]
       end
 
       it "should run the provisioning report on a sub account" do
@@ -1033,13 +1063,13 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 3
         expect(parsed).to match_array [[@group2.id.to_s, "group2sis", @group2.group_category_id.to_s, nil,
                                         @sub_account.id.to_s, "sub1", nil, nil, "group2name", "available",
-                                        "true", @sub_account.id.to_s, 'Account', @group2.group_category.id.to_s, "2"],
+                                        "true", @sub_account.id.to_s, 'Account', "2"],
                                        [@group3.id.to_s, nil, nil, nil, @sub_account.id.to_s, "sub1", nil,
-                                        nil, "group3name", "available", "false", @sub_account.id.to_s, 'Account', nil,
+                                        nil, "group3name", "available", "false", @sub_account.id.to_s, 'Account',
                                         nil],
                                        [@group5.id.to_s, "group5sis", @group5.group_category_id.to_s, nil,
                                         nil, nil, @course1.id.to_s, "SIS_COURSE_ID_1", "group5name", "available",
-                                        "true", @course1.id.to_s, 'Course', @group5.group_category.id.to_s, nil]]
+                                        "true", @course1.id.to_s, 'Course', nil]]
       end
 
       it "includes sub-sub-account groups when run on a sub account" do
@@ -1051,14 +1081,14 @@ describe "Default Account Reports" do
         expect(parsed.length).to eq 4
         expect(parsed).to match_array [[@group2.id.to_s, "group2sis", @group2.group_category_id.to_s, nil,
                                         @sub_account.id.to_s, "sub1", nil, nil, "group2name", "available", "true",
-                                        @sub_account.id.to_s, 'Account', @group2.group_category.id.to_s, "2"],
+                                        @sub_account.id.to_s, 'Account', "2"],
                                        [@group3.id.to_s, nil, nil, nil, @sub_account.id.to_s, "sub1", nil, nil,
-                                        "group3name", "available", "false", @sub_account.id.to_s, 'Account', nil, nil],
+                                        "group3name", "available", "false", @sub_account.id.to_s, 'Account', nil],
                                        [@group5.id.to_s, "group5sis", @group5.group_category_id.to_s, nil, nil, nil,
                                         @course1.id.to_s, "SIS_COURSE_ID_1", "group5name", "available", "true",
-                                        @course1.id.to_s, 'Course', @group5.group_category.id.to_s, nil],
+                                        @course1.id.to_s, 'Course', nil],
                                        [group6.id.to_s, nil, nil, nil, sub_sub_account.id.to_s, nil, nil, nil,
-                                        "group6name", "available", "false", sub_sub_account.id.to_s, 'Account', nil,
+                                        "group6name", "available", "false", sub_sub_account.id.to_s, 'Account',
                                         nil]]
       end
     end
@@ -1318,6 +1348,22 @@ describe "Default Account Reports" do
                                        ["user_sis_id_04", "user_sis_id_03", "active"]]
         expect(parsed.length).to eq 2
       end
+
+      it 'should not include unassociated observers when running from a sub-account' do
+        parameters = {}
+        parameters["user_observers"] = true
+        parsed = read_report("sis_export_csv", {account: @sub_account, params: parameters, order: 0, header: true})
+        expect(parsed).to match_array [['observer_id', 'student_id', 'status']]
+      end
+
+      it "should include associated observers when running from a sub-account" do
+        course_with_student(:account => @sub_account, :user => @user1)
+        parameters = {}
+        parameters["user_observers"] = true
+        parsed = read_report("sis_export_csv", {account: @sub_account, params: parameters, order: 0, header: true})
+        expect(parsed).to match_array [['observer_id', 'student_id', 'status'],
+          ["user_sis_id_02", "user_sis_id_01", "active"]]
+      end
     end
 
     describe 'admins' do
@@ -1340,7 +1386,7 @@ describe "Default Account Reports" do
         parameters['include_deleted'] = true
         parsed = read_report('sis_export_csv', {params: parameters, order: 3, header: true})
         expect(parsed).to match_array [['user_id', 'account_id', 'role_id', 'role', 'status'],
-                                       ['U001', 'sub1', admin_role.id.to_s, 'AccountAdmin', 'active'],
+                                       ['U001', 'sub1', admin_role(root_account_id: @account.id).id.to_s, 'AccountAdmin', 'active'],
                                        ['U002', nil, @role1.id.to_s, 'role1', 'active']]
       end
 
@@ -1353,11 +1399,11 @@ describe "Default Account Reports" do
         expect(parsed).to match_array [['admin_user_name', 'canvas_user_id', 'user_id', 'canvas_account_id',
                                         'account_id', 'role_id', 'role', 'status', 'created_by_sis'],
                                        ['user 1', @u1.id.to_s, 'U001', @sub_account.id.to_s, 'sub1',
-                                        admin_role.id.to_s, 'AccountAdmin', 'active', 'true'],
+                                        admin_role(root_account_id: @account.id).id.to_s, 'AccountAdmin', 'active', 'true'],
                                        ['user 2', @u2.id.to_s, 'U002', @account.id.to_s, nil,
                                         @role1.id.to_s, 'role1', 'active', 'true'],
                                        ['default admin', @admin.id.to_s, nil, @account.id.to_s, nil,
-                                        admin_role.id.to_s, 'AccountAdmin', 'active', 'false']]
+                                        admin_role(root_account_id: @account.id).id.to_s, 'AccountAdmin', 'active', 'false']]
       end
 
       describe 'sharding' do
@@ -1380,11 +1426,11 @@ describe "Default Account Reports" do
           parsed = read_report('sis_export_csv', {params: parameters, order: [3, 0], header: true})
 
           expect(parsed).to match_array [['user_id', 'account_id', 'role_id', 'role', 'status', 'root_account'],
-                                         ['U001', 'sub1', admin_role.id.to_s, 'AccountAdmin',
+                                         ['U001', 'sub1', admin_role(root_account_id: @account.id).id.to_s, 'AccountAdmin',
                                           'active', HostUrl.context_host(@account)],
                                          ['U002', nil, @role1.id.to_s, 'role1',
                                           'active', HostUrl.context_host(@account)],
-                                         ['other_shard', nil, admin_role.id.to_s, 'AccountAdmin',
+                                         ['other_shard', nil, admin_role(root_account_id: @account.id).id.to_s, 'AccountAdmin',
                                           'active', HostUrl.context_host(@root)]]
         end
       end
@@ -1446,7 +1492,7 @@ describe "Default Account Reports" do
                                           'login_id', 'password', 'first_name', 'last_name',
                                           'full_name', 'sortable_name', 'short_name', 'email', 'status']]
       expect(parsed["courses.csv"]).to eq [["course_id", "integration_id", "short_name", "long_name",
-                                            "account_id", "term_id", "status", "start_date", "end_date", "course_format"]]
+                                            "account_id", "term_id", "status", "start_date", "end_date", "course_format", "blueprint_course_id"]]
       expect(parsed["sections.csv"]).to eq [["section_id", "course_id", "integration_id", "name", "status",
                                              "start_date", "end_date"]]
       expect(parsed["enrollments.csv"]).to eq [["course_id", "user_id", "role", "role_id", "section_id",

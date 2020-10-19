@@ -16,20 +16,18 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Table from '@instructure/ui-elements/lib/components/Table'
-import ScreenReaderContent from '@instructure/ui-a11y/lib/components/ScreenReaderContent'
+import {Table} from '@instructure/ui-table'
+import {ScreenReaderContent} from '@instructure/ui-a11y'
 import React from 'react'
 import {arrayOf, string, object, func} from 'prop-types'
 import I18n from 'i18n!account_course_user_search'
 import UsersListRow from './UsersListRow'
 import UsersListHeader from './UsersListHeader'
 
-
 export default class UsersList extends React.Component {
-
   shouldComponentUpdate(nextProps) {
     let count = 0
-    for (let prop in this.props) {
+    for (const prop in this.props) {
       ++count
       if (this.props[prop] !== nextProps[prop]) {
         // a change to searchFilter on it's own should not cause the list
@@ -44,9 +42,9 @@ export default class UsersList extends React.Component {
 
   render() {
     return (
-      <Table margin="small 0" caption={<ScreenReaderContent>{I18n.t('Users')}</ScreenReaderContent>}>
-        <thead>
-          <tr>
+      <Table margin="small 0" caption={I18n.t('Users')}>
+        <Table.Head>
+          <Table.Row>
             <UsersListHeader
               id="username"
               label={I18n.t('Name')}
@@ -79,13 +77,13 @@ export default class UsersList extends React.Component {
               searchFilter={this.props.searchFilter}
               onUpdateFilters={this.props.onUpdateFilters}
             />
-            <th width="1" scope="col">
+            <Table.ColHeader id="header-user-option-links" width="1">
               <ScreenReaderContent>{I18n.t('User option links')}</ScreenReaderContent>
-            </th>
-          </tr>
-        </thead>
-        <tbody data-automation="users list">
-          {this.props.users.map(user =>
+            </Table.ColHeader>
+          </Table.Row>
+        </Table.Head>
+        <Table.Body data-automation="users list">
+          {this.props.users.map(user => (
             <UsersListRow
               handleSubmitEditUserForm={this.props.handleSubmitEditUserForm}
               key={user.id}
@@ -93,8 +91,8 @@ export default class UsersList extends React.Component {
               user={user}
               permissions={this.props.permissions}
             />
-          )}
-        </tbody>
+          ))}
+        </Table.Body>
       </Table>
     )
   }

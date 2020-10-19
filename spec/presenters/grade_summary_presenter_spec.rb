@@ -19,7 +19,6 @@ require File.expand_path(File.dirname(__FILE__) + '/../sharding_spec_helper')
 
 describe GradeSummaryPresenter do
   describe '#courses_with_grades' do
-
     describe 'all on one shard' do
       let(:course) { Course.create! }
       let(:presenter) { GradeSummaryPresenter.new(course, @user, nil) }
@@ -186,7 +185,7 @@ describe GradeSummaryPresenter do
       a.grade_student s4, grade: 99, grader: @teacher
       s4.enrollments.each(&:destroy)
 
-      AssignmentScoreStatisticsGenerator.update_score_statistics(@course.id)
+      ScoreStatisticsGenerator.update_score_statistics(@course.id)
 
       p = GradeSummaryPresenter.new(@course, @teacher, nil)
       stats = p.assignment_stats
@@ -214,7 +213,7 @@ describe GradeSummaryPresenter do
         enrollment.save!
       end
 
-      AssignmentScoreStatisticsGenerator.update_score_statistics(@course.id)
+      ScoreStatisticsGenerator.update_score_statistics(@course.id)
 
       p = GradeSummaryPresenter.new(@course, @teacher, nil)
       stats = p.assignment_stats
@@ -232,7 +231,7 @@ describe GradeSummaryPresenter do
       a.grade_student s3, grade: 10, grader: @teacher
       a.grade_student s4, grade: nil, grader: @teacher
 
-      AssignmentScoreStatisticsGenerator.update_score_statistics(@course.id)
+      ScoreStatisticsGenerator.update_score_statistics(@course.id)
 
       p = GradeSummaryPresenter.new(@course, @teacher, nil)
       stats = p.assignment_stats
@@ -262,7 +261,7 @@ describe GradeSummaryPresenter do
         enrollment.save!
       end
 
-      AssignmentScoreStatisticsGenerator.update_score_statistics(@course.id)
+      ScoreStatisticsGenerator.update_score_statistics(@course.id)
 
       p = GradeSummaryPresenter.new(@course, @teacher, nil)
       expect(p.assignment_stats.values.first.count).to eq 3
@@ -602,6 +601,70 @@ describe GradeSummaryPresenter do
       enrollment = gsp.student_enrollment_for(gspcourse, inactive_student.id)
 
       expect(enrollment).to eq(inactive_student_enrollment)
+    end
+  end
+
+  describe "#hidden_submissions?" do
+    let_once(:course) { Course.create! }
+    let_once(:student) { course.enroll_student(User.create!, enrollment_state: :active).user }
+    let_once(:teacher) { course.enroll_teacher(User.create!, enrollment_state: :active).user }
+
+    let_once(:assignment1) { course.assignments.create!(title: "a1") }
+    let_once(:assignment2) { course.assignments.create!(title: "a2") }
+
+    let_once(:presenter) { GradeSummaryPresenter.new(course, student, student.id) }
+
+    before(:once) do
+      assignment1.ensure_post_policy(post_manually: true)
+      assignment2.ensure_post_policy(post_manually: false)
+    end
+
+    it "returns true if any of the student's submissions in the course are graded and unposted" do
+      assignment1.grade_student(student, grader: teacher, score: 1)
+
+      expect(presenter).to be_hidden_submissions
+    end
+
+    it "returns true if any of the student's submissions are unposted and assignment posts manually" do
+      expect(presenter).to be_hidden_submissions
+    end
+
+    it "returns false if all of the student's submissions in the course are posted" do
+      assignment1.post_submissions
+      assignment2.post_submissions
+
+      expect(presenter).not_to be_hidden_submissions
+    end
+  end
+
+  describe "#show_updated_plagiarism_icons?" do
+    let_once(:actual_plagiarism_data) do
+      {
+        provider: "turnitin",
+        submission_0: { status: "pending" }
+      }
+    end
+    let_once(:course) { Course.create! }
+    let_once(:student) { course.enroll_student(User.create!, enrollment_state: :active).user }
+    let_once(:presenter) { GradeSummaryPresenter.new(course, student, student.id) }
+
+    it "returns false if no plagiarism data is supplied" do
+      course.root_account.enable_feature!(:new_gradebook_plagiarism_indicator)
+      expect(presenter).not_to be_show_updated_plagiarism_icons(nil)
+    end
+
+    it "returns false if vacuous plagiarism data is supplied" do
+      course.root_account.enable_feature!(:new_gradebook_plagiarism_indicator)
+      expect(presenter).not_to be_show_updated_plagiarism_icons({})
+    end
+
+    it "returns false if the new_gradebook_plagiarism_indicator flag is not enabled on the root account" do
+      expect(presenter).not_to be_show_updated_plagiarism_icons(actual_plagiarism_data)
+    end
+
+    it "returns true if given plagiarism data and the new_gradebook_plagiarism_indicator flag is enabled" do
+      course.root_account.enable_feature!(:new_gradebook_plagiarism_indicator)
+      expect(presenter).to be_show_updated_plagiarism_icons(actual_plagiarism_data)
     end
   end
 end

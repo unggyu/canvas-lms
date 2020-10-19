@@ -26,6 +26,7 @@ describe MasterCourses::MasterTemplate do
     it "should add a template to a course" do
       template = MasterCourses::MasterTemplate.set_as_master_course(@course)
       expect(template.course).to eq @course
+      expect(template.root_account).to eq @course.root_account
       expect(template.full_course).to eq true
 
       expect(MasterCourses::MasterTemplate.set_as_master_course(@course)).to eq template # should not create a copy
@@ -214,7 +215,7 @@ describe MasterCourses::MasterTemplate do
     end
 
     it "should touch content when tightening default_restrictions_by_type" do
-      @template.update_attributes(:use_default_restrictions_by_type => true,
+      @template.update(:use_default_restrictions_by_type => true,
         :default_restrictions_by_type => {
           'Assignment' => {:content => true, :points => true},
           'DiscussionTopic' => {:content => true},
@@ -230,7 +231,7 @@ describe MasterCourses::MasterTemplate do
           @template.create_content_tag_for!(obj, :use_default_restrictions => true)
         end
       end
-      @template.update_attributes(:default_restrictions_by_type => {
+      @template.update(:default_restrictions_by_type => {
         'Assignment' => {:content => true}, # lessened restrictions
         'DiscussionTopic' => {:content => true, :points => true},
         'Quizzes::Quiz' => {:content => true, :due_dates => true}

@@ -43,6 +43,10 @@ class AssignmentApiHarness
   def course_quiz_quiz_submissions_url(course, quiz, _options)
     "/course/#{course.id}/quizzes/#{quiz.id}/submissions?zip=1"
   end
+
+  def strong_anything
+    ArbitraryStrongishParams::ANYTHING
+  end
 end
 
 describe "Api::V1::Assignment" do
@@ -69,7 +73,6 @@ describe "Api::V1::Assignment" do
     end
 
     it "includes an associated planner override when flag is passed" do
-      assignment.context.root_account.enable_feature!(:student_planner)
       po = planner_override_model(user: user, plannable: assignment)
       json = api.assignment_json(assignment, user, session,
                                  {include_planner_override: true})
@@ -77,10 +80,41 @@ describe "Api::V1::Assignment" do
       expect(json['planner_override']['id']).to eq po.id
     end
 
+    it "includes the assignment's post policy" do
+      assignment.post_policy.update!(post_manually: true)
+
+      json = api.assignment_json(assignment, user, session)
+      expect(json["post_manually"]).to be true
+    end
+
     it "returns nil for planner override when flag is passed and there is no override" do
       json = api.assignment_json(assignment, user, session, {include_planner_override: true})
       expect(json.key?('planner_override')).to be_present
       expect(json['planner_override']).to be_nil
+    end
+
+    describe "the allowed_attempts attribute" do
+      it "returns -1 if set to nil" do
+        assignment.update_attribute(:allowed_attempts, nil)
+        json = api.assignment_json(assignment, user, session, {override_dates: false})
+        expect(json["allowed_attempts"]).to eq(-1)
+      end
+
+      it "returns -1 if set to -1" do
+        assignment.update_attribute(:allowed_attempts, -1)
+        json = api.assignment_json(assignment, user, session, {override_dates: false})
+        expect(json["allowed_attempts"]).to eq(-1)
+      end
+
+      it "returns any other values as set in the databse" do
+        assignment.update_attribute(:allowed_attempts, 1)
+        json = api.assignment_json(assignment, user, session, {override_dates: false})
+        expect(json["allowed_attempts"]).to eq(1)
+
+        assignment.update_attribute(:allowed_attempts, 2)
+        json = api.assignment_json(assignment, user, session, {override_dates: false})
+        expect(json["allowed_attempts"]).to eq(2)
+      end
     end
 
     context "for an assignment" do
@@ -150,6 +184,100 @@ describe "Api::V1::Assignment" do
       params = { override_dates: false, exclude_response_fields: ['needs_grading_count'] }
       json = api.assignment_json(assignment, user, session, params)
       expect(json).not_to have_key "needs_grading_count"
+    end
+
+    context 'rubrics' do
+      before do
+        rubric_model({
+          context: assignment.course,
+          title: "test rubric",
+          data: [{
+            description: "Some criterion",
+            points: 10,
+            id: 'crit1',
+            ignore_for_scoring: true,
+            ratings: [
+              {description: "Good", points: 10, id: 'rat1', criterion_id: 'crit1'}
+            ]
+          }]
+        })
+        @rubric.associate_with(assignment, assignment.course, purpose: 'grading')
+      end
+
+      it "includes ignore_for_scoring when it is on the rubric" do
+        json = api.assignment_json(assignment, user, session)
+        expect(json['rubric'][0]['ignore_for_scoring']).to eq true
+      end
+
+      it "includes hide_score_total setting in rubric_settings" do
+        json = api.assignment_json(assignment, user, session)
+        expect(json['rubric_settings']['hide_score_total']).to eq false
+      end
+
+      it "returns true for hide_score_total if set to true on the rubric association" do
+        ra = assignment.rubric_association
+        ra.hide_score_total = true
+        ra.save!
+        json = api.assignment_json(assignment, user, session)
+        expect(json['rubric_settings']['hide_score_total']).to eq true
+      end
+
+      it "includes hide_points setting in rubric_settings" do
+        json = api.assignment_json(assignment, user, session)
+        expect(json['rubric_settings']['hide_points']).to eq false
+      end
+
+      it "returns true for hide_points if set to true on the rubric association" do
+        ra = assignment.rubric_association
+        ra.hide_points = true
+        ra.save!
+        json = api.assignment_json(assignment, user, session)
+        expect(json['rubric_settings']['hide_points']).to eq true
+      end
+    end
+
+    describe 'N.Q respondus setting' do
+      context 'when N.Q respondus setting is on' do
+        before do
+          assignment.settings = {
+            'lockdown_browser' => {
+              'require_lockdown_browser' => true
+            }
+          }
+          assignment.save!
+        end
+
+        it 'serializes require_lockdown_browser to be true' do
+          json = api.assignment_json(assignment, user, session, {})
+          expect(json.key?('require_lockdown_browser')).to be_present
+          expect(json['require_lockdown_browser']).to be_truthy
+        end
+      end
+
+      context 'when N.Q respondus setting is off' do
+        before do
+          assignment.settings = {
+            'lockdown_browser' => {
+              'require_lockdown_browser' => false
+            }
+          }
+          assignment.save!
+        end
+
+        it 'serializes require_lockdown_browser to be false' do
+          json = api.assignment_json(assignment, user, session, {})
+          expect(json.key?('require_lockdown_browser')).to be_present
+          expect(json['require_lockdown_browser']).to be_falsy
+        end
+      end
+
+      context 'when N.Q respondus setting is off (default)' do
+        it 'serializes require_lockdown_browser to be false' do
+          json = api.assignment_json(assignment, user, session, {})
+          expect(json.key?('require_lockdown_browser')).to be_present
+          expect(json['require_lockdown_browser']).to be_falsy
+        end
+      end
     end
   end
 
@@ -294,6 +422,62 @@ describe "Api::V1::Assignment" do
           expect(api).to be_assignment_editable_fields_valid(assignment, user)
         end
       end
+    end
+  end
+
+  describe "update lockdown browser settings" do
+    let(:course) { Course.create! }
+    let(:teacher) { course.enroll_teacher(User.create!, enrollment_state: 'active').user }
+
+    let(:initial_lockdown_browser_params) do
+      ActionController::Parameters.new({
+        'require_lockdown_browser' => 'true',
+        'require_lockdown_browser_for_results' => 'false',
+        'require_lockdown_browser_monitor' => 'true',
+        'lockdown_browser_monitor_data' => 'some monitor data',
+        'access_code' => 'magggic code'
+      })
+    end
+
+    let(:lockdown_browser_params) do
+      ActionController::Parameters.new({
+        'require_lockdown_browser_for_results' => 'true',
+        'lockdown_browser_monitor_data' => 'some monitor data cchanges',
+        'access_code' => 'magggic coddddde'
+      })
+    end
+
+    let(:assignment) do
+      course.assignments.create!(
+        title: 'hi',
+        moderated_grading: true,
+        grader_count: 1,
+        final_grader: teacher
+      )
+    end
+
+    before do
+      allow(course).to receive(:account_membership_allows).and_return(false)
+    end
+
+    it "creates and updates lockdown browser settings" do
+      api.update_api_assignment(assignment, initial_lockdown_browser_params, teacher)
+      expect(assignment.settings['lockdown_browser']).to eq(
+        'require_lockdown_browser' => true,
+        'require_lockdown_browser_for_results' => false,
+        'require_lockdown_browser_monitor' => true,
+        'lockdown_browser_monitor_data' => 'some monitor data',
+        'access_code' => 'magggic code'
+      )
+
+      api.update_api_assignment(assignment, lockdown_browser_params, teacher)
+      expect(assignment.settings['lockdown_browser']).to eq(
+        'require_lockdown_browser' => true,
+        'require_lockdown_browser_for_results' => true,
+        'require_lockdown_browser_monitor' => true,
+        'lockdown_browser_monitor_data' => 'some monitor data cchanges',
+        'access_code' => 'magggic coddddde'
+      )
     end
   end
 end

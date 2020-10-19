@@ -21,7 +21,6 @@ describe "assignments" do
   include_context "in-process server selenium tests"
 
   context "peer reviews" do
-
     it "allows deleting a peer review", priority: "2", test_id: 216382 do
       skip_if_safari(:alert)
       course_with_teacher_logged_in
@@ -109,7 +108,7 @@ describe "assignments" do
 
         f('.assess_submission_link').click
         wait_for_animations
-        f('.rubric_table .criterion .rating').click
+        f('.rating-description').click
         f('#rubric_holder .save_rubric_button').click
         wait_for_ajaximations
 
@@ -137,7 +136,7 @@ describe "assignments" do
 
       f('.assess_submission_link').click
       wait_for_animations
-      f('.rubric_table .criterion .rating').click
+      f('.rating-description').click
       f('.save_rubric_button').click
       wait_for_ajaximations
 
@@ -152,11 +151,13 @@ describe "assignments" do
     let!(:reviewed) { student_in_course(active_all: true).user }
     let!(:reviewer) { student_in_course(active_all: true).user }
     let!(:assignment) {
-      assignment_model({
+      @assignment = assignment_model({
         course: review_course,
         peer_reviews: true,
         anonymous_peer_reviews: true
       })
+      @assignment.unmute!
+      @assignment
     }
     let!(:submission) {
       submission_model({
@@ -233,7 +234,7 @@ describe "assignments" do
       before(:each) { user_logged_in(user: reviewer) }
 
       it 'should show comment reviewer name on submission page', priority: "1", test_id: 216387 do
-        get "/courses/#{review_course.id}/assignments/#{assignment.id}/submissions/#{reviewed.id}"
+        get "/courses/#{review_course.id}/assignments/#{assignment.id}/anonymous_submissions/#{submission.anonymous_id}"
         expect(f("#submission_comment_#{comment.id} .author_name")).to include_text(comment.author_name)
       end
     end
@@ -287,11 +288,11 @@ describe "assignments" do
         submission.turnitin_data_changed!
         submission.save!
       }
+
       it 'should show the plagiarism report link for reviewer', priority: "1", test_id: 216392 do
-        get "/courses/#{review_course.id}/assignments/#{assignment.id}/submissions/#{reviewed.id}"
+        get "/courses/#{review_course.id}/assignments/#{assignment.id}/anonymous_submissions/#{submission.anonymous_id}"
         expect(f(".turnitin_similarity_score")).to be_displayed
       end
     end
-
   end
 end

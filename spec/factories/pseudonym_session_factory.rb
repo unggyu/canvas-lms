@@ -29,7 +29,8 @@ module Factories
         :user => user,
         :login_count => 1,
         :global_account_id => '10000000000001',
-        :sis_user_id => 'U001'
+        :sis_user_id => 'U001',
+        :shard => Shard.default
       )
       # at least one thing cares about the id of the pseudonym... using the
       # object_id should make it unique (but obviously things will fail if
@@ -38,13 +39,20 @@ module Factories
       allow(pseudonym).to receive(:unique_id).and_return('unique_id')
     end
 
-    session = double('PseudonymSession', :record => pseudonym, :session_credentials => nil)
+    session = double('PseudonymSession',
+      :record => pseudonym
+    )
 
     @session_stubbed = true
     allow(PseudonymSession).to receive(:find).and_wrap_original do |original|
       next original.call unless @session_stubbed
       session
     end
+    allow(PseudonymSession).to receive(:find_with_validation).and_wrap_original do |original|
+      next original.call unless @session_stubbed
+      session
+    end
+    session
   end
 
   def remove_user_session

@@ -46,7 +46,7 @@ describe Score do
 
   subject_once(:score) { student.scores.create!(params) }
 
-  it { is_expected.to belong_to(:enrollment) }
+  it { is_expected.to belong_to(:enrollment).required }
   # shoulda-matchers will have an `optional` method in version 4. As a workaround,
   # I've used the validates_presence_of matcher on the line following the belong_to matcher
   it { is_expected.to belong_to(:grading_period) }
@@ -130,6 +130,35 @@ describe Score do
     end
   end
 
+  describe "root_account_id" do
+    context "on create" do
+      it "sets root_account_id to the enrollment's root_account_id if root_account_id is nil" do
+        score = student.scores.create!(params)
+        expect(score.root_account_id).to eq student.root_account_id
+      end
+
+      it "does not modify root_account_id if it is already set" do
+        second_account = account_model
+        score = student.scores.create!(params.merge(root_account_id: second_account.id))
+        expect(score.root_account_id).to eq second_account.id
+      end
+    end
+
+    context "on update" do
+      it "sets root_account_id to the enrollment's root_account_id if root_account_id is nil" do
+        score.update_column(:root_account_id, nil)
+        score.update!(current_score: 0)
+        expect(score.root_account_id).to eq student.root_account_id
+      end
+
+      it "does not modify root_account_id if it is already set" do
+        second_account = account_model
+        score.update!(root_account_id: second_account.id)
+        expect(score.root_account_id).to eq second_account.id
+      end
+    end
+  end
+
   describe '#destroy' do
     context 'with score metadata' do
       let(:metadata) { score.create_score_metadata!(calculation_details: { foo: :bar }) }
@@ -150,7 +179,7 @@ describe Score do
       describe 'score_metadata association' do
         it 'also permanently destroys score metadata' do
           metadata.score.destroy_permanently!
-          expect(metadata).to be_destroyed
+          expect { metadata.reload }.to raise_error(ActiveRecord::RecordNotFound)
         end
       end
     end
@@ -268,6 +297,32 @@ describe Score do
       @enrollment.course.hide_final_grade = true
       @enrollment.course.save!
       expect(score.grants_right? @enrollment.user, :read).to eq false
+    end
+  end
+
+  describe "final grade override" do
+    describe "#effective_final_score" do
+      it "returns the override score when one is present" do
+        score.update!(override_score: 88)
+        expect(score.effective_final_score).to eq 88
+      end
+
+      it "returns the calculated final score when no override is present" do
+        expect(score.effective_final_score).to eq 74
+      end
+    end
+
+    describe "#effective_final_grade" do
+      it "returns a grade commensurate with the override score when one is present" do
+        score.update!(override_score: 88)
+        allow(score.course).to receive(:grading_standard_enabled?).and_return(true)
+        expect(score.effective_final_grade).to eq 'B+'
+      end
+
+      it "returns the calculated final grade when no override score is present" do
+        allow(score.course).to receive(:grading_standard_enabled?).and_return(true)
+        expect(score.effective_final_grade).to eq 'C'
+      end
     end
   end
 end

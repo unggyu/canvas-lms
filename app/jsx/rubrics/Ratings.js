@@ -21,26 +21,29 @@ import $ from 'jquery'
 import React from 'react'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
-import Text from '@instructure/ui-elements/lib/components/Text'
-import I18n from 'i18n!edit_rubric'
+import {Text} from '@instructure/ui-text'
+import {Flex} from '@instructure/ui-flex'
+import I18n from 'i18n!edit_rubricRatings'
 
-import { ratingShape, tierShape } from './types'
+import {ratingShape, tierShape} from './types'
 
 const pointString = (points, endOfRangePoints) => {
   if (endOfRangePoints !== null) {
     return I18n.t('%{points} to >%{endOfRangePoints} pts', {
-      points: I18n.toNumber(points, { precision : 1 }),
-      endOfRangePoints: I18n.toNumber(endOfRangePoints, { precision : 1 })
+      points: I18n.toNumber(points, {precision: 2, strip_insignificant_zeros: true}),
+      endOfRangePoints: I18n.toNumber(endOfRangePoints, {
+        precision: 2,
+        strip_insignificant_zeros: true
+      })
     })
-  }
-  else {
+  } else {
     return I18n.t('%{points} pts', {
-      points: I18n.toNumber(points, { precision : 1 })
+      points: I18n.toNumber(points, {precision: 2, strip_insignificant_zeros: true})
     })
   }
 }
 
-export const Rating = (props) => {
+export const Rating = props => {
   const {
     assessing,
     classes,
@@ -57,8 +60,8 @@ export const Rating = (props) => {
     selected
   } = props
 
-  const shaderStyle = { backgroundColor: tierColor }
-  const triangleStyle = { borderBottomColor: tierColor }
+  const shaderStyle = {backgroundColor: tierColor}
+  const triangleStyle = {borderBottomColor: tierColor}
   const shaderClasses = classNames('shader', shaderClass)
 
   const ratingPoints = () => (
@@ -70,11 +73,15 @@ export const Rating = (props) => {
   )
 
   return (
+    // eslint is unhappy here because it's not smart enough to understand that
+    // when this is interact-able (via tabIndex), it will always have a role
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className={classes}
       onClick={assessing ? onClick : null}
-      onKeyPress={(e) => e.key === 'Enter' ? onClick() : null}
-      role={assessing ? "button" : null}
+      onKeyPress={e => (e.key === 'Enter' ? onClick() : null)}
+      role={assessing ? 'button' : null}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       tabIndex={assessing ? 0 : null}
     >
       {hidePoints ? null : ratingPoints()}
@@ -86,16 +93,13 @@ export const Rating = (props) => {
       <Text size="small" lineHeight="condensed">
         {long_description}
       </Text>
-      {
-        footer !== null ? (
-          <div className="rating-footer">
-            {footer}
-          </div>
-        ) : null
-      }
-      <div className={shaderClasses} style={shaderStyle}
-        aria-label={isSummary || !selected ? null : I18n.t('This rating is selected')}>
-        <div className="triangle" style={triangleStyle}/>
+      <div className="rating-footer">{footer}</div>
+      <div
+        className={shaderClasses}
+        style={shaderStyle}
+        aria-label={isSummary || !selected ? null : I18n.t('This rating is selected')}
+      >
+        <div className="triangle" style={triangleStyle} />
       </div>
     </div>
   )
@@ -103,8 +107,9 @@ export const Rating = (props) => {
 
 const getCustomColor = (points, pointsPossible, customRatings) => {
   const sortedRatings = _.sortBy(customRatings, 'points').reverse()
-  const scaledPoints = pointsPossible > 0 ? points * (sortedRatings[0].points / pointsPossible) : points
-  const selectedRating = _.find(sortedRatings, (rating) => ( scaledPoints >= rating.points ))
+  const scaledPoints =
+    pointsPossible > 0 ? points * (sortedRatings[0].points / pointsPossible) : points
+  const selectedRating = _.find(sortedRatings, rating => scaledPoints >= rating.points)
   if (selectedRating) {
     return `#${selectedRating.color}`
   } else {
@@ -129,9 +134,10 @@ Rating.defaultProps = {
   shaderClass: null
 }
 
-const Ratings = (props) => {
+const Ratings = props => {
   const {
     assessing,
+    selectedRatingId,
     customRatings,
     defaultMasteryThreshold,
     footer,
@@ -146,15 +152,24 @@ const Ratings = (props) => {
 
   const pairs = tiers.map((tier, index) => {
     const next = tiers[index + 1]
-    return { current: tier.points, next: next ? next.points : null }
+    return {current: tier.points, next: next ? next.points : null}
   })
 
-  const currentIndex = () => pairs.findIndex(({ current, next }) => {
-    const currentMatch = points === current
-    const withinRange = points > next && points <= current
-    const zeroAndInLastRange = points === 0 && next === null
-    return currentMatch || (useRange && (withinRange || zeroAndInLastRange))
-  })
+  const currentIndex = () => {
+    if (selectedRatingId) {
+      return _.findIndex(
+        tiers,
+        tier => tier.id === selectedRatingId && (useRange || tier.points === points)
+      )
+    } else {
+      return pairs.findIndex(({current, next}) => {
+        const currentMatch = points === current
+        const withinRange = points > next && points <= current
+        const zeroAndInLastRange = points === 0 && next === null
+        return currentMatch || (useRange && (withinRange || zeroAndInLastRange))
+      })
+    }
+  }
 
   const getRangePoints = (currentPoints, nextTier) => {
     if (nextTier) {
@@ -165,8 +180,10 @@ const Ratings = (props) => {
     return null
   }
 
-  const getTierColor = (selected) => {
-    if (!selected) { return 'transparent' }
+  const getTierColor = selected => {
+    if (!selected) {
+      return 'transparent'
+    }
     if (customRatings && customRatings.length > 0) {
       return getCustomColor(points, pointsPossible, customRatings)
     } else {
@@ -174,67 +191,89 @@ const Ratings = (props) => {
     }
   }
 
-  const getShaderClass = (selected) => {
-    if (!selected) { return null }
-    if (customRatings && customRatings.length > 0) { return null }
+  const getShaderClass = selected => {
+    if (!selected) {
+      return null
+    }
+    if (customRatings && customRatings.length > 0) {
+      return null
+    }
     if (points >= defaultMasteryThreshold * 1.5) {
       return 'exceedsMasteryShader'
-    }
-    else if (points >= defaultMasteryThreshold) {
+    } else if (points >= defaultMasteryThreshold) {
       return 'meetsMasteryShader'
-    } else if (points >= defaultMasteryThreshold/2) {
+    } else if (points >= defaultMasteryThreshold / 2) {
       return 'nearMasteryShader'
     } else {
       return 'wellBelowMasteryShader'
     }
   }
 
-  const handleClick = (tierPoints) => {
-    onPointChange(tierPoints)
+  const handleClick = tier => {
+    onPointChange(tier)
     $.screenReaderFlashMessage(I18n.t('Rating selected'))
   }
 
   const selectedIndex = points !== undefined ? currentIndex() : null
-  const ratings = tiers.map((tier, index) => {
-    const selected = selectedIndex === index
-    if (isSummary && !selected) return null
-    const classes = classNames({
-      'rating-tier': true,
-      'selected': selected,
-    })
 
-    return (
-      <Rating
-        key={index} // eslint-disable-line react/no-array-index-key
-        assessing={assessing}
-        classes={classes}
-        endOfRangePoints={useRange ? getRangePoints(tier.points, tiers[index + 1]) : null}
-        footer={footer}
-        onClick={() => handleClick(tier.points)}
-        shaderClass={getShaderClass(selected)}
-        tierColor={getTierColor(selected)}
-        hidePoints={isSummary || hidePoints}
-        isSummary={isSummary}
-        selected={selected}
-        {...tier}
-      />
-    )
-  }).filter((v) => v !== null)
+  const visible = tiers
+    .map((tier, index) => ({
+      tier,
+      index,
+      selected: selectedIndex === index
+    }))
+    .filter(({selected}) => (isSummary ? selected : true))
+
+  const ratings = visible
+    .map(({tier, index}) => {
+      const selected = selectedIndex === index
+      const classes = classNames({
+        'rating-tier': true,
+        selected,
+        assessing
+      })
+
+      return (
+        <Flex.Item key={`tier-${index}`} width={`${100 / visible.length}%`}>
+          <Rating
+            key={index}
+            assessing={assessing}
+            classes={classes}
+            endOfRangePoints={useRange ? getRangePoints(tier.points, tiers[index + 1]) : null}
+            footer={isSummary ? footer : null}
+            onClick={() => handleClick(tier)}
+            shaderClass={getShaderClass(selected)}
+            tierColor={getTierColor(selected)}
+            hidePoints={isSummary || hidePoints}
+            isSummary={isSummary}
+            selected={selected}
+            {...tier}
+          />
+        </Flex.Item>
+      )
+    })
+    .filter(v => v !== null)
 
   const defaultRating = () => (
     <Rating
       key={0}
+      assessing={assessing}
       classes="rating-tier"
       description={I18n.t('No details')}
       footer={footer}
+      isSummary={isSummary}
       points={0}
       hidePoints={isSummary || hidePoints}
     />
   )
 
+  const fullFooter = () =>
+    isSummary || _.isNil(footer) ? null : <div className="rating-all-footer">{footer}</div>
+
   return (
-    <div className={classNames("rating-tier-list", { 'react-assessing': assessing })}>
-      {ratings.length > 0 || !isSummary ? ratings : defaultRating()}
+    <div>
+      <Flex>{ratings.length > 0 || !isSummary ? ratings : defaultRating()}</Flex>
+      {fullFooter()}
     </div>
   )
 }
@@ -249,7 +288,7 @@ Ratings.propTypes = {
 Ratings.defaultProps = {
   footer: null,
   hidePoints: false,
-  onPointChange: () => { }
+  onPointChange: () => {}
 }
 
 export default Ratings

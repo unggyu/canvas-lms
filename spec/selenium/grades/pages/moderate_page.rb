@@ -32,8 +32,12 @@ class ModeratePage
       grade_input_dropdown_list(student)[position].click
     end
 
-    def click_post_grades_button
-      post_grades_button.click
+    def click_release_grades_button
+      release_grades_button.click
+    end
+
+    def click_post_to_students_button
+      post_to_students_button.click
     end
 
     def click_page_number(page_number)
@@ -44,6 +48,24 @@ class ModeratePage
       grade_input(student).click
       grade_input(student).send_keys(:backspace, grade)
       grade_input_dropdown_list(student).find {|k| k.text == "#{grade} (Custom)"}.click
+    end
+
+    def click_student_link(student)
+      wait_for_new_page_load{ student_link(student).click }
+    end
+
+    def fetch_selected_final_grade_text(student)
+      grade_input(student).click
+      text = grade_input_dropdown_list(student).find{|e| e.attribute('aria-selected') == "true"}.text
+      # close the menu
+      grade_input(student).send_keys(:escape)
+      text
+    end
+
+    def accept_grades_for_grader(grader)
+      accept_grades_button(grader).click
+      # wait for Accepted button to exist
+      fj("#grader-row-#{grader.id} button:contains('Accepted')")
     end
 
     # Methods
@@ -78,6 +100,10 @@ class ModeratePage
       f("#main")
     end
 
+    def accept_grades_button(grader)
+      fj("#grader-row-#{grader.id} button:contains('Accept')")
+    end
+
     def student_table_headers
       ff('.GradesGrid__GraderHeader')
     end
@@ -90,12 +116,20 @@ class ModeratePage
       fj(".GradesGrid__BodyRow:contains('#{name}')")
     end
 
-    def post_grades_button
-      fj("button:contains('Post')")
+    def release_grades_button
+      fj("button:contains('Release Grades')")
     end
 
-    def grades_posted_button
-      fj("button:contains('Grades Posted')")
+    def grades_released_button
+      fj("button:contains('Grades Released')")
+    end
+
+    def post_to_students_button
+      fj("button:contains('Post to Students')")
+    end
+
+    def grades_posted_to_students_button
+      fj("button:contains('Grades Posted to Students')")
     end
 
     def page_buttons
@@ -107,15 +141,19 @@ class ModeratePage
     end
 
     def grade_input(student)
-      f('input', student_table_row_by_displayed_name(student.name))
+      f('.GradesGrid__FinalGradeCell input', student_table_row_by_displayed_name(student.name))
     end
 
     def grade_input_dropdown_list(student)
-      ff('li', student_table_row_by_displayed_name(student.name))
+      ff("ul##{grade_input(student).attribute('aria-controls')} li")
     end
 
     def grade_input_dropdown(student)
-      f('ul', student_table_row_by_displayed_name(student.name))
+      f("ul##{grade_input(student).attribute('aria-controls')}")
+    end
+
+    def student_link(student_name)
+      fj(".GradesGrid__BodyRow a:contains('#{student_name}')")
     end
   end
 end

@@ -151,9 +151,9 @@ input[type="checkbox"] {
 // Set the height of select and file controls to match text inputs
 select,
 input[type="file"] {
-  // Adding "8" to the total to account for the extra padding on the updated button styles
-  height: $inputHeight + 8;
-  line-height: $inputHeight + 8;
+  // Adding "0.5" to the total to account for the extra padding on the updated button styles
+  height: $inputHeightRem + 0.5;
+  line-height: $inputHeightRem + 0.5;
 }
 
 // Make select elements obey height by applying a border
@@ -161,6 +161,11 @@ select {
   width: 220px; // default input width + 10px of padding that doesn't get applied
   border: 1px solid $inputBorder;
   background-color: $inputBackground; // Chrome on Linux and Mobile Safari need background-color
+}
+
+select.responsive-width {
+  width: unset;
+  min-width: 220px;
 }
 
 // Make multiple select elements height not fixed
@@ -372,14 +377,14 @@ input[type="checkbox"][readonly] {
 
 // HTML5 invalid states
 // Shares styles with the .control-group.error above
-input:focus:required:invalid,
-textarea:focus:required:invalid,
-select:focus:required:invalid {
+input[type]:required:invalid,
+textarea:required:invalid,
+select:required:invalid {
   color: #b94a48;
   border-color: #ee5f5b;
+  @include box-shadow(0 0 6px lighten(#ee5f5b, 20%));
   &:focus {
     border-color: darken(#ee5f5b, 10%);
-    @include box-shadow(0 0 6px lighten(#ee5f5b, 20%));
   }
 }
 
@@ -456,7 +461,7 @@ This is the standard form actions button bar at the bottom of every content form
   .uneditable-input {
     position: relative; // placed here by default so that on :focus we can place the input above the .add-on for full border and box-shadow goodness
     margin-bottom: 0; // prevent bottom margin from screwing up alignment in stacked forms
-    *margin-left: 0;
+    *margin-#{direction(left)}: 0;
     vertical-align: top;
     border-radius: direction-corners(0 $inputBorderRadius $inputBorderRadius 0);
     // Make input on top when focused so blue border and shadow always show
@@ -504,9 +509,9 @@ This is the standard form actions button bar at the bottom of every content form
   input,
   select,
   .uneditable-input {
-    border-radius: $inputBorderRadius 0 0 $inputBorderRadius;
+    border-radius: direction-corners($inputBorderRadius 0 0 $inputBorderRadius);
     + .btn-group .btn {
-      border-radius: 0 $inputBorderRadius $inputBorderRadius 0;
+      border-radius: direction-corners(0 $inputBorderRadius $inputBorderRadius 0);
     }
   }
   .add-on,
@@ -527,21 +532,21 @@ This is the standard form actions button bar at the bottom of every content form
   .uneditable-input {
     border-radius: 0;
     + .btn-group .btn {
-      border-radius: 0 $inputBorderRadius $inputBorderRadius 0;
+      border-radius: direction-corners(0 $inputBorderRadius $inputBorderRadius 0);
     }
   }
   .add-on:#{direction-if(rtl, last, first)}-child,
   .btn:#{direction-if(rtl, last, first)}-child {
-    margin-right: -1px;
+    margin-#{direction(right)}: -1px;
     border-radius: $inputBorderRadius 0 0 $inputBorderRadius;
   }
   .add-on:#{direction-if(rtl, first, last)}-child,
   .btn:#{direction-if(rtl, first, last)}-child {
-    margin-left: -1px;
+    margin-#{direction(left)}: -1px;
     border-radius: 0 $inputBorderRadius $inputBorderRadius 0;
   }
   .btn-group:#{direction-if(rtl, last, first)}-child {
-    margin-left: 0;
+    margin-#{direction(left)}: 0;
   }
 }
 
@@ -552,10 +557,10 @@ This is the standard form actions button bar at the bottom of every content form
 // -----------
 
 input.search-query {
-  padding-right: 14px;
-  padding-right: 4px \9;
-  padding-left: 14px;
-  padding-left: 4px \9; /* IE7-8 doesn't have border-radius, so don't indent the padding */
+  padding-#{direction(right)}: 14px;
+  padding-#{direction(right)}: 4px \9;
+  padding-#{direction(left)}: 14px;
+  padding-#{direction(left)}: 4px \9; /* IE7-8 doesn't have border-radius, so don't indent the padding */
   margin-bottom: 0; // Remove the default margin on all inputs
 }
 
@@ -669,6 +674,9 @@ legend + .control-group {
   .controls {
     margin-#{direction(left)}: $horizontalComponentOffset;
   }
+  .controls .controls-section {
+    margin-top: 5px;
+  }
   // Remove bottom margin on block level help text since that's accounted for on .control-group
   .help-block {
     margin-bottom: 0;
@@ -684,5 +692,78 @@ legend + .control-group {
   // Move over buttons in .form-actions to align with .controls
   .form-actions {
     padding-#{direction(left)}: $horizontalComponentOffset;
+  }
+}
+
+.form-horizontal .margin-t-m { // todo: can we have margin utils?
+  margin-top: 1rem;
+}
+
+.form-horizontal .responsive-control-group {
+  display: flex;
+
+  .control-label {
+    flex-basis: $horizontalComponentOffset - $spacing-width;
+    flex-grow: 0;
+    padding-#{direction(right)}: $spacing-width;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    margin-#{direction(left)}: inherit; // undo cascade
+  }
+
+  .controls .input-append,
+  .responsive-input-with-add-on {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .controls .input-append input,
+  .responsive-control-input {
+    flex-grow: 1;
+  }
+
+  .controls .input-append .add-on,
+  .responsive-control-add-on {
+    flex-grow: 0;
+    width: auto; // potentially shrink it down to fit content
+  }
+}
+
+@include desktop-only {
+  .form-horizontal .responsive-control-group {
+    margin-bottom: $baseLineHeight;
+  }
+
+  .form-horizontal .responsive-button-container {
+    margin-left: $horizontalComponentOffset;
+  }
+
+  .form-horizontal .responsive-control-button {
+    align-self: flex-start;
+  }
+}
+
+@include mobile-only {
+  .form-horizontal .responsive-control-group {
+    flex-direction: column;
+  }
+
+  .form-horizontal .responsive-control-group .control-label {
+    flex-basis: inherit;  // undo cascade
+    float: inherit;  // undo cascade
+    padding-#{direction(right)}: inherit;
+    text-align: inherit; // undo cascade
+  }
+
+  .form-horizontal .responsive-button-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-horizontal .responsive-control-button {
+    flex-grow: 1;
   }
 }

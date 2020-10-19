@@ -101,10 +101,12 @@ class AssignmentGroupsController < ApplicationController
   # Returns the paginated list of assignment groups for the current context.
   # The returned groups are sorted by their position field.
   #
-  # @argument include[] [String, "assignments"|"discussion_topic"|"all_dates"|"assignment_visibility"|"overrides"|"submission"]
-  #  Associations to include with the group. "discussion_topic", "all_dates"
+  # @argument include[] [String, "assignments"|"discussion_topic"|"all_dates"|"assignment_visibility"|"overrides"|"submission"|"observed_users"|"can_edit"|"score_statistics"]
+  #  Associations to include with the group. "discussion_topic", "all_dates", "can_edit",
   #  "assignment_visibility" & "submission" are only valid if "assignments" is also included.
+  #  "score_statistics" requires that the "assignments" and "submission" options are included.
   #  The "assignment_visibility" option additionally requires that the Differentiated Assignments course feature be turned on.
+  #  If "observed_users" is passed along with "assignments" and "submission", submissions for observed users will also be included as an array.
   #
   # @argument exclude_assignment_submission_types[] [String, "online_quiz"|"discussion_topic"|"wiki_page"|"external_tool"]
   #  If "assignments" are included, those with the specified submission types
@@ -126,22 +128,24 @@ class AssignmentGroupsController < ApplicationController
   #
   # @returns [AssignmentGroup]
   def index
-    if authorized_action(@context.assignment_groups.temp_record, @current_user, :read)
-      groups = Api.paginate(@context.assignment_groups.active, self, api_v1_course_assignment_groups_url(@context))
+    Shackles.activate(:slave) do
+      if authorized_action(@context.assignment_groups.temp_record, @current_user, :read)
+        groups = Api.paginate(@context.assignment_groups.active, self, api_v1_course_assignment_groups_url(@context))
 
-      assignments = if include_params.include?('assignments')
-        visible_assignments(@context, @current_user, groups)
-      else
-        []
-      end
+        assignments = if include_params.include?('assignments')
+                        visible_assignments(@context, @current_user, groups)
+                      else
+                        []
+                      end
 
-      if assignments.any? && include_params.include?('submission')
-        submissions = submissions_hash(['submission'], assignments)
-      end
+        if assignments.any? && include_params.include?('submission')
+          submissions = submissions_hash(include_params, assignments)
+        end
 
-      respond_to do |format|
-        format.json do
-          render json: index_groups_json(@context, @current_user, groups, assignments, submissions)
+        respond_to do |format|
+          format.json do
+            render json: index_groups_json(@context, @current_user, groups, assignments, submissions)
+          end
         end
       end
     end
@@ -165,8 +169,26 @@ class AssignmentGroupsController < ApplicationController
 
       return render json: { message: t("Cannot move assignments due to closed grading periods") }, status: :unauthorized unless can_reorder_assignments?(assignments, @group)
 
-      assignments.update_all(assignment_group_id: @group.id, updated_at: Time.now.utc)
-      @context.active_quizzes.where(assignment_id: order).update_all(assignment_group_id: @group.id, updated_at: Time.now.utc)
+      assignment_ids_to_update = assignments.where.not(:assignment_group_id => @group.id).pluck(:id)
+      tags_to_update = []
+      if assignment_ids_to_update.any?
+        assignments.where(:id => assignment_ids_to_update).update_all(assignment_group_id: @group.id, updated_at: Time.now.utc)
+        tags_to_update += MasterCourses::ChildContentTag.where(:content_type => "Assignment", :content_id => assignment_ids_to_update).to_a
+        Canvas::LiveEvents.send_later_if_production(:assignments_bulk_updated, assignment_ids_to_update)
+      end
+      quizzes = @context.active_quizzes.where(assignment_id: order)
+      quiz_ids_to_update = quizzes.where.not(:assignment_group_id => @group.id).pluck(:id)
+      if quiz_ids_to_update.any?
+        quizzes.where(:id => quiz_ids_to_update).update_all(assignment_group_id: @group.id, updated_at: Time.now.utc)
+        tags_to_update += MasterCourses::ChildContentTag.where(:content_type => "Quizzes::Quiz", :content_id => quiz_ids_to_update).to_a
+      end
+      tags_to_update.each do |mc_tag|
+        unless mc_tag.downstream_changes.include?("assignment_group_id")
+          mc_tag.downstream_changes << "assignment_group_id"
+          mc_tag.save!
+        end
+      end
+
       @group.assignments.first.update_order(order) unless @group.assignments.empty?
       groups = AssignmentGroup.where(id: group_ids)
       groups.touch_all
@@ -323,13 +345,13 @@ class AssignmentGroupsController < ApplicationController
 
   def index_groups_json(context, current_user, groups, assignments, submissions = [])
     include_overrides = include_params.include?('overrides')
+    include_score_statistics = include_params.include?('score_statistics')
 
     assignments_by_group = assignments.group_by(&:assignment_group_id)
     preloaded_attachments = user_content_attachments(assignments, context)
 
     unless assignment_excludes.include?('in_closed_grading_period')
-      closed_grading_period_hash =
-        EffectiveDueDates.for_course(context, assignments).to_hash([:in_closed_grading_period])
+      closed_grading_period_hash = in_closed_grading_period_hash(context, assignments)
     end
 
     if assignments.any? && context.grants_right?(current_user, session, :manage_assignments)
@@ -348,6 +370,7 @@ class AssignmentGroupsController < ApplicationController
         assignment_visibilities: assignment_visibilities(context, assignments),
         exclude_response_fields: assignment_excludes,
         include_overrides: include_overrides,
+        include_score_statistics: include_score_statistics,
         submissions: submissions,
         closed_grading_period_hash: closed_grading_period_hash,
         master_course_status: mc_status

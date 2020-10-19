@@ -16,8 +16,6 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'action_controller_test_process'
-
 # @API Submissions
 #
 # @model MediaComment
@@ -122,6 +120,12 @@ class SubmissionsController < SubmissionsBaseController
 
     return render_unauthorized_action unless @submission.can_view_details?(@current_user)
 
+    # If anonymous peer reviews are enabled, submissions must be peer-reviewed
+    # via this controller's anonymous counterpart
+    return render_unauthorized_action if @assignment.anonymous_peer_reviews? && @submission.peer_reviewer?(@current_user)
+
+    @google_analytics_page_title = "#{@assignment.title} Submission Details"
+
     super
   end
 
@@ -141,7 +145,7 @@ class SubmissionsController < SubmissionsBaseController
   # All online turn-in submission types are supported in this API. However,
   # there are a few things that are not yet supported:
   #
-  # * Files can be submitted based on a file ID of a user or group file. However, there is no API yet for listing the user and group files, or uploading new files via the API. A file upload API is coming soon.
+  # * Files can be submitted based on a file ID of a user or group file or through the {api:SubmissionsApiController#create_file file upload API}. However, there is no API yet for listing the user and group files.
   # * Media comments can be submitted, however, there is no API yet for creating a media comment to submit.
   # * Integration with Google Docs is not yet supported.
   #
@@ -188,21 +192,36 @@ class SubmissionsController < SubmissionsBaseController
   # @argument submission[media_comment_type] [String, "audio"|"video"]
   #   The type of media comment being submitted.
   #
+  # @argument submission[user_id] [Integer]
+  #   Submit on behalf of the given user. Requires grading permission.
+  #
+  # @argument submission[submitted_at] [DateTime]
+  #   Choose the time the submission is listed as submitted at.  Requires grading permission.
+
   def create
     params[:submission] ||= {}
+    user_id = params[:submission].delete(:user_id)
+    @submission_user = if user_id
+      get_user_considering_section(user_id)
+    else
+      @current_user
+    end
 
-    @assignment = @context.assignments.active.find(params[:assignment_id])
-    @assignment = AssignmentOverrideApplicator.assignment_overridden_for(@assignment, @current_user)
+    @assignment = api_find(@context.assignments.active, params[:assignment_id])
+    @assignment = AssignmentOverrideApplicator.assignment_overridden_for(@assignment, @submission_user)
 
-    return unless authorized_action(@assignment, @current_user, :submit)
+    return unless authorized_action(@assignment, @submission_user, :submit)
+    submit_at = params.dig(:submission, :submitted_at)
+    user_sub = @assignment.submissions.find_by(user: user_id)
+    return if (user_id || submit_at) && !authorized_action(user_sub, @current_user, :grade)
 
-    if @assignment.locked_for?(@current_user) && !@assignment.grants_right?(@current_user, :update)
+    if @assignment.locked_for?(@submission_user) && !@assignment.grants_right?(@current_user, :update)
       flash[:notice] = t('errors.can_not_submit_locked_assignment', "You can't submit an assignment when it is locked")
       redirect_to named_context_url(@context, :context_assignment_url, @assignment.id)
       return
     end
 
-    @group = @assignment.group_category.group_for(@current_user) if @assignment.has_group_category?
+    @group = @assignment.group_category.group_for(@submission_user) if @assignment.has_group_category?
 
     return unless valid_text_entry?
     return unless process_api_submission_params if api_request?
@@ -230,15 +249,14 @@ class SubmissionsController < SubmissionsBaseController
     end
 
     submission_params = params[:submission].permit(
-      :body, :url, :submission_type, :comment, :group_comment,
+      :body, :url, :submission_type, :submitted_at, :comment, :group_comment,
       :media_comment_type, :media_comment_id, :eula_agreement_timestamp,
       :attachment_ids => []
     )
     submission_params[:group_comment] = value_to_boolean(submission_params[:group_comment])
-    submission_params[:attachments] = self.class.copy_attachments_to_submissions_folder(@context, params[:submission][:attachments].compact.uniq)
-
+    submission_params[:attachments] = Attachment.copy_attachments_to_submissions_folder(@context, params[:submission][:attachments].compact.uniq)
     begin
-      @submission = @assignment.submit_homework(@current_user, submission_params)
+      @submission = @assignment.submit_homework(@submission_user, submission_params)
     rescue ActiveRecord::RecordInvalid => e
       respond_to do |format|
         format.html {
@@ -255,7 +273,20 @@ class SubmissionsController < SubmissionsBaseController
         log_asset_access(@assignment, "assignments", @assignment_group, 'submit')
         format.html do
           flash[:notice] = t('assignment_submit_success', 'Assignment successfully submitted.')
-          redirect_to course_assignment_url(@context, @assignment)
+          tardiness = case
+          when @submission.late?
+            2 # late
+          when @submission.cached_due_date.nil?
+            0 # don't know
+          else
+            1 # on time
+          end
+
+          if @submission.late? || !@domain_root_account&.feature_enabled?(:confetti_for_assignments)
+            redirect_to course_assignment_url(@context, @assignment, submitted: tardiness)
+          else
+            redirect_to course_assignment_url(@context, @assignment, submitted: tardiness, confetti: true)
+          end
         end
         format.json do
           if api_request?
@@ -265,7 +296,7 @@ class SubmissionsController < SubmissionsBaseController
               status: :created,
               location: api_v1_course_assignment_submission_url(@context, @assignment, @current_user)
           else
-            render :json => @submission.as_json(:include => :submission_comments), :status => :created,
+            render :json => @submission.as_json(:include => :submission_comments, :methods => :late), :status => :created,
               :location => course_gradebook_url(@submission.assignment.context)
           end
         end
@@ -280,12 +311,63 @@ class SubmissionsController < SubmissionsBaseController
   end
 
   def update
-    @assignment = @context.assignments.active.find(params.fetch(:assignment_id))
+    @assignment = api_find(@context.assignments.active, params.fetch(:assignment_id))
     @user = @context.all_students.find(params.fetch(:id))
     @submission = @assignment.find_or_create_submission(@user)
 
     super
   end
+
+  def audit_events
+    return render_unauthorized_action unless @context.grants_right?(@current_user, :view_audit_trail)
+    submission = Submission.find(params[:submission_id])
+
+    audit_events = AnonymousOrModerationEvent.events_for_submission(
+      assignment_id: params[:assignment_id],
+      submission_id: params[:submission_id]
+    )
+
+    user_data = User.find(audit_events.pluck(:user_id).compact)
+    tool_data = ContextExternalTool.find(audit_events.pluck(:context_external_tool_id).compact)
+    quiz_data = Quizzes::Quiz.find(audit_events.pluck(:quiz_id).compact)
+
+    respond_to do |format|
+      format.json do
+        render json: {
+          audit_events: audit_events.as_json(include_root: false),
+          users: audit_event_data(data: user_data, submission: submission),
+          tools: audit_event_data(data: tool_data, role: "grader"),
+          quizzes: audit_event_data(data: quiz_data, role: "grader", name_field: :title),
+        }, status: :ok
+      end
+    end
+  end
+
+  def audit_event_data(data:, submission: nil, role: nil, name_field: :name)
+    data.map do |datum|
+      {
+        id: datum.id,
+        name: datum.public_send(name_field),
+        role: role.presence || auditing_user_role(user: datum, submission: submission)
+      }
+    end
+  end
+  private :audit_event_data
+
+  def auditing_user_role(user:, submission:)
+    assignment = submission.assignment
+
+    if submission.user == user
+      "student"
+    elsif assignment.moderated_grading? && assignment.final_grader == user
+      "final_grader"
+    elsif assignment.course.account_membership_allows(user)
+      "admin"
+    else
+      "grader"
+    end
+  end
+  private :auditing_user_role
 
   def lookup_existing_attachments
     if params[:submission][:file_ids].is_a?(Array)
@@ -298,24 +380,12 @@ class SubmissionsController < SubmissionsBaseController
     params[:submission][:attachments] = []
 
     attachment_ids.each do |id|
-      params[:submission][:attachments] << @current_user.attachments.active.where(id: id).first if @current_user
+      params[:submission][:attachments] << @submission_user.attachments.active.where(id: id).first if @submission_user
       params[:submission][:attachments] << @group.attachments.active.where(id: id).first if @group
       params[:submission][:attachments].compact!
     end
   end
   private :lookup_existing_attachments
-
-  def self.copy_attachments_to_submissions_folder(assignment_context, attachments)
-    attachments.map do |attachment|
-      if attachment.folder && attachment.folder.for_submissions?
-        attachment # already in a submissions folder
-      elsif attachment.context.respond_to?(:submissions_folder)
-        attachment.copy_to_folder!(attachment.context.submissions_folder(assignment_context))
-      else
-        attachment # in a weird context; leave it alone
-      end
-    end
-  end
 
   def is_media_recording?
     return params[:submission][:submission_type] == 'media_recording'
@@ -394,7 +464,7 @@ class SubmissionsController < SubmissionsBaseController
   private :has_file_attached?
 
   def extensions_allowed?
-    # if extensions are being restricted, check that the extension is whitelisted
+    # if extensions are being restricted, check that the extension is allowed
     # The first check here is for web interface submissions that contain only one file
     # The second check is for multiple submissions and API calls that use the uploaded_data parameter to pass a filename
     if @assignment.allowed_extensions.present?
@@ -476,100 +546,8 @@ class SubmissionsController < SubmissionsBaseController
     Attachments::Storage.store_for_attachment(attachment, uploaded_data)
   end
 
-  def turnitin_report
-    plagiarism_report('turnitin')
-  end
-
-  def resubmit_to_turnitin
-    resubmit_to_plagiarism('turnitin')
-  end
-
-  def vericite_report
-    plagiarism_report('vericite')
-  end
-
-  def resubmit_to_vericite
-    resubmit_to_plagiarism('vericite')
-  end
-
-  def originality_report
-    plagiarism_report('originality_report')
-  end
-
-  def legacy_plagiarism_report(submission, asset_string, type)
-    plag_data = submission.turnitin_data
-    url = nil
-    if type == 'vericite'
-      plag_data = submission.vericite_data
-    end
-    if (report_url = plag_data[asset_string] && plag_data[asset_string][:report_url])
-      url = polymorphic_url([:retrieve, @context, :external_tools], url:report_url, display:'borderless')
-    else
-      if type == 'vericite'
-        # VeriCite URL
-        url = submission.vericite_report_url(asset_string, @current_user, session) rescue nil
-      else
-        # Turnitin URL
-        url = submission.turnitin_report_url(asset_string, @current_user) rescue nil
-      end
-    end
-    url
-  end
-  private :legacy_plagiarism_report
-
-  def plagiarism_report(type)
-    return head(:bad_request) unless params_are_integers?(:assignment_id, :submission_id)
-
-    @assignment = @context.assignments.active.find(params[:assignment_id])
-    @submission = @assignment.submissions.where(user_id: params[:submission_id]).first
-    @asset_string = params[:asset_string]
-    if authorized_action(@submission, @current_user, :read)
-      if type == 'originality_report'
-        url = @submission.originality_report_url(@asset_string, @current_user)
-      else
-        url = legacy_plagiarism_report(@submission, @asset_string, type)
-      end
-
-      if url
-        redirect_to url
-      else
-        flash[:notice] = t('errors.no_report', "Couldn't find a report for that submission item")
-        redirect_to named_context_url(@context, :context_assignment_submission_url, @assignment.id, @submission.user_id)
-      end
-    end
-  end
-  private :plagiarism_report
-
-  def resubmit_to_plagiarism(type)
-    return head 400 unless params_are_integers?(:assignment_id, :submission_id)
-
-    if authorized_action(@context, @current_user, [:manage_grades, :view_all_grades])
-      @assignment = @context.assignments.active.find(params[:assignment_id])
-      @submission = @assignment.submissions.where(user_id: params[:submission_id]).first
-      Canvas::LiveEvents.plagiarism_resubmit(@submission)
-
-      if type == 'vericite'
-        # VeriCite
-        @submission.resubmit_to_vericite
-        message = t("Successfully resubmitted to VeriCite.")
-      else
-        # turnitin
-        @submission.resubmit_to_turnitin
-        message = t("Successfully resubmitted to turnitin.")
-      end
-      respond_to do |format|
-        format.html {
-          flash[:notice] = message
-          redirect_to named_context_url(@context, :context_assignment_submission_url, @assignment.id, @submission.user_id)
-        }
-        format.json { head :no_content }
-      end
-    end
-  end
-  private :resubmit_to_plagiarism
-
   def always_permitted_create_params
-    always_permitted_params = [:eula_agreement_timestamp].freeze
+    always_permitted_params = [:eula_agreement_timestamp, :submitted_at].freeze
     params.require(:submission).permit(always_permitted_params)
   end
   private :always_permitted_create_params
@@ -617,5 +595,23 @@ class SubmissionsController < SubmissionsBaseController
         format.json { render :json => attachment }
       end
     end
+  end
+
+  def plagiarism_report(type)
+    return head(:bad_request) unless params_are_integers?(:assignment_id, :submission_id)
+
+    @assignment = @context.assignments.active.find(params.require(:assignment_id))
+    @submission = @assignment.submissions.find_by(user_id: params.require(:submission_id))
+
+    super(type)
+  end
+
+  def resubmit_to_plagiarism(type)
+    return head(:bad_request) unless params_are_integers?(:assignment_id)
+
+    @assignment = @context.assignments.active.find(params.require(:assignment_id))
+    @submission = @assignment.submissions.find_by(user_id: params.require(:submission_id))
+
+    super(type)
   end
 end

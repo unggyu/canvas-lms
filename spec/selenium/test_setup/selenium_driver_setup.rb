@@ -16,8 +16,10 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 require "fileutils"
-require "chromedriver/helper"
+require 'webdrivers/chromedriver'
 require_relative "common_helper_methods/custom_alert_actions"
+require_relative 'common_helper_methods/custom_screen_actions'
+require_relative 'patches/selenium/webdriver/remote/w3c/bridge.rb'
 
 # WebDriver uses port 7054 (the "locking port") as a mutex to ensure
 # that we don't launch two Firefox instances at the same time. Each
@@ -70,22 +72,23 @@ module SeleniumDriverSetup
 
   # prevents subsequent specs from failing because tooltips are showing etc.
   def move_mouse_to_known_position
-    driver.mouse.move_to(f("body"), 0, 0) if driver.ready_for_interaction
+    driver.action.move_to_location(0, 0).perform if driver.ready_for_interaction
   end
 
   class ServerStartupError < RuntimeError; end
 
   class << self
+    include CustomScreenActions
     include CustomAlertActions
     extend Forwardable
 
     attr_accessor :browser_log,
                   :browser_process,
-                  :headless,
                   :server,
                   :server_ip,
                   :server_port
 
+    attr_reader :driver
     def reset!
       dump_browser_log if browser_log
       @driver = nil
@@ -145,11 +148,7 @@ module SeleniumDriverSetup
         Selenium::WebDriver.const_get(browser.to_s.capitalize).path = path
       end
 
-      set_up_display_buffer if run_headless?
-
       @driver = create_driver
-
-      focus_viewport if run_headless?
 
       set_timeouts(TIMEOUTS)
 
@@ -194,6 +193,8 @@ module SeleniumDriverSetup
           chrome_driver
         when :internet_explorer
           ie_driver
+        when :edge
+          edge_driver
         when :safari
           safari_driver
         else
@@ -218,62 +219,13 @@ module SeleniumDriverSetup
       puts browser_log.read
     end
 
-    def run_headless?
-      ENV.key?("TEST_ENV_NUMBER") && !saucelabs_test_run?
-    end
-
-    HEADLESS_DEFAULTS = {
-      dimensions: "1920x1080x24",
-      reuse: false,
-      destroy_at_exit: true,
-      video: {
-        provider: :ffmpeg,
-        # yay interframe compression
-        codec: 'libx264',
-        # use less CPU. doesn't actually shrink the resulting file much.
-        frame_rate: 4,
-        extra: [
-          # quicktime doesn't understand the default yuv422p
-          '-pix_fmt', 'yuv420p',
-          # limit videos to 1 minute 20 seconds in case something bad happens and we forget to stop recording
-          '-t', '80',
-          # use less CPU
-          '-preset', 'superfast'
-        ]
-      }.freeze
-    }.freeze
-
-    def set_up_display_buffer
-      # start_driver can get called again if firefox dies, but
-      # self.headless should already be good to go
-      return if headless
-
-      require "headless"
-
-      test_number = ENV["TEST_ENV_NUMBER"]
-      # it'll be '', '2', '3', '4'...
-      test_number = test_number.blank? ? 1 : test_number.to_i
-      # start at 21 to avoid conflicts with other test runner Xvfb stuff
-      display = 20 + test_number
-
-      self.headless = Headless.new(HEADLESS_DEFAULTS.merge({
-        display: display
-      }))
-      headless.start
-      puts "Setting up DISPLAY=#{ENV['DISPLAY']}"
-    end
-
-    def focus_viewport
-      # force the viewport to have focus right away; otherwise certain specs
-      # will fail unless they follow another dialog accepting/dismissing spec,
-      # since they rely on focus/blur events, which don't fire if the window
-      # doesn't have focus
-      driver.execute_script "alert('yolo')"
-      driver.switch_to.alert.accept
-    end
-
     def ie_driver
       puts "using IE driver"
+      selenium_remote_driver
+    end
+
+    def edge_driver
+      puts "using Edge driver"
       selenium_remote_driver
     end
 
@@ -321,8 +273,18 @@ module SeleniumDriverSetup
 
     def ruby_chrome_driver
       puts "Thread: provisioning local chrome driver"
-      Chromedriver.set_version "2.38"
-      Selenium::WebDriver.for :chrome, switches: %w[--disable-impl-side-painting]
+      # in your selenium.yml you can define a different chromedriver version
+      # by adding 'chromedriver_version: <version>' for the version you want.
+      # otherwise this will use the default version matching what is used in docker.
+      Webdrivers::Chromedriver.required_version = (CONFIG[:chromedriver_version] || "84.0.4147.30")
+      chrome_options = Selenium::WebDriver::Chrome::Options.new
+      # put `auto_open_devtools: true` in your selenium.yml if you want to have
+      # the chrome dev tools open by default by selenium
+      if CONFIG[:auto_open_devtools]
+        chrome_options.add_argument('--auto-open-devtools-for-tabs')
+      end
+
+      Selenium::WebDriver.for :chrome, desired_capabilities: desired_capabilities, options: chrome_options
     end
 
     def ruby_safari_driver
@@ -332,29 +294,50 @@ module SeleniumDriverSetup
 
     def selenium_remote_driver
       puts "Thread: provisioning remote #{browser} driver"
-      Selenium::WebDriver.for(
+      driver = Selenium::WebDriver.for(
         :remote,
         :url => selenium_url,
         :desired_capabilities => desired_capabilities
       )
+
+      driver.file_detector = lambda do |args|
+        # args => ["/path/to/file"]
+        str = args.first.to_s
+        str if File.exist?(str)
+      end
+
+      driver
     end
 
     def desired_capabilities
-      caps = Selenium::WebDriver::Remote::Capabilities.send(browser)
-      caps.version = CONFIG[:version] unless CONFIG[:version].nil?
-      caps.platform = CONFIG[:platform] unless CONFIG[:platform].nil?
-      caps["tunnel-identifier"] = CONFIG[:tunnel_id] unless CONFIG[:tunnel_id].nil?
-      caps[:unexpectedAlertBehaviour] = 'ignore'
+      case browser
+      when :firefox
+        caps = Selenium::WebDriver::Remote::Capabilities.firefox
+      when :chrome
+        caps = Selenium::WebDriver::Remote::Capabilities.chrome
+        caps['goog:chromeOptions'] = {
+          args: %w[disable-dev-shm-usage no-sandbox start-maximized]
+        }
+        caps['goog:loggingPrefs'] = {
+          browser: 'ALL'
+        }
+      when :edge
+        # TODO: options for edge driver
+      when :safari
+        # TODO: options for safari driver
+      else
+        raise "unsupported browser #{browser}"
+      end
       caps
     end
 
     def selenium_url
       case browser
       when :firefox
-        CONFIG[:remote_url_firefox]
+        CONFIG[:remote_url_firefox] || CONFIG[:remote_url]
       when :chrome
-        CONFIG[:remote_url_chrome]
-      when :internet_explorer, :safari
+        CONFIG[:remote_url_chrome] || CONFIG[:remote_url]
+      when :internet_explorer, :safari, :edge
         CONFIG[:remote_url]
       else
         raise "unsupported browser #{browser}"

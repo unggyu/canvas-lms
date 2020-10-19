@@ -16,8 +16,6 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'action_controller_test_process'
-
 # Attaches a file generally to another file, using the attachment_fu gateway.
 class FileInContext
   class << self
@@ -51,7 +49,8 @@ class FileInContext
 
       uploaded_data = Rack::Test::UploadedFile.new(filename, Attachment.mimetype(explicit_filename || filename))
 
-      @attachment = Attachment.new(:context => context, :uploaded_data => uploaded_data, :display_name => display_name, :folder => folder)
+      @attachment = Attachment.new(:context => context, :display_name => display_name, :folder => folder)
+      Attachments::Storage.store_for_attachment(@attachment, uploaded_data)
       @attachment.filename = explicit_filename if explicit_filename
       @attachment.set_publish_state_for_usage_rights
       @attachment.save!

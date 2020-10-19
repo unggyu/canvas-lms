@@ -75,74 +75,83 @@ QUnit.module('GradeSummary Header', suiteHooks => {
     equal(childArray[headingIndex + 1].text(), 'Example Assignment')
   })
 
-  test('includes a "grades posted" message when grades have been published', () => {
+  test('includes a "grades released" message when grades have been released', () => {
     storeEnv.assignment.gradesPublished = true
     mountComponent()
-    ok(wrapper.text().includes('they have already been posted'))
+    ok(wrapper.text().includes('they have already been released'))
   })
 
-  test('excludes the "grades posted" message when grades have not yet been published', () => {
+  test('excludes the "grades released" message when grades have not yet been released', () => {
     mountComponent()
-    notOk(wrapper.text().includes('they have already been posted'))
+    notOk(wrapper.text().includes('they have already been released'))
   })
 
-  test('includes a "no graders" message when there are no graders', () => {
-    storeEnv.graders = []
-    mountComponent()
-    ok(wrapper.text().includes('Moderation is unable to occur'))
+  QUnit.module('Graders Table', () => {
+    test('is not displayed when there are no graders', () => {
+      storeEnv.graders = []
+      mountComponent()
+      strictEqual(wrapper.find('GradersTable').length, 0)
+    })
+
+    test('is displayed when there are graders', () => {
+      mountComponent()
+      strictEqual(wrapper.find('GradersTable').length, 1)
+    })
   })
 
-  test('excludes the "no graders" message when there are graders', () => {
-    mountComponent()
-    notOk(wrapper.text().includes('Moderation is unable to occur'))
-  })
-
-  QUnit.module('"Post" button', hooks => {
+  QUnit.module('"Release Grades" button', hooks => {
     hooks.beforeEach(() => {
       sinon.stub(window, 'confirm').returns(true)
       sinon
-        .stub(AssignmentActions, 'publishGrades')
-        .returns(AssignmentActions.setPublishGradesStatus(AssignmentActions.STARTED))
+        .stub(AssignmentActions, 'releaseGrades')
+        .returns(AssignmentActions.setReleaseGradesStatus(AssignmentActions.STARTED))
     })
 
     hooks.afterEach(() => {
-      AssignmentActions.publishGrades.restore()
+      AssignmentActions.releaseGrades.restore()
       window.confirm.restore()
+    })
+
+    test('is always displayed', () => {
+      storeEnv.graders = []
+      mountComponent()
+      strictEqual(wrapper.find('ReleaseButton').length, 1)
     })
 
     test('receives the assignment gradesPublished property as a prop', () => {
       mountComponent()
-      strictEqual(wrapper.find('PostButton').prop('gradesPublished'), false)
+      strictEqual(wrapper.find('ReleaseButton').prop('gradesReleased'), false)
     })
 
     test('receives the unmuteAssignmentStatus as a prop', () => {
       mountComponent()
-      store.dispatch(AssignmentActions.setPublishGradesStatus(AssignmentActions.STARTED))
-      const button = wrapper.find('PostButton')
-      equal(button.prop('publishGradesStatus'), AssignmentActions.STARTED)
+      store.dispatch(AssignmentActions.setReleaseGradesStatus(AssignmentActions.STARTED))
+      wrapper.update()
+      const button = wrapper.find('ReleaseButton')
+      equal(button.prop('releaseGradesStatus'), AssignmentActions.STARTED)
     })
 
     test('displays a confirmation dialog when clicked', () => {
       mountComponent()
-      wrapper.find('PostButton').simulate('click')
+      wrapper.find('ReleaseButton').simulate('click')
       strictEqual(window.confirm.callCount, 1)
     })
 
-    test('publishes grades when dialog is confirmed', () => {
+    test('releases grades when dialog is confirmed', () => {
       mountComponent()
-      wrapper.find('PostButton').simulate('click')
-      equal(store.getState().assignment.publishGradesStatus, AssignmentActions.STARTED)
+      wrapper.find('ReleaseButton').simulate('click')
+      equal(store.getState().assignment.releaseGradesStatus, AssignmentActions.STARTED)
     })
 
-    test('does not publish grades when dialog is dismissed', () => {
+    test('does not release grades when dialog is dismissed', () => {
       window.confirm.returns(false)
       mountComponent()
-      wrapper.find('PostButton').simulate('click')
-      strictEqual(store.getState().assignment.publishGradesStatus, null)
+      wrapper.find('ReleaseButton').simulate('click')
+      strictEqual(store.getState().assignment.releaseGradesStatus, null)
     })
   })
 
-  QUnit.module('"Display to Students" button', hooks => {
+  QUnit.module('"Post to Students" button', hooks => {
     hooks.beforeEach(() => {
       storeEnv.assignment.gradesPublished = true
       sinon.stub(window, 'confirm').returns(true)
@@ -156,35 +165,42 @@ QUnit.module('GradeSummary Header', suiteHooks => {
       window.confirm.restore()
     })
 
+    test('is always displayed', () => {
+      storeEnv.graders = []
+      mountComponent()
+      strictEqual(wrapper.find('PostToStudentsButton').length, 1)
+    })
+
     test('receives the assignment as a prop', () => {
       mountComponent()
-      const button = wrapper.find('DisplayToStudentsButton')
+      const button = wrapper.find('PostToStudentsButton')
       deepEqual(button.prop('assignment'), storeEnv.assignment)
     })
 
     test('receives the unmuteAssignmentStatus as a prop', () => {
       mountComponent()
       store.dispatch(AssignmentActions.setUnmuteAssignmentStatus(AssignmentActions.STARTED))
-      const button = wrapper.find('DisplayToStudentsButton')
+      wrapper.update()
+      const button = wrapper.find('PostToStudentsButton')
       equal(button.prop('unmuteAssignmentStatus'), AssignmentActions.STARTED)
     })
 
     test('displays a confirmation dialog when clicked', () => {
       mountComponent()
-      wrapper.find('DisplayToStudentsButton').simulate('click')
+      wrapper.find('PostToStudentsButton').simulate('click')
       strictEqual(window.confirm.callCount, 1)
     })
 
     test('unmutes the assignment when dialog is confirmed', () => {
       mountComponent()
-      wrapper.find('DisplayToStudentsButton').simulate('click')
+      wrapper.find('PostToStudentsButton').simulate('click')
       equal(store.getState().assignment.unmuteAssignmentStatus, AssignmentActions.STARTED)
     })
 
     test('does not unmute the assignment when dialog is dismissed', () => {
       window.confirm.returns(false)
       mountComponent()
-      wrapper.find('DisplayToStudentsButton').simulate('click')
+      wrapper.find('PostToStudentsButton').simulate('click')
       strictEqual(store.getState().assignment.unmuteAssignmentStatus, null)
     })
   })

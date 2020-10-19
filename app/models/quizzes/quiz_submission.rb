@@ -19,6 +19,7 @@
 require 'sanitize'
 
 class Quizzes::QuizSubmission < ActiveRecord::Base
+  extend RootAccountResolver
   self.table_name = 'quiz_submissions'
 
   include Workflow
@@ -54,6 +55,8 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
   has_many :attachments, :as => :context, :inverse_of => :context, :dependent => :destroy
   has_many :events, class_name: 'Quizzes::QuizSubmissionEvent'
 
+  resolves_root_account through: :quiz
+
   # update the QuizSubmission's Submission to 'graded' when the QuizSubmission is marked as 'complete.' this
   # ensures that quiz submissions with essay questions don't show as graded in the SpeedGrader until the instructor
   # has graded the essays.
@@ -65,6 +68,14 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
 
   def grade_submission!
     submission.update_attribute(:workflow_state, "graded")
+  end
+
+  after_update :update_planner_override
+
+  def update_planner_override
+    return unless self.saved_change_to_workflow_state?
+    return unless self.workflow_state == "complete"
+    PlannerHelper.complete_planner_override_for_quiz_submission(self)
   end
 
   serialize :quiz_data
@@ -96,7 +107,7 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
     given { |user| user && user.id == self.user_id && self.untaken? }
     can :update
 
-    given { |user, session| self.quiz.grants_right?(user, session, :manage) || self.quiz.grants_right?(user, session, :review_grades) }
+    given { |user, session| self.quiz.grants_right?(user, session, :review_grades) }
     can :read
 
     given { |user| user &&
@@ -414,6 +425,10 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
       @assignment_submission.user_id = self.user_id
       @assignment_submission.submission_type = "online_quiz"
       @assignment_submission.saved_by = :quiz_submission
+
+      unless @assignment_submission.posted? || @assignment_submission.assignment.post_manually?
+        @assignment_submission.posted_at = @assignment_submission.graded_at
+      end
     end
   end
 
@@ -619,18 +634,21 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
   end
 
   def context_module_action
-    if self.quiz && self.user
-      if self.score
-        self.quiz.context_module_action(self.user, :scored, self.kept_score)
-      end
-      if self.finished_at
-        self.quiz.context_module_action(self.user, :submitted)
+    self.class.connection.after_transaction_commit do
+      if self.quiz && self.user
+        if self.score
+          self.quiz.context_module_action(self.user, :scored, self.kept_score)
+        end
+        if self.finished_at
+          self.quiz.context_module_action(self.user, :submitted, self.kept_score) # pass in the score so we don't accidentally unset a min_score requirement
+        end
       end
     end
   end
 
   def update_scores(params)
     original_score = self.score
+    original_workflow_state = self.workflow_state
     params = (params || {}).with_indifferent_access
     self.manually_scored = false
     self.grader_id = params[:grader_id]
@@ -718,7 +736,7 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
 
     self.reload
     grader = Quizzes::SubmissionGrader.new(self)
-    if grader.outcomes_require_update(self, original_score)
+    if grader.outcomes_require_update(self, original_score, original_workflow_state)
       grader.track_outcomes(version.model.attempt)
     end
     true
@@ -752,6 +770,10 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
   # Excludes teacher preview and Student View submissions.
   scope :for_students, ->(quiz) { not_preview.for_user_ids(quiz.context.all_real_student_ids) }
 
+  def course_broadcast_data
+    quiz.context&.broadcast_data
+  end
+
   has_a_broadcast_policy
 
   set_broadcast_policy do |p|
@@ -764,6 +786,7 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
       BroadcastPolicies::QuizSubmissionPolicy.new(q_sub).
         should_dispatch_submission_graded?
     }
+    p.data { course_broadcast_data }
 
     p.dispatch :submission_grade_changed
     p.to { ([user] + User.observing_students_in_course(user, self.context)).uniq(&:id) }
@@ -771,6 +794,7 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
       BroadcastPolicies::QuizSubmissionPolicy.new(q_sub).
         should_dispatch_submission_grade_changed?
     }
+    p.data { course_broadcast_data }
 
     p.dispatch :submission_needs_grading
     p.to { teachers }
@@ -778,6 +802,7 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
       BroadcastPolicies::QuizSubmissionPolicy.new(q_sub).
         should_dispatch_submission_needs_grading?
     }
+    p.data { course_broadcast_data }
   end
 
   def teachers
@@ -852,7 +877,7 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
   def due_at
     return quiz.due_at if submission.blank?
 
-    quiz.overridden_for(submission.user, skip_clone: true).due_at
+    submission.cached_due_date
   end
 
   # same as the instance method, but with a hash of attributes, instead
@@ -864,11 +889,21 @@ class Quizzes::QuizSubmission < ActiveRecord::Base
     due_at = if submission.blank?
       quiz.due_at
     else
-      quiz.overridden_for(submission.user, skip_clone: true).due_at
+      submission.cached_due_date
     end
     return false if due_at.blank?
 
     check_time = attributes['finished_at'] - 60.seconds
     check_time > due_at
+  end
+
+  def posted?
+    # Ungraded surveys and practice quizzes will not have associated Assignment
+    # or Submission objects, and so results should always be shown to the student.
+    quiz.ungraded? || !!submission&.posted?
+  end
+
+  def end_at_without_time_limit
+    quiz.build_submission_end_at(self, false)
   end
 end

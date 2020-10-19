@@ -25,9 +25,7 @@ module Factories
       if opts[:active_all]
         u = User.create!
         u.register!
-        if u.feature_enabled?(:new_user_tutorial_on_off) && !opts[:new_user]
-          u.disable_feature!(:new_user_tutorial_on_off)
-        end
+        u.enable_feature!(:new_user_tutorial_on_off) if opts[:new_user]
         e = @course.enroll_teacher(u)
         e.workflow_state = 'active'
         e.save!
@@ -126,7 +124,7 @@ module Factories
     submission_count.times do |s|
       assignment = @course.assignments.create!(:title => "test #{s} assignment")
       submission = assignment.submissions.find_by!(user: @student)
-      submission.update_attributes!(score: '5') if opts[:submission_points]
+      submission.update!(score: '5') if opts[:submission_points]
     end
   end
 
@@ -153,7 +151,7 @@ module Factories
     if user = options[:enroll_user]
       section_ids = create_records(CourseSection, course_ids.map{ |id| {course_id: id, root_account_id: account.id, name: "Default Section", default_section: true}})
       type = options[:enrollment_type] || "TeacherEnrollment"
-      role_id = Role.get_built_in_role(type).id
+      role_id = Role.get_built_in_role(type, root_account_id: account.resolved_root_account_id).id
       result = create_records(Enrollment, course_ids.each_with_index.map{ |id, i| {course_id: id, user_id: user.id, type: type, course_section_id: section_ids[i], root_account_id: account.id, workflow_state: 'active', :role_id => role_id}})
       create_enrollment_states(result, {state: "active"})
       result

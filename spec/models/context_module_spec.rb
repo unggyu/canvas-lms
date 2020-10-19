@@ -24,17 +24,44 @@ describe ContextModule do
     @module = @course.context_modules.create!(:name => "some module")
   end
 
+  describe "name validation" do
+    before :once do
+      course_factory
+    end
+
+    it "rejects an empty name if required" do
+      mod = @course.context_modules.build
+      expect(mod).to be_valid
+      mod.require_presence_of_name = true
+      expect(mod).not_to be_valid
+      mod.name = 'blah'
+      expect(mod).to be_valid
+    end
+  end
+
+  describe "#set_root_account_id" do
+    subject { context_module.root_account }
+
+    let(:course) { course_factory }
+    let(:context_module) { course.context_modules.create! }
+
+    it { is_expected.to eq course.root_account }
+  end
+
   describe "publish_items!" do
+    before :once do
+      course_module
+      @file = @course.attachments.create!(:display_name => "some file", :uploaded_data => default_uploaded_data, :locked => true)
+      @tag = @module.add_item(:id => @file.id, :type => "attachment")
+    end
+
     context "with file usage rights required" do
-      before :each do
-        course_module
-        @course.enable_feature! :usage_rights_required
-        @file = @course.attachments.create!(:display_name => "some file", :uploaded_data => default_uploaded_data, :locked => true)
-        @tag = @module.add_item(:id => @file.id, :type => "attachment")
+      before :once do
+        @course.usage_rights_required = true
+        @course.save!
       end
 
       it "should not publish Attachment module items if usage rights are missing" do
-        @file.usage_rights = nil
         @module.publish_items!
         expect(@tag.published?).to eql(false)
         expect(@file.published?).to eql(false)
@@ -44,14 +71,17 @@ describe ContextModule do
         @file.usage_rights = @course.usage_rights.create(:use_justification => 'own_copyright')
         @file.save!
 
-        # ensure models are in sync around publish_items!
-        @module.reload
-        @module.publish_items!
-        @file.reload
-        @tag.reload
+        @module.reload.publish_items!
+        expect(@tag.reload.published?).to eql(true)
+        expect(@file.reload.published?).to eql(true)
+      end
+    end
 
-        expect(@tag.published?).to eql(true)
-        expect(@file.published?).to eql(true)
+    context "without file usage rights required" do
+      it "should publish Attachment module items" do
+        @module.publish_items!
+        expect(@tag.reload.published?).to eql(true)
+        expect(@file.reload.published?).to eql(true)
       end
     end
   end
@@ -100,6 +130,8 @@ describe ContextModule do
     assignment2 = @course.assignments.create!(:title => "assignment copy")
     @module.add_item(type: 'context_module_sub_header', title: 'unpublished header')
     @module.add_item({:id => assignment1.id, :type => 'assignment'})
+    @module.unlock_at = Time.zone.now # doesn't matter what, just not nil
+    @module.prerequisites = @module # This is silly, but just want something not nil
     quiz = @course.quizzes.build(:title => "some quiz", :quiz_type => "assignment")
     quiz.save!
     # It is permitted to duplicate a module with a deleted quiz tag, but the deleted
@@ -108,17 +140,31 @@ describe ContextModule do
     @module.content_tags[2].workflow_state = 'deleted'
     @module.add_item({:id => assignment2.id, :type => 'assignment'})
 
+    @module.add_item(
+      :type => 'external_url',
+      :url => "http://www.instructure.com",
+      :new_tab => true,
+      :title => "Instructure",
+      :indent => 0
+    )
+
     @module.workflow_state = 'published'
     @module.save!
     new_module = @module.duplicate
     expect(new_module.name).to eq "some module Copy"
-    expect(new_module.content_tags.length).to eq 3
+    expect(new_module.content_tags.length).to eq 4
     # Stuff with actual content should get unique names, but not stuff like headers.
     expect(new_module.content_tags[0].title).to eq('unpublished header')
     expect(new_module.content_tags[1].content.title).to eq('assignment Copy 2')
     # Respect original choice of "copy" if the thing I copied already made a decision.
     expect(new_module.content_tags[2].content.title).to eq('assignment copy 3')
     expect(new_module.workflow_state).to eq('unpublished')
+
+    expect(new_module.content_tags[3].title).to eq('Instructure')
+    expect(new_module.content_tags[3].url).to eq('http://www.instructure.com')
+    expect(new_module.content_tags[3].new_tab).to eq(true)
+    expect(new_module.unlock_at).to be_nil
+    expect(new_module.prerequisites).to eq []
   end
 
   describe "available_for?" do
@@ -149,7 +195,8 @@ describe ContextModule do
     it "should reevaluate progressions if a tag is not provided and deep_check_if_needed is given" do
       module1 = course_module
       module1.find_or_create_progression(@student)
-      module2 = course_module
+      module1.save!
+      module2 = @course.context_modules.create!(:name => "some module")
       url_item = module2.content_tags.create!(content_type: 'ExternalUrl', context: @course,
         title: 'url', url: 'https://www.google.com')
       module2.completion_requirements = [{id: url_item.id, type: 'must_view'}]
@@ -221,6 +268,37 @@ describe ContextModule do
       expect(@module2.prerequisites[0][:id]).to eql(@module.id)
       expect(@module2.prerequisites.length).to eql(1)
     end
+
+    it "should remove itself as a requirement when deleted" do
+      course_module
+      @module2 = @course.context_modules.build(:name => "next module")
+      @module2.prerequisites = "module_#{@module.id}"
+      @module2.save!
+
+      expect(@module2.prerequisites).to be_is_a(Array)
+      expect(@module2.prerequisites).not_to be_empty
+      expect(@module2.prerequisites[0][:id]).to eq(@module.id)
+      @module.destroy
+      @module2 = ContextModule.find(@module2.id)
+      expect(@module2.prerequisites).to be_is_a(Array)
+      expect(@module2.prerequisites).to be_empty
+    end
+
+    it "returns the current name of prerequisite modules" do
+      course_module
+      @module2 = @course.context_modules.create!(:name => "next module", :workflow_state => 'unpublished')
+
+      @module3 = @course.context_modules.build(:name => "next next module")
+      @module3.prerequisites = "module_#{@module.id},module_#{@module2.id}"
+      @module3.save!
+
+      @module.update_attribute(:name, "new name 1")
+      @module2.update_attribute(:name, "new name 2")
+
+      @module3 = ContextModule.find(@module3.id)
+      expect(@module3.prerequisites).to match_array([{:id => @module.id, :type => 'context_module', :name => 'new name 1'}, {:id => @module2.id, :type => 'context_module', :name => "new name 2"}])
+      expect(@module3.active_prerequisites).to match_array([{:id => @module.id, :type => 'context_module', :name => "new name 1"}])
+    end
   end
 
   describe "add_item" do
@@ -286,6 +364,107 @@ describe ContextModule do
       course_module
       tag = @module.add_item(type: 'context_module_sub_header', title: 'unpublished header')
       expect(tag.unpublished?).to be_truthy
+    end
+
+    it "should add an external url" do
+      course_module
+      @tag = @module.add_item(
+        :type => 'external_url',
+        :url => "http://www.instructure.com",
+        :new_tab => true,
+        :title => "Instructure",
+        :indent => 0
+      )
+      @module.workflow_state = 'published'
+      @module.save!
+
+      expect(@module.content_tags).to be_include(@tag)
+    end
+  end
+
+  describe "insert_items" do
+    before :once do
+      course_module
+      @attach = attachment_model context: @course, display_name: 'attach'
+      @assign = @course.assignments.create! title: 'assign'
+      @page = @course.wiki_pages.create! title: 'page'
+      @quiz = @course.quizzes.create! title: 'quiz', quiz_type: "assignment"
+      @topic = graded_discussion_topic context: @course, title: 'topic'
+      @tool = @course.context_external_tools.create! name: 'tool', consumer_key: '1', shared_secret: '1', url: 'http://example.com/'
+      @module.add_item(type: 'context_module_sub_header', title: 'one')
+      @module.add_item(type: 'context_module_sub_header', title: 'two')
+      @module.add_item(type: 'context_module_sub_header', title: 'three')
+    end
+
+    it "appends items to the end of a module" do
+      @module.insert_items([@attach, @assign, @page, @quiz, @topic, @tool])
+      expect(@module.content_tags.order(:position).pluck(:title)).to eq(
+        %w(one two three attach assign page quiz topic tool))
+    end
+
+    it 'appends items to the beginning of a module' do
+      @module.insert_items([@attach, @assign, @page, @quiz, @topic, @tool], 1)
+      expect(@module.content_tags.pluck(:title)).to eq(%w(attach assign page quiz topic tool one two three))
+    end
+
+    it "inserts items into a module" do
+      @module.insert_items([@attach, @assign, @page, @quiz, @topic, @tool], 2)
+      expect(@module.content_tags.order(:position).pluck(:title)).to eq(
+        %w(one attach assign page quiz topic tool two three))
+    end
+
+    it "adds things to an empty module" do
+      empty = @course.context_modules.create! name: 'empty'
+      empty.insert_items([@attach, @assign])
+      expect(empty.content_tags.order(:position).pluck(:title)).to eq(%w(attach assign))
+    end
+
+    it "sets the indent to 0" do
+      empty = @course.context_modules.create! name: 'empty'
+      empty.insert_items([@attach, @assign])
+      expect(empty.content_tags.pluck(:indent)).to eq([0, 0])
+    end
+
+    it "doesn't add weird things to a module" do
+      @module.insert_items([@attach, user_model, 'foo', @assign])
+      expect(@module.content_tags.order(:position).pluck(:title)).to eq(
+        %w(one two three attach assign))
+    end
+
+    it 'adds the item in the correct position when the existing items do not start at 1' do
+      @module.content_tags.update_all(['position = position + ?', 3])
+      @module.insert_items([@attach, @assign], 3)
+      expect(@module.content_tags.pluck(:title)).to eq(%w(one two attach assign three))
+    end
+
+    it 'adds the item in the correct position when the existing items have duplicate positions' do
+      @module.content_tags.find_by(title: 'two').update(position: 1)
+      @module.insert_items([@attach, @assign], 2)
+      expect(@module.content_tags.find_by(position: 2).title).to eq @attach.title
+      expect(@module.content_tags.find_by(position: 3).title).to eq @assign.title
+      expect(@module.content_tags.pluck(:title)).to eq(%w(one attach assign two three))
+    end
+
+    it 'ignores deleted items in the position calculation' do
+      @module.content_tags.find_by(title: 'two').destroy
+      @module.insert_items([@attach, @assign], 3)
+      expect(@module.content_tags.not_deleted.pluck(:title)).to eq(%w(one three attach assign))
+    end
+
+    it "respects the added items' published state" do
+      @page.unpublish!
+      m = @course.context_modules.create!
+      m.insert_items([@assign, @page, @tool])
+      expect(m.content_tags.pluck(:title, :workflow_state)).to eq(
+        [['assign', 'active'], ['page', 'unpublished'], ['tool', 'active']]
+      )
+    end
+
+    it "adds the submittable object when given a graded discussion topic or quiz's assignment" do
+      m = @course.context_modules.create!
+      m.insert_items([@quiz.assignment.reload, @topic.assignment.reload])
+      expect(m.content_tags.map(&:content_type)).to eq(%w(Quizzes::Quiz DiscussionTopic))
+      expect(m.content_tags.map(&:content_id)).to eq([@quiz.id, @topic.id])
     end
   end
 
@@ -750,7 +929,7 @@ describe ContextModule do
     end
 
     describe "must_submit requirement" do
-      before :each do
+      before :once do
         course_module
         student_in_course course: @course, active_all: true
 
@@ -837,6 +1016,7 @@ describe ContextModule do
 
     it "should mark progression completed for min_score on discussion topic assignment" do
       asmnt = assignment_model(:submission_types => "discussion_topic", :points_possible => 10)
+      asmnt.ensure_post_policy(post_manually: false)
       topic = asmnt.discussion_topic
       @course.offer
       course_with_student(:active_all => true, :course => @course)
@@ -852,10 +1032,8 @@ describe ContextModule do
 
       topic.discussion_entries.create!(:message => "hi", :user => @student)
 
-      sub = asmnt.reload.submissions.first
-      sub.score = 5
-      sub.workflow_state = 'graded'
-      sub.save!
+      asmnt.reload.submissions.first
+      asmnt.grade_student(@student, grader: @teacher, score: 5)
 
       p = mod.evaluate_for(@student)
       expect(p.requirements_met).to eq [{:type=>"min_score", :min_score=>5, :id=>tag.id}]
@@ -1112,7 +1290,7 @@ describe ContextModule do
   end
 
   context 'unpublished completion requirements' do
-    before do
+    before :once do
       course_module
       course_with_student(course: @course, user: @student, active_all: true)
 
@@ -1158,7 +1336,7 @@ describe ContextModule do
   end
 
   describe "content_tags_visible_to" do
-    before do
+    before :once do
       course_module
       @student_1 = student_in_course(course: @course, active_all: true).user
       @student_2 = student_in_course(course: @course, active_all: true).user
@@ -1273,10 +1451,50 @@ describe ContextModule do
       @module.restore
       expect(@module.reload).to be_unpublished
     end
+
+    it "should restore module items that were deleted at the same time the module was" do
+      course_factory
+      @module = @course.context_modules.create!
+      @a0 = @course.assignments.create! :name => 'a0'
+      @a1 = @course.assignments.create! :name => 'a1', :workflow_state => 'unpublished'
+      @a2 = @course.assignments.create! :name => 'a2', :workflow_state => 'published'
+      @p1 = @course.wiki_pages.create! :title => 'p1', :workflow_state => 'unpublished'
+      @p2 = @course.wiki_pages.create! :title => 'p2', :workflow_state => 'active'
+      Timecop.travel(2.weeks.ago) do
+        @module.add_item :type => 'sub_header', :title => 'foo'
+        @doomed_header = @module.add_item :type => 'sub_header', :title => 'baz'
+        @doomed_assignment = @module.add_item :type => 'assignment', :id => @a0.id
+      end
+      Timecop.travel(1.week.ago) do
+        @module.add_item :type => 'assignment', :id => @a1.id
+        @module.add_item :type => 'assignment', :id => @a2.id
+        @module.add_item :type => 'wiki_page', :id => @p1.id
+        @module.add_item :type => 'wiki_page', :id => @p2.id
+      end
+      Timecop.travel(6.days.ago) do
+        # these should not be restored because they were deleted before the module was
+        @doomed_header.destroy
+        @doomed_assignment.destroy
+      end
+      Timecop.travel(5.days.ago) do
+        @module.destroy
+      end
+      Timecop.travel(3.days.ago) do
+        @p1.destroy # don't restore tag for deleted asset
+        @p2.title = 'p2-renamed' # test updating restored tag with current asset name
+        @p2.save!
+      end
+      @module.restore
+      tags = @module.content_tags.not_deleted.order(:position).to_a
+      expect(tags.size).to eq 4
+      expect(tags.map(&:content_id)).to eq([0, @a1.id, @a2.id, @p2.id])
+      expect(tags.map(&:title)).to eq(['foo', 'a1', 'a2', 'p2-renamed'])
+      expect(tags.map(&:workflow_state)).to eq(['unpublished', 'unpublished', 'active', 'active'])
+    end
   end
 
   describe "#relock_warning?" do
-    before :each do
+    before :once do
       course_factory(active_all: true)
     end
 
@@ -1333,6 +1551,31 @@ describe ContextModule do
       mod2.save!
       mod1.unpublish!; mod1.publish!
       expect(mod1.relock_warning?).to be_falsey
+    end
+
+    it "should be true when publishing a module that has prerequisites" do
+      # this is necessary because the prerequisites may have changed while the module was unpublished
+      mod1 = @course.context_modules.new(:name => "some module")
+      mod1.workflow_state = "active"
+      mod1.save!
+
+      mod2 = @course.context_modules.new(:name => "some module2")
+      mod2.prerequisites = "module_#{mod1.id}"
+      mod2.workflow_state = "unpublished"
+      mod2.save!
+
+      mod2.publish!
+      expect(mod2.relock_warning?).to eq true
+    end
+
+    it "should be true when publishing a module that has an unlock_at date" do
+      mod1 = @course.context_modules.new(:name => "some module")
+      mod1.workflow_state = "unpublished"
+      mod1.unlock_at = 1.month.from_now
+      mod1.save!
+
+      mod1.publish!
+      expect(mod1.relock_warning?).to eq true
     end
   end
 

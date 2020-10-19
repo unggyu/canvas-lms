@@ -71,7 +71,7 @@ describe "Canvas::Redis" do
     end
 
     it "should pass through other command errors" do
-      expect(CanvasStatsd::Statsd).to receive(:increment).never
+      expect(InstStatsd::Statsd).to receive(:increment).never
 
       expect(Canvas.redis._client).to receive(:write).and_raise(Redis::CommandError.new("NOSCRIPT No matching script. Please use EVAL.")).once
       expect { Canvas.redis.evalsha('xxx') }.to raise_error(Redis::CommandError)
@@ -81,19 +81,10 @@ describe "Canvas::Redis" do
     end
 
     describe "redis failure" do
-      let(:cache) { ActiveSupport::Cache::RedisStore.new(['redis://localhost:1234']) }
+      let(:cache) { ActiveSupport::Cache::RedisCacheStore.new(url: 'redis://localhost:1234') }
 
       before do
-        allow(cache.data._client).to receive(:ensure_connected).and_raise(Redis::TimeoutError)
-      end
-
-      it "should fail if not ignore_redis_failures" do
-        Setting.set('ignore_redis_failures', 'false')
-        expect {
-          enable_cache(cache) {
-            expect(Rails.cache.read('blah')).to eq nil
-          }
-        }.to raise_error(Redis::TimeoutError)
+        allow(cache.redis._client).to receive(:ensure_connected).and_raise(Redis::TimeoutError)
       end
 
       it "should not fail cache.read" do
@@ -123,7 +114,7 @@ describe "Canvas::Redis" do
       end
 
       it "should not fail cache.delete for a ring" do
-        enable_cache(ActiveSupport::Cache::RedisStore.new(['redis://localhost:1234', 'redis://localhost:4567'])) do
+        enable_cache(ActiveSupport::Cache::RedisCacheStore.new(url: ['redis://localhost:1234', 'redis://localhost:4567'])) do
           expect(Rails.cache.delete('blah')).to eq 0
         end
       end
@@ -136,13 +127,13 @@ describe "Canvas::Redis" do
 
       it "should not fail cache.delete_matched" do
         enable_cache(cache) do
-          expect(Rails.cache.delete_matched('blah')).to eq false
+          expect(Rails.cache.delete_matched('blah')).to eq nil
         end
       end
 
       it "should fail separate servers separately" do
-        cache = ActiveSupport::Cache::RedisStore.new([Canvas.redis.id, 'redis://nonexistent:1234/0'])
-        client = cache.data
+        cache = ActiveSupport::Cache::RedisCacheStore.new(url: [Canvas.redis.id, 'redis://nonexistent:1234/0'])
+        client = cache.redis
         key2 = 2
         while client.node_for('1') == client.node_for(key2.to_s)
           key2 += 1
@@ -166,6 +157,11 @@ describe "Canvas::Redis" do
         expect(Canvas.redis.setnx('my_key', 5)).to eq nil
       end
 
+      it "returns a non-nil structure for mget" do
+        expect(Canvas.redis._client).to receive(:ensure_connected).and_raise(Redis::TimeoutError).once
+        expect(Canvas.redis.mget(['k1', 'k2', 'k3'])).to eq []
+      end
+
       it "distinguishes between failure and not exists for set nx" do
         Canvas.redis.del('my_key')
         expect(Canvas.redis.set('my_key', 5, nx: true)).to eq true
@@ -181,9 +177,7 @@ describe "Canvas::Redis" do
     let(:key) { 'mykey' }
     let(:key2) { 'mykey2' }
     let(:val) { 'myvalue' }
-    before(:once) { Setting.set('redis_log_style', 'json') }
-    # cache to avoid capturing a log line for db lookup
-    before(:each) { Canvas::Redis.log_style }
+    before { allow(Canvas::Redis).to receive(:log_style).and_return('json') }
 
     def json_logline(get = :shift)
       # drop the non-json logging at the start of the line
@@ -223,9 +217,7 @@ describe "Canvas::Redis" do
 
     context "rails caching" do
       let(:cache) do
-        ActiveSupport::Cache::RedisStore.new([]).tap do |cache|
-          cache.instance_variable_set(:@data, Canvas.redis.__getobj__)
-        end
+        ActiveSupport::Cache::RedisCacheStore.new(redis: Canvas.redis)
       end
 
       it "should log the cache fetch block generation time" do
@@ -285,9 +277,7 @@ describe "Canvas::Redis" do
   end
 
   it "should allow disabling redis logging" do
-    Setting.set('redis_log_style', 'off')
-    # cache to avoid capturing a log line for db lookup
-    Canvas::Redis.log_style
+    allow(Canvas::Redis).to receive(:log_style).and_return('off')
     Rails.logger.capture_messages do
       Canvas.redis.set('mykey', 'myvalue')
       expect(Rails.logger.captured_messages).to be_empty
@@ -295,12 +285,58 @@ describe "Canvas::Redis" do
   end
 
   describe "Canvas::RedisWrapper" do
-    it "should wrap redis connections" do
-      expect(Canvas.redis.class).to eq Canvas::RedisWrapper
-    end
-
     it "should raise on unsupported commands" do
       expect { Canvas.redis.keys }.to raise_error(Canvas::Redis::UnsupportedRedisMethod)
+    end
+  end
+
+  describe "handle_redis_failure" do
+    before do
+      Canvas::Redis.patch
+    end
+
+    after do
+      Canvas::Redis.reset_redis_failure
+    end
+
+    it "logs any redis error when they occur" do
+      messages = []
+      expect(Rails.logger).to receive(:error) do |message|
+        messages << message
+      end.at_least(:once)
+      Canvas::Redis.handle_redis_failure({'failure'=>'val'}, 'local_fake_redis') do
+        raise ::Redis::InheritedError, "intentional failure"
+      end
+      expect(messages.length).to eq(2)
+      msgs = messages.select{|m| m =~ /Query failure/ }
+      expect(msgs.length).to eq(1)
+      m = msgs.first
+      expect(m).to match(/\[REDIS\] Query failure/)
+      expect(m).to match(/\(local_fake_redis\)/)
+      expect(m).to match(/InheritedError/)
+    end
+
+    it "tracks failure only briefly for local redis" do
+      local_node = "localhost:9999"
+      expect(Canvas::Redis.redis_failure?(local_node)).to be_falsey
+      Canvas::Redis.last_redis_failure[local_node] = Time.now
+      expect(Canvas::Redis.redis_failure?(local_node)).to be_truthy
+      Timecop.travel(4) do
+        expect(Canvas::Redis.redis_failure?(local_node)).to be_falsey
+      end
+    end
+
+    it "circuit breaks for standard nodes for a different amount of time" do
+      remote_node = "redis-test-node-42:9999"
+      expect(Canvas::Redis.redis_failure?(remote_node)).to be_falsey
+      Canvas::Redis.last_redis_failure[remote_node] = Time.now
+      expect(Canvas::Redis.redis_failure?(remote_node)).to be_truthy
+      Timecop.travel(4) do
+        expect(Canvas::Redis.redis_failure?(remote_node)).to be_truthy
+      end
+      Timecop.travel(400) do
+        expect(Canvas::Redis.redis_failure?(remote_node)).to be_falsey
+      end
     end
   end
 end

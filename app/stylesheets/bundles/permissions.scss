@@ -37,7 +37,7 @@ $darkRowBg: #f9f9f9;
   }
   button {
     @include ic-focus-base;
-    &:focus-within {
+    &:focus {
       @include ic-focus-variant;
     }
     border: none;
@@ -52,21 +52,16 @@ $darkRowBg: #f9f9f9;
 .ic-permissions__table-container {
   // dimensions of the table on screen, the table will scroll inside this container
   // might want to change to match design
-  width: 72vw;
-  height: 64vh;
+
+  margin: $ic-sp 0;
+  @include breakpoint(tablet) {
+    height: 64vh;
+  }
 
   // needed for scrolling + sticky headers
   overflow: auto;
   position: relative;
-
   border: 1px solid $border-color;
-
-  margin: 20px 20px 20px 0px;
-}
-
-.permissions-v2__header_contianer {
-  width: 70vw;
-  margin: 20px 20px 20px 0px;
 }
 
 .ic-permissions_role_tray {
@@ -112,18 +107,20 @@ $darkRowBg: #f9f9f9;
   }
 
   // content cell, aka a table cell with permission buttons inside it
+  // IconButtons and Checkboxes get slightly different margins because
+  // of the difference in size.
   .ic-permissions__cell-content {
-    margin-#{direction(left)}: 20px;
+    margin-#{direction(left)}: 18px;
     text-align: center;
   }
 
   // STICKY PROPERTIES
   .ic-permissions__corner-stone {
     width: 300px;
-    border-right: 1px solid #ddd;
+    border-#{direction(right)}: 1px solid #ddd;
     box-shadow: 3px 4px 5px 0 #e8e8e8, inset 0 1px 0 0 #ddd;
     position: sticky;
-    left: 0;
+    #{direction(left)}: 0;
     top: 0;
     z-index: 100;
     background-color: $lightRowBg;
@@ -135,29 +132,17 @@ $darkRowBg: #f9f9f9;
   .ic-permissions__corner-stone:after{
     content:'';
     position: absolute;
-    left: 0;
+    #{direction(left)}: 0;
     bottom: 0;
     width: 100%;
   }
 
   .ic-permissions__main-left-header {
     position: sticky;
-    left: 0;
+    #{direction(left)}: 0;
     z-index: 9;
   }
 
-  // the header cells of the expanded row
-  .ic-permissions__left-header__expanded {
-    position: sticky;
-    left: 0;
-
-    .ic-permissions__left-header__col-wrapper {
-
-      .ic-permissions__header-content {
-        text-align: right;
-      }
-    }
-  }
   // specifically for the column header content
   .ic-permissions__header-content-col {
     justify-content: center;
@@ -172,6 +157,10 @@ $darkRowBg: #f9f9f9;
     background-color: inherit;
   }
 
+  .ic-permissions__left-header__col-wrapper button {
+    text-align: direction(left);
+  }
+
   .ic-permissions__top-header__col-wrapper-th {
     box-shadow: 3px 4px 5px 0 #e8e8e8, inset 0 1px 0 0 #ddd;
     position: sticky;
@@ -183,7 +172,7 @@ $darkRowBg: #f9f9f9;
   .ic-permissions__top-header__col-wrapper-th:after{
     content:'';
     position: absolute;
-    left: 0;
+    #{direction(left)}: 0;
     bottom: 0;
     width: 100%;
     border-bottom: 1px solid $border-color;
@@ -191,8 +180,8 @@ $darkRowBg: #f9f9f9;
 
   // the top "fixed" header
   .ic-permissions__top-header__col-wrapper {
-    margin-left: auto;
-    margin-right: auto;
+    margin-#{direction(left)}: auto;
+    margin-#{direction(right)}: auto;
     height: 50px;
     width: 140px;
     background: transparent;
@@ -205,10 +194,10 @@ $darkRowBg: #f9f9f9;
     background: $lightRowBg;
 
     .ic-permissions__header-content {
-      text-align: left;
+      text-align: direction(left);
 
       // that border shadow effect on the left side header
-      border-right: 1px solid #ddd;
+      border-#{direction(right)}: 1px solid #ddd;
       box-shadow: 3px 4px 5px 0 #e8e8e8, $borderShadow;
     }
   }
@@ -219,5 +208,5 @@ $darkRowBg: #f9f9f9;
     position: sticky;
     bottom: 0;
     background: $faintRowBg;
-    padding: 0 0 20px 0;
+    padding: 0 0 20px;
 }

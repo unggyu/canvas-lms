@@ -22,8 +22,8 @@ module Quizzes
 
     root :quiz
 
-    attributes :id, :title, :html_url, :mobile_url, :description, :quiz_type,
-                :time_limit, :shuffle_answers, :show_correct_answers,
+    attributes :id, :title, :html_url, :mobile_url, :description, :quiz_type, :time_limit,
+                :timer_autosubmit_disabled, :shuffle_answers, :show_correct_answers,
                 :scoring_policy, :allowed_attempts, :one_question_at_a_time,
                 :question_count, :points_possible, :cant_go_back,
                 :access_code, :ip_filter, :due_at, :lock_at, :unlock_at,
@@ -57,10 +57,9 @@ module Quizzes
       :course_quiz_quiz_submissions_url,
       :course_quiz_submission_versions_url
 
-    def_delegators :@object,
-      :context,
-      :submitted_students_visible_to,
-      :unsubmitted_students_visible_to
+    def context
+      quiz.context
+    end
 
     def_delegators :@quiz, :quiz_questions
 
@@ -193,8 +192,8 @@ module Quizzes
       !serializer_option(:skip_date_overrides) && due_dates == all_dates
     end
 
-    def include_unpublishable?
-      quiz.grants_right?(current_user, :manage)
+    def include_permissions?
+      !serializer_option(:skip_permissions)
     end
 
     def filter(keys)
@@ -203,7 +202,7 @@ module Quizzes
         when :all_dates
           include_all_dates?
         when :unpublishable, :can_unpublish
-          include_unpublishable?
+          user_may_manage?
         when :section_count,
              :speed_grader_url,
              :message_students_url,
@@ -225,6 +224,8 @@ module Quizzes
           !serializer_option(:skip_lock_tests)
         when :anonymous_submissions
           quiz.survey?
+        when :permissions
+          include_permissions?
         else true
         end
       end
@@ -361,11 +362,11 @@ module Quizzes
     end
 
     def user_may_grade?
-      quiz.grants_right?(current_user, :grade)
+      context.grants_right?(current_user, :manage_grades)
     end
 
     def user_may_manage?
-      quiz.grants_right?(current_user, :manage)
+      context.grants_right?(current_user, :manage_assignments)
     end
 
     def user_finder
@@ -388,6 +389,10 @@ module Quizzes
 
     def post_to_sis
       quiz.post_to_sis?
+    end
+
+    def timer_autosubmit_disabled
+      quiz.timer_autosubmit_disabled?
     end
   end
 end

@@ -33,6 +33,7 @@ if ENV['COVERAGE'] == "1"
 end
 
 require File.expand_path('../../config/environment', __FILE__) unless defined?(Rails)
+
 require 'rspec/rails'
 
 require 'webmock'
@@ -60,6 +61,7 @@ BlankSlateProtection.install!
 GreatExpectations.install!
 
 ActionView::TestCase::TestController.view_paths = ApplicationController.view_paths
+ActionView::Base.streaming_completion_on_exception = "</html>"
 
 # this makes sure that a broken transaction becomes functional again
 # by the time we hit rescue_action_in_public, so that the error report
@@ -83,6 +85,9 @@ module SpecTransactionWrapper
 end
 ActionController::Base.set_callback(:process_action, :around,
   ->(_r, block) { SpecTransactionWrapper.wrap_block_in_transaction(block) })
+
+ActionController::Base.set_callback(:process_action, :before,
+  ->(_r) { @streaming_template = false })
 
 module RSpec::Core::Hooks
 class AfterContextHook < Hook
@@ -143,9 +148,25 @@ module RSpec::Rails
       !!Nokogiri::HTML(actual).at_css(expected)
     end
   end
+
+  RSpec::Matchers.define :be_checked do
+    match do |node|
+      if node.is_a?(Nokogiri::XML::Element)
+        node.attr('checked') == 'checked'
+      elsif node.respond_to?(:checked?)
+        node.checked?
+      end
+    end
+  end
 end
 
 module RenderWithHelpers
+  def assign(key, value)
+    @assigned_variables ||= {}
+    @assigned_variables[key] = value
+    super
+  end
+
   def render(*args)
     controller_class = ("#{@controller.controller_path.camelize}Controller".constantize rescue nil) || ApplicationController
 
@@ -173,6 +194,12 @@ module RenderWithHelpers
     real_controller = controller_class.new
     real_controller.instance_variable_set(:@_request, @controller.request)
     real_controller.instance_variable_set(:@context, @controller.instance_variable_get(:@context))
+    @assigned_variables&.each do |key, value|
+      real_controller.instance_variable_set(:"@#{key}", value)
+    end
+    if real_controller.instance_variable_get(:@domain_root_account).nil?
+      real_controller.instance_variable_set(:@domain_root_account, Account.default)
+    end
     @controller.real_controller = real_controller
 
     # just calling "render 'path/to/view'" by default looks for a partial
@@ -185,22 +212,11 @@ module RenderWithHelpers
 end
 RSpec::Rails::ViewExampleGroup::ExampleMethods.prepend(RenderWithHelpers)
 
-require 'action_controller_test_process'
 require_relative 'rspec_mock_extensions'
 require File.expand_path(File.dirname(__FILE__) + '/ams_spec_helper')
 
 require 'i18n_tasks'
-
-legit_global_methods = Object.private_methods
-Dir[File.dirname(__FILE__) + "/factories/**/*.rb"].each {|f| require f }
-crap_factories = (Object.private_methods - legit_global_methods)
-if crap_factories.present?
-  $stderr.puts "\e[31mError: Don't create global factories/helpers"
-  $stderr.puts "Put #{crap_factories.map { |m| "`#{m}`" }.to_sentence} in the `Factories` module"
-  $stderr.puts "(or somewhere else appropriate)\e[0m"
-  $stderr.puts
-  exit! 1
-end
+require_relative 'factories'
 
 Dir[File.dirname(__FILE__) + "/shared_examples/**/*.rb"].each {|f| require f }
 
@@ -214,6 +230,8 @@ if defined?(Spec::DSL::Main)
     remove_method :context if respond_to? :context
   end
 end
+
+RSpec::Mocks.configuration.allow_message_expectations_on_nil = false
 
 RSpec::Matchers.define_negated_matcher :not_eq, :eq
 RSpec::Matchers.define_negated_matcher :not_have_key, :have_key
@@ -250,33 +268,31 @@ end
 RSpec::Matchers.define :and_query do |expected|
   match do |actual|
     query = Rack::Utils.parse_query(URI(actual).query)
-    values_match?(expected, query)
+
+    expected_as_strings = RSpec::Matchers::Helpers.cast_to_strings(expected: expected)
+    values_match?(expected_as_strings, query)
   end
 end
 
 RSpec::Matchers.define :and_fragment do |expected|
   match do |actual|
     fragment = JSON.parse(URI.decode_www_form_component(URI(actual).fragment))
-    values_match?(expected, fragment)
+    expected_as_strings = RSpec::Matchers::Helpers.cast_to_strings(expected: expected)
+    values_match?(expected_as_strings, fragment)
+  end
+end
+
+RSpec::Matchers.define_negated_matcher :not_change, :change
+
+module RSpec::Matchers::Helpers
+  # allows for matchers to use symbols and literals even though URIs are always strings.
+  # i.e. `and_query({assignment_id: @assignment.id})`
+  def self.cast_to_strings(expected:)
+    expected.map {|k,v| [k.to_s, v.to_s]}.to_h
   end
 end
 
 module Helpers
-  def message(opts={})
-    m = Message.new
-    m.to = opts[:to] || 'some_user'
-    m.from = opts[:from] || 'some_other_user'
-    m.subject = opts[:subject] || 'a message for you'
-    m.body = opts[:body] || 'foo bar'
-    m.sent_at = opts[:sent_at] || 5.days.ago
-    m.workflow_state = opts[:workflow_state] || 'sent'
-    m.user_id = opts[:user_id] || opts[:user].try(:id)
-    m.path_type = opts[:path_type] || 'email'
-    m.root_account_id = opts[:account_id] || Account.default.id
-    m.save!
-    m
-  end
-
   def assert_status(status=500)
     expect(response.status.to_i).to eq status
   end
@@ -309,10 +325,13 @@ end
 
 RSpec::Expectations.configuration.on_potential_false_positives = :raise
 
+require 'rspec_junit_formatter'
+
 RSpec.configure do |config|
+  config.example_status_persistence_file_path = Rails.root.join('tmp', 'rspec')
   config.use_transactional_fixtures = true
   config.use_instantiated_fixtures = false
-  config.fixture_path = Rails.root+'spec/fixtures/'
+  config.fixture_path = Rails.root.join('spec', 'fixtures')
   config.infer_spec_type_from_file_location!
   config.raise_errors_for_deprecations!
   config.color = true
@@ -325,7 +344,18 @@ RSpec.configure do |config|
   config.include Factories
   config.include RequestHelper, type: :request
   config.include Onceler::BasicHelpers
+  config.include PGCollkeyHelper
   config.project_source_dirs << "gems" # so that failures here are reported properly
+
+  # DOCKER_PROCESSES is only used on Jenkins and we only care to have RspecJunitFormatter on Jenkins.
+  if ENV['DOCKER_PROCESSES']
+    # if file already exists this is a rerun of a failed spec, don't generate new xml.
+    config.add_formatter "RspecJunitFormatter", "log/results.xml" unless File.file?("log/results.xml")
+  end
+
+  if ENV['RSPEC_LOG']
+    config.add_formatter "ParallelTests::RSpec::RuntimeLogger", "log/parallel_runtime_rspec_tests.log"
+  end
 
   if ENV['RAILS_LOAD_ALL_LOCALES'] && RSpec.configuration.filter.rules[:i18n]
     config.around :each do |example|
@@ -352,7 +382,6 @@ RSpec.configure do |config|
     Notification.reset_cache!
     ActiveRecord::Base.reset_any_instantiation!
     Folder.reset_path_lookups!
-    RoleOverride.clear_cached_contexts
     Delayed::Job.redis.flushdb if Delayed::Job == Delayed::Backend::Redis::Job
     Rails::logger.try(:info, "Running #{self.class.description} #{@method_name}")
     Attachment.current_root_account = nil
@@ -362,6 +391,7 @@ RSpec.configure do |config|
     MultiCache.reset
     Course.enroll_user_call_count = 0
     TermsOfService.skip_automatic_terms_creation = true
+    LiveEvents.clear_context!
     $spec_api_tokens = {}
   end
 
@@ -375,7 +405,6 @@ RSpec.configure do |config|
 
   config.before :all do
     raise "all specs need to use transactions" unless using_transactions_properly?
-    Role.ensure_built_in_roles!
   end
 
   Onceler.configure do |c|
@@ -420,36 +449,6 @@ RSpec.configure do |config|
 
   config.before do
     allow(AttachmentFu::Backends::S3Backend).to receive(:load_s3_config) { StubS3::AWS_CONFIG.dup }
-  end
-
-  # this runs on post-merge builds to capture dependencies of each spec;
-  # we then use that data to run just the bare minimum subset of selenium
-  # specs on the patchset builds
-  if ENV["SELINIMUM_CAPTURE"]
-    require "selinimum"
-    require "selinimum/capture"
-
-    config.before :suite do
-      Selinimum::Capture.install!
-    end
-
-    config.prepend_before :all do |group|
-      # ensure these constants get reloaded, otherwise you get the dreaded
-      # `A copy of #{from_mod} has been removed from the module tree but is still active!`
-      BroadcastPolicy.reset_notifiers!
-
-      Selinimum::Capture.current_group = group.class
-    end
-
-    config.around :each do |example|
-      Selinimum::Capture.with_example(example) do
-        example.run
-      end
-    end
-
-    config.after :suite do
-      Selinimum::Capture.report!(ENV["SELINIMUM_BATCH_NAME"])
-    end
   end
 
   # flush redis before the first spec, and before each spec that comes after
@@ -524,22 +523,6 @@ RSpec.configure do |config|
     fixture_file_upload('docs/doc.doc', 'application/msword', true)
   end
 
-  def factory_with_protected_attributes(ar_klass, attrs, do_save = true)
-    obj = ar_klass.respond_to?(:new) ? ar_klass.new : ar_klass.build
-    attrs.each { |k, v| obj.send("#{k}=", attrs[k]) }
-    obj.save! if do_save
-    obj
-  end
-
-  def update_with_protected_attributes!(ar_instance, attrs)
-    attrs.each { |k, v| ar_instance.send("#{k}=", attrs[k]) }
-    ar_instance.save!
-  end
-
-  def update_with_protected_attributes(ar_instance, attrs)
-    update_with_protected_attributes!(ar_instance, attrs) rescue false
-  end
-
   def create_temp_dir!
     dir = Dir.mktmpdir
     @temp_dirs ||= []
@@ -564,9 +547,7 @@ RSpec.configure do |config|
     path = generate_csv_file(lines)
     opts[:files] = [path]
 
-    use_parallel = SisBatch.use_parallel_importers?(account)
-    import_class = use_parallel ? SIS::CSV::ImportRefactored : SIS::CSV::Import
-    importer = import_class.process(account, opts)
+    importer = SIS::CSV::ImportRefactored.process(account, opts)
     run_jobs
 
     File.unlink path
@@ -580,17 +561,35 @@ RSpec.configure do |config|
     importer
   end
 
-  def enable_cache(new_cache=:memory_store)
+  def set_cache(new_cache)
+    cache_opts = {}
+    if new_cache == :redis_cache_store
+      if Canvas.redis_enabled?
+        cache_opts[:redis] = Canvas.redis
+      else
+        skip "redis required"
+      end
+    end
     new_cache ||= :null_store
-    new_cache = ActiveSupport::Cache.lookup_store(new_cache)
-    previous_cache = Rails.cache
+    new_cache = ActiveSupport::Cache.lookup_store(new_cache, cache_opts)
     allow(Rails).to receive(:cache).and_return(new_cache)
     allow(ActionController::Base).to receive(:cache_store).and_return(new_cache)
     allow_any_instance_of(ActionController::Base).to receive(:cache_store).and_return(new_cache)
-    previous_perform_caching = ActionController::Base.perform_caching
     allow(ActionController::Base).to receive(:perform_caching).and_return(true)
     allow_any_instance_of(ActionController::Base).to receive(:perform_caching).and_return(true)
     MultiCache.reset
+  end
+
+  def specs_require_cache(new_cache=:memory_store)
+    before :each do
+      set_cache(new_cache)
+    end
+  end
+
+  def enable_cache(new_cache=:memory_store)
+    previous_cache = Rails.cache
+    previous_perform_caching = ActionController::Base.perform_caching
+    set_cache(new_cache)
     if block_given?
       begin
         yield
@@ -634,6 +633,14 @@ RSpec.configure do |config|
                                              })
   end
 
+  def override_dynamic_settings(data)
+    original_fallback = Canvas::DynamicSettings.fallback_data
+    Canvas::DynamicSettings.fallback_data = data
+    yield
+  ensure
+    Canvas::DynamicSettings.fallback_data = original_fallback
+  end
+
   def json_parse(json_string = response.body)
     JSON.parse(json_string.sub(%r{^while\(1\);}, ''))
   end
@@ -643,7 +650,7 @@ RSpec.configure do |config|
     BACKENDS = %w{FileSystem S3}.map { |backend| AttachmentFu::Backends.const_get(:"#{backend}Backend") }.freeze
 
     class As #:nodoc:
-      private *instance_methods.select { |m| m !~ /(^__|^\W|^binding$)/ }
+      private *instance_methods.select { |m| m !~ /(^__|^\W|^binding$|^untaint$)/ }
 
       def initialize(subject, ancestor)
         @subject = subject
@@ -812,6 +819,10 @@ RSpec.configure do |config|
     def enabled?; true; end
 
     def base; end
+
+    def name
+      id.to_s.humanize
+    end
   end
   def web_conference_plugin_mock(id, settings)
     WebConferencePluginMock.new(id, settings)
@@ -825,30 +836,14 @@ RSpec.configure do |config|
     Rails.application.config.consider_all_requests_local = value
   end
 
-  # a fast way to create a record, especially if you don't need the actual
-  # ruby object. since it just does a straight up insert, you need to
-  # provide any non-null attributes or things that would normally be
-  # inferred/defaulted prior to saving
-  def create_record(klass, attributes, return_type = :id)
-    create_records(klass, [attributes], return_type)[0]
-  end
-
-  # a little wrapper around bulk_insert that gives you back records or ids
-  # in order
-  # NOTE: if you decide you want to go add something like this to canvas
-  # proper, make sure you have it handle concurrent inserts (this does
-  # not, because READ COMMITTED is the default transaction isolation
-  # level)
-  def create_records(klass, records, return_type = :id)
-    return [] if records.empty?
-    klass.transaction do
-      klass.connection.bulk_insert klass.table_name, records
-      return if return_type == :nil
-      scope = klass.order("id DESC").limit(records.size)
-      return_type == :record ?
-        scope.to_a.reverse :
-        scope.pluck(:id).reverse
-    end
+  def skip_if_prepended_class_method_stubs_broken
+    versions = [
+      '2.4.6',
+      '2.4.9',
+      '2.5.1',
+      '2.5.3'
+    ]
+    skip("stubbing prepended class methods is broken in this version of ruby") if versions.include?(RUBY_VERSION) || RUBY_VERSION >= "2.6"
   end
 end
 
@@ -893,4 +888,14 @@ Shoulda::Matchers.configure do |config|
     # Or, choose the following (which implies all of the above):
     # with.library :rails
   end
+end
+
+def enable_developer_key_account_binding!(developer_key)
+  developer_key.developer_key_account_bindings.first.update!(
+    workflow_state: 'on'
+  )
+end
+
+def enable_default_developer_key!
+  enable_developer_key_account_binding!(DeveloperKey.default)
 end

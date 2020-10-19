@@ -20,7 +20,6 @@ module SIS
   class XlistImporter < BaseImporter
 
     def process
-      start = Time.now
       importer = Work.new(@batch, @root_account, @logger)
       Course.suspend_callbacks(:update_enrollments_later) do
         Course.process_as_sis(@sis_options) do
@@ -32,11 +31,10 @@ module SIS
         end
       end
       Course.update_account_associations(importer.course_ids_to_update_associations.to_a) unless importer.course_ids_to_update_associations.empty?
-      @logger.debug("Crosslists took #{Time.now - start} seconds")
-      return importer.success_count
+
+      importer.success_count
     end
 
-  private
     class Work
       attr_accessor :success_count, :course_ids_to_update_associations
 
@@ -51,8 +49,6 @@ module SIS
       end
 
       def add_crosslist(xlist_course_id, section_id, status)
-        @logger.debug("Processing CrossListing #{[xlist_course_id, section_id, status].inspect}")
-
         raise ImportError, "No xlist_course_id given for a cross-listing" if xlist_course_id.blank?
         raise ImportError, "No section_id given for a cross-listing" if section_id.blank?
         raise ImportError, "Improper status \"#{status}\" for a cross-listing" unless status =~ /\A(active|deleted)\z/i
@@ -101,7 +97,7 @@ module SIS
 
             begin
               @course_ids_to_update_associations.merge [@course.id, section.course_id, section.nonxlist_course_id].compact
-              section.crosslist_to_course(@course, :run_jobs_immediately)
+              section.crosslist_to_course(@course, run_jobs_immediately: true)
             rescue => e
               raise ImportError, "An active cross-listing failed: #{e}"
             end
@@ -114,7 +110,7 @@ module SIS
 
             begin
               @course_ids_to_update_associations.merge [section.course_id, section.nonxlist_course_id]
-              section.uncrosslist(:run_jobs_immediately)
+              section.uncrosslist(run_jobs_immediately: true)
             rescue => e
               raise ImportError, "A deleted cross-listing failed: #{e}"
             end

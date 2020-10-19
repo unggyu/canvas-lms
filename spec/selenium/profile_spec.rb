@@ -32,8 +32,7 @@ describe "profile" do
     f('#unregistered_service_skype > a').click
     skype_dialog = f('#unregistered_service_skype_dialog')
     skype_dialog.find_element(:id, 'skype_user_service_user_name').send_keys("jakesorce")
-    submit_dialog(skype_dialog, '.btn')
-    wait_for_ajaximations
+    wait_for_new_page_load { submit_dialog(skype_dialog, '.btn') }
     expect(f('#registered_services')).to include_text("Skype")
   end
 
@@ -67,8 +66,7 @@ describe "profile" do
     edit_form.find_element(:id, 'old_password').send_keys(old_password)
     edit_form.find_element(:id, 'pseudonym_password').send_keys(new_password)
     edit_form.find_element(:id, 'pseudonym_password_confirmation').send_keys(new_password)
-    submit_form(edit_form)
-    wait_for_ajaximations
+    wait_for_new_page_load { submit_form(edit_form) }
   end
 
   it "should give error - wrong old password" do
@@ -139,9 +137,7 @@ describe "profile" do
 
     it "should change default email address" do
       @user.communication_channel.confirm!
-      channel = @user.communication_channels.create!(:path_type => 'email',
-                                                     :path => 'walter_white@example.com')
-      channel.confirm!
+      channel = communication_channel(@user, {username: 'walter_white@example.com', active_cc: true})
 
       get '/profile/settings'
       row = f("#channel_#{channel.id}")
@@ -157,8 +153,7 @@ describe "profile" do
       get "/profile/settings"
       edit_form = click_edit
       replace_content(edit_form.find_element(:id, 'user_name'), new_user_name)
-      submit_form(edit_form)
-      wait_for_ajaximations
+      wait_for_new_page_load { submit_form(edit_form) }
       expect(f('.full_name')).to include_text new_user_name
     end
 
@@ -207,6 +202,21 @@ describe "profile" do
       wait_for_ajaximations
       close_visible_dialog
       expect(f('.other_channels .path')).to include_text(test_cell_number)
+    end
+
+    it 'should add another contact method - slack' do
+      @user.account.enable_feature!(:slack_notifications)
+      test_slack_email = 'sburnett@instructure.com'
+      get '/profile/settings'
+      f('.add_contact_link').click
+      f('a[href="#register_slack_handle"]').click
+      f('#communication_channel_slack').send_keys(test_slack_email)
+      driver.action.send_keys(:tab).perform
+      register_form = f('#register_slack_handle')
+      submit_form(register_form)
+      wait_for_ajaximations
+      close_visible_dialog
+      expect(f('.other_channels .path')).to include_text(test_slack_email)
     end
 
     it "should register a service" do

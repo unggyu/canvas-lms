@@ -30,7 +30,7 @@
   position: fixed;
   top: 10px;
   #{direction(left)}: 50px;
-  z-index: 9999;
+  z-index: 99999;
   background-color: #fff;
   border: 2px solid #888;
 }
@@ -45,7 +45,7 @@
   position: fixed;
   z-index: 100000;
   #{direction(left)}: 0;
-  width: 100%;
+  width: 100vw;
 }
 
 // contains copies of all static messages so that we reserve enough height in the ui
@@ -80,7 +80,7 @@
   li:not(.ic-flash-info, .ic-flash-success, .ic-flash-warning, .ic-flash-error) {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
     border-bottom-color: rgba(0, 0, 0, 0.5);
-    padding: 4px 40px 4px 8px;
+    padding: direction-sides(4px 40px 4px 8px);
     min-height: 20px;
     vertical-align: middle;
     text-align: center;
@@ -132,18 +132,11 @@
   position: relative;
   min-height: 5px;
   max-width: 100%;
-  // firefox max-width images break the parent container
-  @-moz-document url-prefix() {
-    overflow-x: hidden;
-  }
+  overflow-x: auto;
   a:not(.btn, .Button) {
     text-decoration: underline;
   }
 
-  h3, .h3 {
-    margin-top: 1em;
-    margin-bottom: 1em;
-  }
   table:not([cellpadding]) {
     margin-#{direction(left)}: 5px;
     td {
@@ -152,6 +145,7 @@
   }
 }
 
+
 .user_content iframe,
 .user_content video
  {
@@ -159,6 +153,10 @@
   padding: 0;
   margin: 0;
   max-width: 100%;
+}
+
+.user_content iframe[data-media-id] {
+  background-color: #eee;
 }
 
 .reminder, .reminder-content {
@@ -175,8 +173,8 @@
     padding: 0px 10px;
     border-bottom: 1px solid #aaa;
     font-size: 1.2em;
-    border-top-right-radius: 4px;
-    border-top-left-radius: 4px;
+    border-top-#{direction(right)}-radius: 4px;
+    border-top-#{direction(left)}-radius: 4px;
   }
   .body {
     width: auto;
@@ -250,7 +248,7 @@
   table.courses {
     width: 100%;
     td {
-      padding: 5px 5px 10px 10px;
+      padding: direction-sides(5px 5px 10px 10px);
       background-color: #eee;
       color: #888;
       .name {
@@ -299,7 +297,7 @@
         height: 100%;
         width: $ic-sp;
         background: linear-gradient(
-          to right, rgba(255, 255, 255, 0) 0%,
+          to direction(right), rgba(255, 255, 255, 0) 0%,
           rgba(255, 255, 255, 1) 80%);
       }
     }
@@ -310,7 +308,7 @@
       &:after {
         width: $ic-sp * 2.5;
         background: linear-gradient(
-          to right, rgba(255, 255, 255, 0) 0%,
+          to direction(right), rgba(255, 255, 255, 0) 0%,
           rgba(255, 255, 255, 1) 50%);
       }
     }
@@ -336,6 +334,11 @@
       &[class*=icon-]:before, &[class^=icon-]:before {
         @include fontSize(16px);
         vertical-align: middle;
+      }
+      &:focus {
+        outline: 1px solid var(--ic-link-color-darkened-10);
+        outline-offset: -1px;
+        padding: 2px;
       }
     }
   }
@@ -381,7 +384,7 @@ table.summary {
   table.subtable {
     th, td {
       border-top: 0;
-      padding: 1px 5px 1px 0;
+      padding: direction-sides(1px 5px 1px 0);
       font-size: 0.8em;
     }
   }
@@ -413,12 +416,12 @@ table.formtable td {
   }
   .details {
     font-size: 0.8em;
-    margin: 0 0 0 10px;
+    margin: direction-sides(0 0 0 10px);
   }
   .info {
     clear: direction(left);
     font-size: 0.8em;
-    margin: 0 0 5px 10px;
+    margin: direction-sides(0 0 5px 10px);
     .links {
       color: #eee;
       a {
@@ -495,7 +498,7 @@ body .disabled_link {
 .error_box {
   position: absolute;
   top: -1000px;
-  left: -100px;
+  #{direction(left)}: -100px;
   z-index: 11;
   max-width: 200px;
   min-width: 100px;
@@ -511,7 +514,7 @@ body .disabled_link {
   .error_bottom {
     position: absolute;
     bottom: 0;
-    left: 4px;
+    #{direction(left)}: 4px;
   }
 }
 
@@ -624,7 +627,7 @@ $wizard-bg-color: $ic-color-dark;
     }
     .wizard_options_list {
       list-style-type: none;
-      margin: 0 10px 0 0;
+      margin: direction-sides(0 10px 0 0);
       padding-#{direction(left)}: 5px;
       li {
         line-height: 1.8em;
@@ -823,7 +826,7 @@ $wizard-bg-color: $ic-color-dark;
             display: flex;
             width: 100%;
             align-items: center;
-            padding: 8px ($ic-sp * 3) 8px ($ic-sp * 3);
+            padding: direction-sides(8px ($ic-sp * 3) 8px ($ic-sp * 3));
             color: $ic-color-light;
             text-decoration: none;
             background: url("/images/wizard-todo-unchecked.svg") no-repeat $ic-sp 50%;
@@ -1004,8 +1007,8 @@ $wizard-bg-color: $ic-color-dark;
 }
 
 .communication_message {
-  margin: 0 0.5em 0.5em 0.5em;
-  padding: 0 0 0.5em 0;
+  margin: 0 0.5em 0.5em;
+  padding: 0 0 0.5em;
   width: auto;
   color: #000;
   border-bottom: 1px solid #ddd;
@@ -1095,7 +1098,7 @@ $wizard-bg-color: $ic-color-dark;
       }
     }
     &.content {
-      padding: 5px 5px 1px 50px;
+      padding: direction-sides(5px 5px 1px 50px);
       color: #444;
       .links {
         text-align: direction(right);
@@ -1139,7 +1142,7 @@ $wizard-bg-color: $ic-color-dark;
           }
           &.stats {
             vertical-align: top;
-            padding: 5px 0 5px 10px;
+            padding: direction-sides(5px 0 5px 10px);
             border-bottom: 1px solid #eee;
             .answer {
               .text {
@@ -1176,9 +1179,6 @@ $wizard-bg-color: $ic-color-dark;
     &.base_links {
       font-size: 1.5em;
       text-align: center;
-    }
-    &.subcontent {
-      /* :border-left 1px solid #ddd */
     }
   }
   &.pinned_notification {
@@ -1266,12 +1266,12 @@ $wizard-bg-color: $ic-color-dark;
 .communication_message.conversation {
   .submission {
     ul {
-      margin: 0 10px 10px 0;
+      margin: direction-sides(0 10px 10px 0);
       padding: 0;
     }
     li {
       padding: 2px 5px;
-      margin: 0 0 2px 0;
+      margin: 0 0 2px;
       list-style: none;
       background: #e8e8e8;
     }
@@ -1287,7 +1287,7 @@ $wizard-bg-color: $ic-color-dark;
 }
 
 .communication_sub_message {
-  margin: 0 2.5em 2px 0em;
+  margin: direction-sides(0 2.5em 2px 0em);
   padding: 0;
   width: auto;
   color: #000;
@@ -1334,7 +1334,7 @@ $wizard-bg-color: $ic-color-dark;
       }
     }
     &.content {
-      padding: 1px 5px 1px 30px;
+      padding: direction-sides(1px 5px 1px 30px);
       color: #444;
       .less_important {
         color: #888;
@@ -1367,7 +1367,7 @@ $wizard-bg-color: $ic-color-dark;
     }
     &.behavior_content {
       color: #999;
-      padding: 2px 5px 2px 30px;
+      padding: direction-sides(2px 5px 2px 30px);
       a {
         color: #888;
       }
@@ -1522,7 +1522,7 @@ html > body .new_activity_message form textarea {
     padding: 2px 5px;
   }
   .content {
-    padding: 5px 20px 5px 10px;
+    padding: direction-sides(5px 20px 5px 10px);
     max-height: 50px;
     overflow: auto;
     ul {
@@ -1552,7 +1552,7 @@ html > body .new_activity_message form textarea {
         img {
           visibility: hidden;
         }
-        background: url(/images/pass.png) no-repeat left top;
+        background: url(/images/pass.png) no-repeat direction(left) top;
         &:hover {
           img {
             visibility: visible;
@@ -1628,8 +1628,8 @@ body > #ui-datepicker-div {
 body.padless-content .ic-Layout-contentMain,
 .ic-Layout-contentMain.padless {
   #sequence_footer {
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-#{direction(left)}: 10px;
+    margin-#{direction(right)}: 10px;
     padding-top: 0;
   }
 }
@@ -1762,19 +1762,30 @@ form.user_content_post_form {
       vertical-align: middle;
       margin-#{direction(right)}: 10px;
     }
-    b {
+    b, div {
       line-height: 28px;
       vertical-align: middle;
+    }
+    i.icon-x {
+      padding-bottom: 3px;
+      margin: 0px;
     }
   }
   .fixed_warning {
     background-color: #FDD;
-    border-width: 2px 0 0 0;
+    border-width: 2px 0 0;
     border-style: solid;
     border-color: black;
     padding: 15px;
     opacity: 0.9;
     color: black;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .warning_message {
+      margin-#{direction(left)}: auto;
+    }
   }
 }
 
@@ -1791,6 +1802,11 @@ form.user_content_post_form {
   text-indent: -10000px;
   white-space: nowrap;
   width: 0;
+}
+
+.nav-icon {
+  @include ic-badge-maker(18px, $ic-content-background-color, $ic-color-dark);
+  float: direction(right);
 }
 
 .nav-badge {
@@ -1811,4 +1827,22 @@ form.user_content_post_form {
 
 .clear {
   clear: both;
+}
+
+.ic-Error-page {
+  text-align: center;
+  h1 {
+    margin-top: 3rem;
+  }
+  .ic-Error-img
+  {
+    margin-top: 2rem;
+    max-width: 350px;
+  }
+  .ic-Error-form {
+    text-align: #{direction(left)};
+    max-width: 410px;
+    margin-#{direction(left)}: auto;
+    margin-#{direction(right)}: auto;
+  }
 }

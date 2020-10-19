@@ -16,16 +16,17 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import $ from 'jquery'
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
-import RadioInput from '@instructure/ui-forms/lib/components/RadioInput'
-import RadioInputGroup from '@instructure/ui-forms/lib/components/RadioInputGroup'
-import ScreenReaderContent from '@instructure/ui-a11y/lib/components/ScreenReaderContent'
+import {Flex} from '@instructure/ui-flex'
+import {IconNoLine} from '@instructure/ui-icons'
+import {RadioInput, RadioInputGroup} from '@instructure/ui-forms'
+import {ScreenReaderContent} from '@instructure/ui-a11y'
+import {Tooltip} from '@instructure/ui-tooltip'
 
 export default class PolicyCell extends React.Component {
-  static renderAt (elt, props) {
+  static renderAt(elt, props) {
     ReactDOM.render(<PolicyCell {...props} />, elt)
   }
 
@@ -34,48 +35,73 @@ export default class PolicyCell extends React.Component {
     category: PropTypes.string,
     channelId: PropTypes.string,
     buttonData: PropTypes.array,
-    onValueChanged: PropTypes.func,
+    disabled: PropTypes.bool,
+    disabledTooltipText: PropTypes.string,
+    onValueChanged: PropTypes.func
   }
 
-  handleValueChanged (newValue) {
+  handleValueChanged(newValue) {
     if (this.props.onValueChanged) {
       this.props.onValueChanged(this.props.category, this.props.channelId, newValue)
     }
   }
 
-  renderIcon (iconName, title) {
-    return <span>
-      <i aria-hidden="true" className={iconName} />
-      <ScreenReaderContent>{title}</ScreenReaderContent>
-    </span>
+  renderIcon(iconName, title) {
+    return (
+      <span>
+        <i aria-hidden="true" className={iconName} />
+        <ScreenReaderContent>{title}</ScreenReaderContent>
+      </span>
+    )
   }
 
   renderRadioInput(iconName, title, value) {
-    return <RadioInput
-      key={value}
-      label={this.renderIcon(iconName, title)}
-      value={value}
-      id={`cat_${this.props.category}_ch_${this.props.channelId}_${value}`}
-    />
+    return (
+      <RadioInput
+        key={value}
+        label={this.renderIcon(iconName, title)}
+        value={value}
+        id={`cat_${this.props.category}_ch_${this.props.channelId}_${value}`}
+      />
+    )
   }
 
   renderRadioInputs() {
     const buttonData = this.props.buttonData
-    return buttonData.map((button) => {
+    return buttonData.map(button => {
       return this.renderRadioInput(button.icon, button.title, button.code)
     })
   }
 
-  render () {
-    return <RadioInputGroup
-      name={Math.floor(1 + Math.random() * 0x10000).toString()}
-      description=""
-      variant="toggle"
-      size="small"
-      defaultValue={this.props.selection}
-      onChange={(e, val) => this.handleValueChanged(val)}
-    >
-      {this.renderRadioInputs()}
-    </RadioInputGroup>
+  render() {
+    return (
+      <Flex justifyItems="center">
+        <Flex.Item>
+          {this.props.disabled ? (
+            <Tooltip
+              renderTip={this.props.disabledTooltipText}
+              placement="end"
+              on={['click', 'hover', 'focus']}
+            >
+              <span data-testid="notification-type-disabled">
+                <IconNoLine />
+                <ScreenReaderContent>Unavailable</ScreenReaderContent>
+              </span>
+            </Tooltip>
+          ) : (
+            <RadioInputGroup
+              name={Math.floor(1 + Math.random() * 0x10000).toString()}
+              description=""
+              variant="toggle"
+              size="small"
+              defaultValue={this.props.selection}
+              onChange={(e, val) => this.handleValueChanged(val)}
+            >
+              {this.renderRadioInputs()}
+            </RadioInputGroup>
+          )}
+        </Flex.Item>
+      </Flex>
+    )
   }
 }

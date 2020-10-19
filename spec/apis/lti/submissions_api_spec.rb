@@ -56,17 +56,17 @@ module Lti
 
     let(:other_tool_proxy) do
       tp = tool_proxy.dup
-      tp.update_attributes(guid: other_tp_guid)
+      tp.update(guid: other_tp_guid)
       tp
     end
 
     let(:other_tp_guid) { SecureRandom.uuid }
 
     before do
-      mock_sub_helper = instance_double("Lti::AssignmentSubscriptionsHelper",
+      mock_sub_helper = instance_double("Lti::PlagiarismSubscriptionsHelper",
                                         create_subscription: "123",
                                         destroy_subscription: nil)
-      allow(Lti::AssignmentSubscriptionsHelper).to receive(:new).and_return(mock_sub_helper)
+      allow(Lti::PlagiarismSubscriptionsHelper).to receive(:new).and_return(mock_sub_helper)
       tool_proxy.raw_data['enabled_capability'] << ResourcePlacement::SIMILARITY_DETECTION_LTI2
       tool_proxy.save!
     end
@@ -133,6 +133,8 @@ module Lti
                  "submission_type" => "online_upload",
                  "workflow_state" => "submitted",
                  "attempt" => 1,
+                 "course_id" => assignment.context.global_id,
+                 "lti_course_id" => Lti::Asset.opaque_identifier_for(assignment.context),
                  "attachments" =>
                    [
                      {
@@ -142,6 +144,7 @@ module Lti
                        "filename" => attachment.filename,
                        "display_name" => attachment.display_name,
                        "created_at" => now.iso8601,
+                       "upload_status" => "success",
                        "updated_at" => now.iso8601
                      }
                    ]
@@ -187,6 +190,8 @@ module Lti
                  "submission_type" => "online_upload",
                  "workflow_state" => "submitted",
                  "attempt" => 1,
+                 "course_id" => assignment.context.global_id,
+                 "lti_course_id" => Lti::Asset.opaque_identifier_for(assignment.context),
                  "attachments" =>
                    [
                      {
@@ -196,6 +201,7 @@ module Lti
                        "filename" => attachment.filename,
                        "display_name" => attachment.display_name,
                        "created_at" => now.iso8601,
+                       "upload_status" => "success",
                        "updated_at" => now.iso8601
                      }
                    ]
@@ -257,7 +263,7 @@ module Lti
 
           @shard2.activate do
             get url, headers: request_headers
-            expect(response).to be_success
+            expect(response).to be_successful
             expect(response.content_type.to_s).to eq attachment.content_type
           end
         end

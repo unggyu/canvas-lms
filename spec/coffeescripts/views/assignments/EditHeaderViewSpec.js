@@ -62,9 +62,9 @@ test('renders', () => {
   ok(view.$('.header-bar-right').length > 0, 'header bar is rendered')
 })
 
-test('delete works for an un-saved assignment', function() {
+test('delete works for an un-saved assignment', () => {
   const view = editHeaderView()
-  const cb = this.stub(view, 'onDeleteSuccess')
+  const cb = sandbox.stub(view, 'onDeleteSuccess')
   view.delete()
   equal(cb.called, true, 'onDeleteSuccess was called')
 })
@@ -97,10 +97,10 @@ test('allows deleting assignments due in closed grading periods for admins', () 
   ok(view.$('.delete_assignment_link:not(.disabled)').length)
 })
 
-test('does not attempt to delete an assignment due in a closed grading period', function() {
+test('does not attempt to delete an assignment due in a closed grading period', () => {
   const view = editHeaderView({in_closed_grading_period: true})
-  this.stub(window, 'confirm').returns(true)
-  this.spy(view, 'delete')
+  sandbox.stub(window, 'confirm').returns(true)
+  sandbox.spy(view, 'delete')
   view.$('.delete_assignment_link').click()
   ok(window.confirm.notCalled)
   ok(view.delete.notCalled)
@@ -111,8 +111,7 @@ QUnit.module('EditHeaderView - try deleting assignment', {
     fakeENV.setup()
     ENV.CONDITIONAL_RELEASE_SERVICE_ENABLED = true
     ENV.CONDITIONAL_RELEASE_ENV = {
-      assignment: {id: 1},
-      jwt: 'foo'
+      assignment: {id: 1}
     }
   },
   teardown() {
@@ -121,10 +120,10 @@ QUnit.module('EditHeaderView - try deleting assignment', {
   }
 })
 
-test('attempt to delete an assignment, but clicked Cancel on confirmation box', function() {
+test('attempt to delete an assignment, but clicked Cancel on confirmation box', () => {
   const view = editHeaderView({in_closed_grading_period: false})
-  this.stub(window, 'confirm').returns(false)
-  this.spy(view, 'delete')
+  sandbox.stub(window, 'confirm').returns(false)
+  sandbox.spy(view, 'delete')
   const setFocusStub = sinon.stub()
   sinon
     .stub(window, '$')
@@ -141,8 +140,7 @@ QUnit.module('EditHeaderView - ConditionalRelease', {
     fakeENV.setup()
     ENV.CONDITIONAL_RELEASE_SERVICE_ENABLED = true
     ENV.CONDITIONAL_RELEASE_ENV = {
-      assignment: {id: 1},
-      jwt: 'foo'
+      assignment: {id: 1}
     }
   },
   teardown() {

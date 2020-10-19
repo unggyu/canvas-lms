@@ -31,6 +31,23 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
   padding: $ic-sp 0.125rem 0;
 }
 
+.unpublished_courses_redesign .ic-DashboardCard__box {
+  padding: $ic-sp $ic-sp*2;
+}
+
+.unpublished_courses_redesign .ic-DashboardCard__box__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid $ic-border-light;
+  background: rgba($ic-color-light, 0.95);
+  box-sizing: border-box;
+  margin-bottom: $ic-sp*2;
+  @include mobile-only {
+    & { font-size: 1.5em };
+  }
+}
+
 @supports (position: sticky) or (position: -webkit-sticky) {
   .ic-DashboardCard__box {
     padding-top: $ic-sp * 2;
@@ -67,7 +84,16 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
   width: $ic-DashboardCard-width;
   display: inline-block;
   vertical-align: top;
-  margin: 0 $ic-sp*3 $ic-sp*3 0;
+  margin: direction-sides(0 $ic-sp*3 $ic-sp*3 0);
+
+  // if there is not enough screen width to fit 2 whole cards (like on a phone) then just have one card fill the whole width
+  @media only screen and (max-width: $ic-DashboardCard-width*2 + $ic-sp*8) {
+    & { width: 100%; }
+    body.responsive_awareness & {
+      margin-#{direction(right)}: 0;
+    }
+  }
+
   .no-touch & {
     &:hover { box-shadow: 0 4px 10px rgba(black, 0.35); }
   }
@@ -114,6 +140,13 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
   @include dashcardHeaderButton;
 }
 
+.ic-DashboardCard__header-publish {
+  position: absolute;
+  top: $ic-sp;
+  #{direction(left)}: $ic-sp;
+  height: $ic-sp*3;
+}
+
 .ic-DashboardCard_settings_icon {
   color: white;
   opacity: 0.6;
@@ -125,7 +158,7 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
   padding: 0;
   margin: 0;
   line-height: 1.3;
-  font-size: $baseFontSize;
+  font-size: calculateRem($baseFontSize);
   font-weight: bold;
 }
 
@@ -150,6 +183,7 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
 
 .ic-DashboardCard__action-layout {
   position: relative;
+  font-size: $ic-DashboardCard-icon-size
 }
 
 .ic-DashboardCard__action-badge {
@@ -163,6 +197,7 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
 .ic-DashboardCard__action-container {
   box-sizing: border-box;
   display: flex;
+  align-items: flex-end;
   padding: 0 0 $ic-sp;
   margin-top: $ic-sp * 0.75;
   height: 2.5rem; // maintain nav height when there are no action links
@@ -178,12 +213,27 @@ $ic-DashboardCard-icon-color: $ic-icon-link-color;
   @include overwrite-default-icon-size($ic-DashboardCard-icon-size);
 
   .no-touch & {
+    &:hover { color: var(--ic-brand-primary); }
+  }
+
+  // the focus outline on the svg is broken in safari
+  // and on the <a> is broken in firefox
+  // ff is the only one I can single out
+  .no-touch:not(.ff) & {
     &:focus {
-      @if $use_high_contrast {
-        outline: 1px solid var(--ic-link-color);
-        outline-offset: 0.125rem;
+      outline-style: solid;
+      outline-width: 1px;
+      outline-offset: -1px;
+    }
+  }
+  .no-touch.ff & {
+    &:focus {
+      outline: none;
+      svg, i {
+        outline-offset: .25rem;
+        outline-style: solid;
+        outline-width: 1px;
       }
-      @else { outline: none; }
     }
     &:hover { color: var(--ic-brand-primary); }
   }

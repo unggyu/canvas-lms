@@ -16,6 +16,21 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 module Canvas::Redis
+  def self.clear_idle_connections
+    # every 1 minute, clear connections that have been idle at least a minute
+    clear_frequency = Setting.get("clear_idle_connections_frequency", 60).to_i
+    clear_timeout = Setting.get("clear_idle_connections_timeout", 60).to_i
+    @last_clear_time ||= Time.now.utc
+    if (Time.now.utc - @last_clear_time > clear_frequency)
+      @last_clear_time = Time.now.utc
+      # gather all the redises we can find
+      redises = Switchman.config[:cache_map].values.
+        map { |cache| cache.try(:redis) }.compact.uniq.
+        map { |redis| redis.try(:ring)&.nodes || [redis] }.inject([], &:concat).uniq
+      redises.each { |r| r._client.disconnect_if_idle(@last_clear_time - clear_timeout) }
+    end
+  end
+
   # try to grab a lock in Redis, returning false if the lock can't be held. If
   # the lock is grabbed and `ttl` is given, it'll be set to expire after `ttl`
   # seconds.
@@ -24,8 +39,7 @@ module Canvas::Redis
     full_key = lock_key(key)
     if Canvas.redis.setnx(full_key, 1)
       Canvas.redis.expire(full_key, ttl.to_i) if ttl
-      true
-    else
+      true else
       # key is already used
       false
     end
@@ -49,12 +63,16 @@ module Canvas::Redis
   COMPACT_LINE = "Redis (%{request_time_ms}ms) %{command} %{key} [%{host}]".freeze
   def self.log_style
     # supported: 'off', 'compact', 'json'
-    Setting.get('redis_log_style', 'compact')
+    @log_style ||= ConfigFile.load('redis')&.[]('log_style') || 'compact'
   end
 
   def self.redis_failure?(redis_name)
     return false unless last_redis_failure[redis_name]
     # i feel this dangling rescue is justifiable, given the try-to-be-failsafe nature of this code
+    if redis_name =~ /localhost/
+      # talking to local redis should not short ciruit as long
+      return (Time.now - last_redis_failure[redis_name]) < (Setting.get('redis_local_failure_time', '2').to_i rescue 2)
+    end
     return (Time.now - last_redis_failure[redis_name]) < (Setting.get('redis_failure_time', '300').to_i rescue 300)
   end
 
@@ -67,11 +85,22 @@ module Canvas::Redis
   end
 
   def self.handle_redis_failure(failure_retval, redis_name)
-    return failure_retval if redis_failure?(redis_name)
+    Setting.skip_cache do
+      if redis_failure?(redis_name)
+        Rails.logger.warn("  [REDIS] Short circuiting due to recent redis failure (#{redis_name})")
+        return failure_retval
+      end
+    end
     reply = yield
     raise reply if reply.is_a?(Exception)
     reply
   rescue ::Redis::BaseConnectionError, SystemCallError, ::Redis::CommandError => e
+    # spring calls its after_fork hooks _after_ establishing a new db connection
+    # after forking. so we don't get a chance to close the connection. just ignore
+    # the error (but lets use logging to make sure we know if it happens)
+    Rails.logger.error("  [REDIS] Query failure #{e.inspect} (#{redis_name})")
+    return failure_retval if e.is_a?(::Redis::InheritedError) && defined?(Spring)
+
     # We want to rescue errors such as "max number of clients reached", but not
     # actual logic errors such as trying to evalsha a script that doesn't
     # exist.
@@ -81,16 +110,20 @@ module Canvas::Redis
       raise
     end
 
-    CanvasStatsd::Statsd.increment("redis.errors.all")
-    CanvasStatsd::Statsd.increment("redis.errors.#{CanvasStatsd::Statsd.escape(redis_name)}")
+    InstStatsd::Statsd.increment("redis.errors.all")
+    InstStatsd::Statsd.increment("redis.errors.#{InstStatsd::Statsd.escape(redis_name)}",
+                                 short_stat: 'redis.errors',
+                                 tags: {redis_name: InstStatsd::Statsd.escape(redis_name)})
     Rails.logger.error "Failure handling redis command on #{redis_name}: #{e.inspect}"
 
-    if self.ignore_redis_failures?
-      Canvas::Errors.capture(e, type: :redis)
-      last_redis_failure[redis_name] = Time.now
-      failure_retval
-    else
-      raise
+    Setting.skip_cache do
+      if self.ignore_redis_failures?
+        Canvas::Errors.capture(e, type: :redis)
+        last_redis_failure[redis_name] = Time.now
+        failure_retval
+      else
+        raise
+      end
     end
   end
 
@@ -109,6 +142,10 @@ module Canvas::Redis
     }
 
   module Client
+    def disconnect_if_idle(since_when)
+      disconnect if !@process_start || @process_start < since_when
+    end
+
     def process(commands, *a, &b)
       # These instance vars are used by the added #log_request_response method.
       @processing_requests = commands.map(&:dup)
@@ -127,15 +164,16 @@ module Canvas::Redis
       last_command_args = Array.wrap(last_command)
       last_command = (last_command.respond_to?(:first) ? last_command.first : last_command).to_s
       failure_val = case last_command
-                    when 'keys', 'hmget'
+                    when 'keys', 'hmget', 'mget'
                       []
+                    when 'scan'
+                      ["0", []]
                     when 'del'
                       0
                     end
-      if (last_command == 'set' && (last_command_args.include?('XX') || last_command_args.include?('NX')))
+      if last_command == 'set' && (last_command_args.include?('XX') || last_command_args.include?('NX'))
         failure_val = :failure
       end
-
       Canvas::Redis.handle_redis_failure(failure_val, self.location) do
         super
       end
@@ -171,7 +209,14 @@ module Canvas::Redis
         host: location,
       }
       unless NON_KEY_COMMANDS.include?(command)
-        message[:key] = request.first
+        if command == :mset
+          # This is an array with a single element: an array alternating key/values
+          message[:key] = request.first { |v| v.first }.select.with_index { |_,i| (i) % 2 == 0 }
+        elsif command == :mget
+          message[:key] = request
+        else
+          message[:key] = request.first
+        end
       end
       if defined?(Marginalia)
         message[:controller] = Marginalia::Comment.controller
@@ -275,20 +320,19 @@ module Canvas::Redis
     ].freeze
   end
 
-  module DistributedStore
+  module Distributed
     def initialize(addresses, options = { })
-      _extend_namespace options
-      @ring = options[:ring] || Canvas::HashRing.new([], options[:replicas], options[:digest])
-
-      addresses.each do |address|
-        @ring.add_node(::Redis::Store.new _merge_options(address, options))
-      end
+      options[:ring] ||= Canvas::HashRing.new([], options[:replicas], options[:digest])
+      super
     end
   end
 
   def self.patch
+    Bundler.require 'redis'
+    require 'redis/distributed'
+
     Redis::Client.prepend(Client)
-    Redis::DistributedStore.prepend(DistributedStore)
+    Redis::Distributed.prepend(Distributed)
     Redis.send(:remove_const, :BoolifySet)
     Redis.const_set(:BoolifySet, BoolifySet)
   end

@@ -24,6 +24,27 @@ describe "better_file_browsing" do
   include_context "in-process server selenium tests"
   include FilesCommon
 
+  context "On user's root /files page" do
+    before(:once) do
+      course_with_teacher(active_all: true)
+    end
+
+    before(:each) do
+      user_session @teacher
+    end
+
+    it "should work in the user's root /files page, not just /courses/x/files" do
+      get "/files"
+      add_folder("A New Folder")
+      created_folder = @teacher.folders.find_by(name: "A New Folder")
+      expect(created_folder).to be_present
+      add_file(fixture_file_upload('files/example.pdf', 'application/pdf'), @user, "example.pdf", created_folder)
+      fj('a.treeLabel:contains("A New Folder")').click
+      wait_for_ajaximations
+      expect(ff('.ef-name-col__text')[0]).to include_text 'example.pdf'
+    end
+  end
+
   context "As a teacher" do
     before(:once) do
       course_with_teacher(active_all: true)
@@ -137,7 +158,8 @@ describe "better_file_browsing" do
 
       it "tabs through all buttons in the header button bar", priority: "1", test_id: 193816 do
         buttons = ff('.ef-file-preview-header-buttons > *')
-        driver.execute_script("$('.ef-file-preview-header-buttons').children().first().focus()")
+        buttons.first.send_keys "" # focuses on the first button
+
         buttons.each do |button|
           check_element_has_focus(button)
           button.send_keys("\t")
@@ -170,8 +192,9 @@ describe "better_file_browsing" do
     include_context "public course as a logged out user"
 
     it "should display course files", priority: "1", test_id: 270032 do
+      public_course.attachments.create!(:filename => "somefile.doc", :uploaded_data => StringIO.new('test'))
       get "/courses/#{public_course.id}/files"
-      expect(f('div.ef-main[data-reactid]')).to be_displayed
+      expect(f('.ef-main')).to be_displayed
     end
   end
 
@@ -333,8 +356,8 @@ describe "better_file_browsing" do
         set_value f('.UsageRightsSelectBox__creativeCommons'), 'cc_by'
       end
       set_value f('#copyrightHolder'), 'Test User'
-      f('.ReactModal__Footer-Actions .btn-primary').click
-      expect(f("body")).not_to contain_css('.ReactModal__Content')
+      f('.UsageRightsDialog__Footer-Actions button[type="submit"]').click
+      expect(f("body")).not_to contain_css('.UsageRightsDialog__Content')
     end
 
     def verify_usage_rights_ui_updates(iconClass = 'icon-files-creative-commons')
@@ -343,7 +366,8 @@ describe "better_file_browsing" do
 
     before :once do
       course_with_teacher(active_all: true)
-      Account.default.enable_feature!(:usage_rights_required)
+      @course.usage_rights_required = true
+      @course.save!
       add_file(fixture_file_upload('files/a_file.txt', 'text/plan'),
                @course, "a_file.txt")
       add_file(fixture_file_upload('files/amazing_file.txt', 'text/plan'),
@@ -451,7 +475,8 @@ describe "better_file_browsing" do
   context "When Require Usage Rights is turned-off" do
     it "sets files to published by default", priority: "1", test_id: 133136 do
       course_with_teacher_logged_in
-      Account.default.disable_feature!(:usage_rights_required)
+      @course.usage_rights_required = true
+      @course.save!
       add_file(fixture_file_upload("files/b_file.txt", 'text/plain'), @course, 'b_file.txt')
 
       get "/courses/#{@course.id}/files"

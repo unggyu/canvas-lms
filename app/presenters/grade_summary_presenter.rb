@@ -142,7 +142,7 @@ class GradeSummaryPresenter
   end
 
   def assignments_visible_to_student
-    includes = [:assignment_overrides]
+    includes = [:assignment_overrides, :post_policy]
     includes << :assignment_group if @assignment_order == :assignment_group
     AssignmentGroup.
       visible_assignments(student, @context, all_groups, includes).
@@ -169,7 +169,7 @@ class GradeSummaryPresenter
     when :module
       sorted_by_modules(assignments)
     when :assignment_group
-      assignments.sort_by { |a| [a.assignment_group.position, a.position] }
+      assignments.sort_by { |a| [a.assignment_group.position, a.position].map{|p| p || CanvasSort::Last} }
     end
   end
 
@@ -184,19 +184,20 @@ class GradeSummaryPresenter
 
   def submissions
     @submissions ||= begin
-      ss = @context.submissions
-      .preload(:visible_submission_comments,
-                {:rubric_assessments => [:rubric, :rubric_association]},
-                :content_participations)
-      .where("assignments.workflow_state != 'deleted'")
-      .where(user_id: student).to_a
+      ss = @context.submissions.
+      preload(
+        :visible_submission_comments,
+        {:rubric_assessments => [:rubric, :rubric_association]},
+        :content_participations,
+        {:assignment => [:context, :post_policy]}
+      ).
+      joins(:assignment).
+      where("assignments.workflow_state != 'deleted'").
+      where(user_id: student).to_a
 
       if vericite_enabled? || turnitin_enabled?
         ActiveRecord::Associations::Preloader.new.preload(ss, :originality_reports)
       end
-
-      visible_assignment_ids = AssignmentStudentVisibility.visible_assignment_ids_for_user(student_id, @context.id)
-      ss.select!{ |submission| visible_assignment_ids.include?(submission.assignment_id) }
 
       assignments_index = assignments.index_by(&:id)
 
@@ -224,12 +225,6 @@ class GradeSummaryPresenter
     rubric_assessments.map(&:rubric).uniq
   end
 
-  # Called by external classes that want to make sure we clear out
-  # cached data. Most likely this is only the GradeCalculator
-  def self.invalidate_cache(context)
-    Rails.cache.delete(cache_key(context, 'assignment_stats'))
-  end
-
   def assignment_stats
     @stats ||= ScoreStatistic.where(assignment: @context.assignments.active.except(:order)).index_by(&:assignment_id)
   end
@@ -241,8 +236,15 @@ class GradeSummaryPresenter
     end
   end
 
-  def has_muted_assignments?
-    assignments.any?(&:muted?)
+  def hidden_submissions?
+    if @context.post_policies_enabled?
+      submissions.any? do |sub|
+        return !sub.posted? if sub.assignment.post_manually?
+        sub.graded? && !sub.posted?
+      end
+    else
+      assignments.any?(&:muted?)
+    end
   end
 
   def courses_with_grades
@@ -311,6 +313,10 @@ class GradeSummaryPresenter
 
   def grading_periods
     @all_grading_periods ||= GradingPeriod.for(@context).order(:start_date).to_a
+  end
+
+  def show_updated_plagiarism_icons?(plagiarism_data)
+    plagiarism_data.present? && @context.root_account.feature_enabled?(:new_gradebook_plagiarism_indicator)
   end
 
   private

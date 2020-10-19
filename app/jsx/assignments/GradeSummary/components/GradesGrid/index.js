@@ -18,17 +18,23 @@
 
 import React, {Component} from 'react'
 import {arrayOf, bool, func, shape, string} from 'prop-types'
-import View from '@instructure/ui-layout/lib/components/View'
+import {View} from '@instructure/ui-layout'
 import I18n from 'i18n!assignment_grade_summary'
 
+import {speedGraderUrl} from '../../assignment/AssignmentApi'
 import FocusableView from '../FocusableView'
 import Grid from './Grid'
 import PageNavigation from './PageNavigation'
 
 const ROWS_PER_PAGE = 20
 
-function studentToRow(student, pageStart, studentIndex) {
+function studentToRow(student, pageStart, studentIndex, rowOptions) {
+  const {anonymousStudents, assignmentId, courseId} = rowOptions
   return {
+    speedGraderUrl: speedGraderUrl(courseId, assignmentId, {
+      anonymousStudents,
+      studentId: student.id
+    }),
     studentId: student.id,
     studentName:
       student.displayName ||
@@ -36,19 +42,34 @@ function studentToRow(student, pageStart, studentIndex) {
   }
 }
 
-function studentsToPages(students) {
+function studentsToPages(props) {
+  const {anonymousStudents, assignment, students} = props
+  const rowOptions = {anonymousStudents, assignmentId: assignment.id, courseId: assignment.courseId}
   const pages = []
+
+  if (anonymousStudents) {
+    students.sort((a, b) => (a.id > b.id ? 1 : -1))
+  }
+
   for (let pageStart = 0; pageStart < students.length; pageStart += ROWS_PER_PAGE) {
     const pageStudents = students.slice(pageStart, pageStart + ROWS_PER_PAGE)
     pages.push(
-      pageStudents.map((student, studentIndex) => studentToRow(student, pageStart, studentIndex))
+      pageStudents.map((student, studentIndex) =>
+        studentToRow(student, pageStart, studentIndex, rowOptions)
+      )
     )
   }
+
   return pages
 }
 
 export default class GradesGrid extends Component {
   static propTypes = {
+    anonymousStudents: bool.isRequired,
+    assignment: shape({
+      courseId: string.isRequired,
+      id: string.isRequired
+    }).isRequired,
     disabledCustomGrade: bool.isRequired,
     finalGrader: shape({
       graderId: string.isRequired
@@ -78,23 +99,21 @@ export default class GradesGrid extends Component {
   constructor(props) {
     super(props)
 
-    this.setPage = this.setPage.bind(this)
-
     this.state = {
       currentPageIndex: 0,
-      pages: studentsToPages(this.props.students)
+      pages: studentsToPages(props)
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.students !== this.props.students) {
-      const pages = studentsToPages(nextProps.students)
+      const pages = studentsToPages(nextProps)
       const currentPageIndex = Math.min(this.state.currentPageIndex, pages.length - 1)
       this.setState({currentPageIndex, pages})
     }
   }
 
-  setPage(page) {
+  setPage = page => {
     this.setState({currentPageIndex: page - 1})
   }
 

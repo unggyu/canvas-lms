@@ -1,13 +1,14 @@
 <div class="event-details carat-bottom">
+  <div id="event-details-trap-focus">
   <a href="#" class="popover_close x-close-link close" role="button" aria-label="{{#t "close"}}Close{{/t}}">×</a>
   <div class='event-details-header'>
-    <h3 class="details_title title">
+    <h2 class="details_title title">
       {{#if showEventLink}}
         <a href="{{fullDetailsURL}}" class="view_event_link">{{title}}</a>
       {{else}}
         {{title}}
       {{/if}}
-    </h3>
+    </h2>
   </div>
   <div class="event-details-content">
     <div class="event-details-timestring">{{{displayTimeString}}}</div>
@@ -40,18 +41,31 @@
                 <td>{{location_address}}</td>
               </tr>
             {{/if}}
+      {{#if webConference}}
+              <tr>
+                <th scope="row">{{#t}}Conferencing{{/t}}</th>
+                <td><div class="conferencing"></div></td>
+              </tr>
+            {{/if}}
       {{#if description}}
         <tr>
           <th scope="row">{{#t "details"}}Details{{/t}}</th>
           <td class="user_content">
-            <div class="event-detail-overflow">{{convertApiUserContent description}}</div>
+              <div class="event-detail-overflow">
+                  {{#if is_appointment_group}}
+                      {{linkify description}}
+                  {{else}}
+                      {{convertApiUserContent description}}
+                  {{/if}}
+              </div>
           </td>
         </tr>
       {{/if}}
       {{#unless isPlannerNote}}
-        <tr id='reservations'>
-          <th scope="row">{{#t "attendees"}}Attendees{{/t}}</th>
-          {{#if reservations}}
+            <tr id='reservations'>
+              {{#if reservations}}
+              <th id='attendees_header_text'
+               scope="row">{{#t "attendees"}}Attendees{{/t}}</th>
               <td>
                 {{#if can_edit}}
                   <ul id="attendees">
@@ -73,8 +87,8 @@
                   </ul>
                 {{/if}}
               </td>
-          {{/if}}
-        </tr>
+              {{/if}}
+            </tr>
       {{/unless}}
       {{#if availableSlotsText}}
         <tr>
@@ -145,4 +159,5 @@
       </div>
     </div>
   {{/ifAny}}
+  </div>
 </div>

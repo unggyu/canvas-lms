@@ -198,7 +198,7 @@
               if (_subLiA.length && !$this.next().length) {
                 var group = _liA.pop();
                 $.each(_subLiA, function(i, item) {
-                    group += "<li rel='" + i + "' tabindex='0'>" + item + "</li>";
+                  group += "<li rel='" + i + "' tabindex='0'>" + item + "</li>";
                 });
                 group += '</ul></div>';
                 _liA.push(group);
@@ -344,8 +344,8 @@
                   } else {
                       minHeight = 0;
                   }
-                  menu.css({'max-height' : menuHeight + 'px', 'overflow' : 'visible', 'min-height' : minHeight + 'px'});
-                  menuInner.css({'max-height' : (menuHeight - menuPadding) + 'px', 'overflow-y' : 'visible'});
+                  menu.css({'max-height' : menuHeight + 'px', 'overflow' : 'auto', 'min-height' : minHeight + 'px'});
+                  menuInner.css({'max-height' : (menuHeight - menuPadding) + 'px', 'overflow-y' : 'auto'});
           }
               getSize();
               $(window).resize(getSize);

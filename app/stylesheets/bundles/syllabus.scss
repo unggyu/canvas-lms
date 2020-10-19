@@ -26,8 +26,26 @@
     text-align: direction(left);
     @include fontSize(14px);
   }
-  tr.date {
+  tr.detail_list {
 
+    td.dates {
+      white-space: nowrap;
+      padding-#{direction(right)}: 7px;
+
+      text-align: direction(right);
+    }
+    td {
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+    td.not_last {
+      border-bottom: 1px solid $ic-border-light;
+    }
+    &.related_event {
+      background-color: $ic-bg-light-primary;
+    }
+  }
+  tr.date {
     &.date_passed {
       > td, > th {
         background-color: $ic-color-medium-light;
@@ -42,23 +60,12 @@
         border: none;
         background-color: transparent;
       }
-    }
-    table.detail_list {
-      width: 100%;
-
-      td.dates {
-        white-space: nowrap;
-        padding-#{direction(right)}: 7px;
-        text-align: direction(right);
-      }
-
-      td.not_last {
-        border-bottom: 1px solid $ic-border-light;
-      }
-      tr.related_event {
-        background-color: $ic-bg-light-primary;
+      td.icon {
+        padding-#{direction(right)}: 0;
+        width: 1rem;  // size of the contained icon.
       }
     }
+    
     &.date_passed {
       td, th {
         background-color: $ic-color-medium-light;
@@ -85,16 +92,19 @@
     padding-#{direction(right)}: $ic-sp/2;
   }
 }
-#toggle_special_dates_in_syllabus {
-  &.hidden span.hide {
-    display: none;
-  }
-  &.shown span.show {
-    display: none;
-  }
-  float: direction(right);
-}
 
 #syllabus_links {
   @include clearfix;
+}
+
+@include mobile-only {
+  .responsive_awareness {
+    #syllabus {
+      tr.date {
+        .day_date {
+          white-space: inherit;
+        }
+      }
+    }
+  }
 }

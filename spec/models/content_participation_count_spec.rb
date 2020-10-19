@@ -23,6 +23,8 @@ describe ContentParticipationCount do
     course_with_teacher(:active_all => true)
     student_in_course(:active_all => true)
 
+    @course.default_post_policy.update!(post_manually: false)
+
     @assignment = @course.assignments.new(:title => "some assignment")
     @assignment.workflow_state = "published"
     @assignment.save
@@ -59,6 +61,11 @@ describe ContentParticipationCount do
       ContentParticipationCount.where(:id => cpc).update_all(:updated_at => time)
       ContentParticipationCount.create_or_update(:context => @course, :user => @student, :content_type => "Submission")
       expect(cpc.reload.updated_at.to_i).to eq time.to_i
+    end
+
+    it "should correctly set root_account_id from course" do
+      cpc = ContentParticipationCount.create_or_update(:context => @course, :user => @student, :content_type => "Submission")
+      expect(cpc.root_account_id).to eq(@course.root_account_id)
     end
   end
 
@@ -141,6 +148,12 @@ describe ContentParticipationCount do
       expect(ContentParticipationCount.unread_submission_count_for(@course, @student)).to eq 0
     end
 
+    it "should be read if a graded assignment is set to ungraded for some reason" do
+      @submission = @assignment.grade_student(@student, grade: 3, grader: @teacher).first
+      @assignment.update_attribute(:submission_types, "not_graded")
+      expect(ContentParticipationCount.unread_submission_count_for(@course, @student)).to eq 0
+    end
+
     it "should be unread after submission is graded" do
       @assignment.submit_homework(@student)
       @submission = @assignment.grade_student(@student, grade: 3, grader: @teacher).first
@@ -150,6 +163,31 @@ describe ContentParticipationCount do
     it "should be unread after submission is commented on by teacher" do
       @submission = @assignment.update_submission(@student, { :commenter => @teacher, :comment => "good!" }).first
       expect(ContentParticipationCount.unread_submission_count_for(@course, @student)).to eq 1
+    end
+
+    it "ignores draft comments" do
+      @submission = @assignment.update_submission(
+        @student,
+        {
+          commenter: @teacher,
+          comment: "good!",
+          draft_comment: true
+        }
+      ).first
+      expect(ContentParticipationCount.unread_submission_count_for(@course, @student)).to eq 0
+    end
+
+    it "ignores hidden comments" do
+      @assignment.ensure_post_policy(post_manually: true)
+      @submission = @assignment.update_submission(
+        @student,
+        {
+          commenter: @teacher,
+          comment: "good!",
+          hidden: true
+        }
+      ).first
+      expect(ContentParticipationCount.unread_submission_count_for(@course, @student)).to eq 0
     end
 
     it "should be read after viewing the submission comment" do

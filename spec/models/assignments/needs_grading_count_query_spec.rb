@@ -110,18 +110,36 @@ module Assignments
         end
       end
 
-      it "should cache" do
-        @assignment = @course.assignments.create(
+      it "caches the count query" do
+        @assignment = @course.assignments.create!(
           title: "some assignment",
-          submission_types: ['online_text_entry']
+          submission_types: ['online_text_entry'],
+          moderated_grading: true,
+          grader_count: 2
         )
         querier = NeedsGradingCountQuery.new(@assignment, @teacher)
-        expect(@assignment).to receive(:moderated_grading?).twice
+        expect(querier).to receive(:needs_moderated_grading_count).once
         enable_cache do
           querier.count
           querier.count
-          @assignment.update_attribute(:updated_at, Time.now.utc + 1.minute)
+        end
+      end
+
+      it "invalidates cache for count query when specifically cleared" do
+        @assignment = @course.assignments.create!(
+          title: "some assignment",
+          submission_types: ['online_text_entry'],
+          moderated_grading: true,
+          grader_count: 2
+        )
+        querier = NeedsGradingCountQuery.new(@assignment, @teacher)
+        expect(querier).to receive(:needs_moderated_grading_count).twice
+        enable_cache do
           querier.count
+          Timecop.freeze(1.minute.from_now) do
+            @assignment.clear_cache_key(:needs_grading)
+            querier.count
+          end
         end
       end
 

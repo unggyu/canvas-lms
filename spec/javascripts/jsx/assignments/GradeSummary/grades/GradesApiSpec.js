@@ -17,21 +17,55 @@
  */
 
 import * as GradesApi from 'jsx/assignments/GradeSummary/grades/GradesApi'
-import FakeServer, {jsonBodyFromRequest, pathFromRequest} from 'jsx/__tests__/FakeServer'
+import FakeServer, {
+  jsonBodyFromRequest,
+  pathFromRequest
+} from 'jsx/shared/network/__tests__/FakeServer'
 
 QUnit.module('GradeSummary GradesApi', suiteHooks => {
-  let qunitTimeout
   let server
 
   suiteHooks.beforeEach(() => {
-    qunitTimeout = QUnit.config.testTimeout
-    QUnit.config.testTimeout = 500 // avoid accidental unresolved async
     server = new FakeServer()
   })
 
   suiteHooks.afterEach(() => {
     server.teardown()
-    QUnit.config.testTimeout = qunitTimeout
+  })
+
+  QUnit.module('.bulkSelectProvisionalGrades()', () => {
+    const url = `/api/v1/courses/1201/assignments/2301/provisional_grades/bulk_select`
+
+    test('sends a request to select a provisional grade', async () => {
+      server.for(url).respond({status: 200, body: {}})
+      await GradesApi.bulkSelectProvisionalGrades('1201', '2301', ['4601', '4602'])
+      const request = server.receivedRequests[0]
+      equal(pathFromRequest(request), url)
+    })
+
+    test('sends a PUT request', async () => {
+      server.for(url).respond({status: 200, body: {}})
+      await GradesApi.bulkSelectProvisionalGrades('1201', '2301', ['4601', '4602'])
+      const request = server.receivedRequests[0]
+      equal(request.method, 'PUT')
+    })
+
+    test('includes provisional grade ids in the request body', async () => {
+      server.for(url).respond({status: 200, body: {}})
+      await GradesApi.bulkSelectProvisionalGrades('1201', '2301', ['4601', '4602'])
+      const request = server.receivedRequests[0]
+      const json = jsonBodyFromRequest(request)
+      deepEqual(json.provisional_grade_ids, ['4601', '4602'])
+    })
+
+    test('does not catch failures', async () => {
+      server.for(url).respond({status: 500, body: {error: 'server error'}})
+      try {
+        await GradesApi.bulkSelectProvisionalGrades('1201', '2301', ['4601', '4602'])
+      } catch (e) {
+        ok(e.message.includes('500'))
+      }
+    })
   })
 
   QUnit.module('.selectProvisionalGrade()', () => {

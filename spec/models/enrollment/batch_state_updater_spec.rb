@@ -24,13 +24,15 @@ describe "Enrollment::BatchStateUpdater" do
       to raise_error(ArgumentError, 'Cannot call with more than 1000 enrollments')
   end
 
+  it 'should not fail with more than empty batch' do
+    expect { Enrollment::BatchStateUpdater.run_call_backs_for([], nil) }.to_not raise_error
+  end
+
   before(:once) do
     @enrollment2 = course_with_teacher(active_all: true)
     @user2 = @enrollment2.user
     @enrollment = student_in_course(active_all: true, course: @course)
   end
-  # destroy_batch needs to account for all the callbacks in Enrollment
-
 
   describe '.mark_enrollments_as_deleted' do
     it 'should delete each enrollment and scores' do
@@ -74,7 +76,7 @@ describe "Enrollment::BatchStateUpdater" do
       enable_cache do
         user = User.create!
         user.update_attribute(:workflow_state, 'creation_pending')
-        user.communication_channels.create!(path: 'panda@instructure.com')
+        communication_channel(user, {username: 'panda@instructure.com'})
         enrollment = @course.enroll_user(user)
         expect(Enrollment.cached_temporary_invitations('panda@instructure.com').length).to eq 1
         Enrollment::BatchStateUpdater.mark_enrollments_as_deleted([enrollment])
@@ -144,6 +146,7 @@ describe "Enrollment::BatchStateUpdater" do
       recache_course_grade_distribution
       recalculate_enrollment_state
       reset_notifications_cache
+      resolve_cross_account_role
       restore_submissions_and_scores
       set_sis_stickiness
       set_update_cached_due_dates

@@ -20,11 +20,10 @@ module SIS
   class GroupCategoryImporter < BaseImporter
 
     def process
-      start = Time.zone.now
       importer = Work.new(@batch, @root_account, @logger)
       yield importer
-      SisBatchRollBackData.bulk_insert_roll_back_data(importer.roll_back_data) if @batch.using_parallel_importers?
-      @logger.debug("Group categories took #{Time.zone.now - start} seconds")
+      SisBatchRollBackData.bulk_insert_roll_back_data(importer.roll_back_data)
+
       importer.success_count
     end
 
@@ -50,8 +49,6 @@ module SIS
         if course_id && account_id
           raise ImportError, "Only one context is allowed and both course_id and account_id where provided for group category #{sis_id}."
         end
-
-        @logger.debug("Processing Group Category #{[sis_id, account_id, course_id, category_name, status].inspect}")
 
         context = nil
         if account_id
@@ -110,9 +107,7 @@ module SIS
       end
 
       def should_build_roll_back_data?(group_category)
-        return false unless @batch.using_parallel_importers?
-        return true if group_category.id_before_last_save.nil?
-        return true if group_category.saved_change_to_deleted_at?
+        return true if group_category.id_before_last_save.nil? || group_category.saved_change_to_deleted_at?
         false
       end
 

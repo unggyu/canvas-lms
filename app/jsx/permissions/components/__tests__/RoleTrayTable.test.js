@@ -27,8 +27,9 @@ function createRowProps(title, roleId) {
   const role = ROLES.find(r => r.id === roleId)
   const permissionName = Object.keys(role.permissions)[0]
   const permission = role.permissions[permissionName]
+  const onChange = Function.prototype
 
-  return {title, role, permission, permissionName}
+  return {title, role, permission, permissionName, permissionLabel: 'whatever', onChange}
 }
 
 it('renders the component with only one child', () => {
@@ -63,7 +64,7 @@ it('renders the title', () => {
   expect(
     node
       .at(0)
-      .dive()
+      .children()
       .text()
   ).toEqual('fruit')
 })

@@ -109,7 +109,7 @@ test('A key press event on the select menu causes the change function to call', 
   ]
   let fired = false
   const selectMenu = new SpeedgraderSelectMenu(optionsArray)
-  selectMenu.appendTo('#test_area', e => (fired = true))
+  selectMenu.appendTo('#test_area', () => (fired = true))
   const event = new Event('keyup')
   event.keyCode = 37
   document.getElementById('students_selectmenu').dispatchEvent(event)
@@ -152,8 +152,18 @@ QUnit.module('SpeedGraderSelectMenu - rendered select control', {
         ],
         anonymizableId: 'id'
       },
-      {id: '3', name: 'Student 2', className: {raw: 'graded', formatted: 'graded'}, anonymizableId: 'id'},
-      {id: '1', name: 'Student 1', className: {raw: 'not_graded', formatted: 'not graded'}, anonymizableId: 'id'}
+      {
+        id: '3',
+        name: 'Student 2',
+        className: {raw: 'graded', formatted: 'graded'},
+        anonymizableId: 'id'
+      },
+      {
+        id: '1',
+        name: 'Student 1',
+        className: {raw: 'not_graded', formatted: 'not graded'},
+        anonymizableId: 'id'
+      }
     ]
     this.selectMenu = new SpeedgraderSelectMenu(this.optionsArray)
     this.selectMenu.appendTo('#test_area')
@@ -166,6 +176,11 @@ QUnit.module('SpeedGraderSelectMenu - rendered select control', {
 
 test('renders a select control', function() {
   strictEqual(this.selectMenu.$el.prop('tagName'), 'SELECT')
+})
+
+test('renders a label for the select element', function() {
+  const label = this.testArea.querySelector('label[for="students_selectmenu"]')
+  strictEqual(label.textContent, 'Select a student')
 })
 
 test('renders the select control with an id of students_selectmenu', function() {
@@ -214,5 +229,8 @@ test('renders an option for Student 2', function() {
 
 test('option for Student 2 comes first as in the order of the options passed in', function() {
   const options = this.selectMenu.$el.find('> option.ui-selectmenu-hasIcon').toArray()
-  deepEqual(options.map(opt => $(opt).attr('value')), ['3', '1'])
+  deepEqual(
+    options.map(opt => $(opt).attr('value')),
+    ['3', '1']
+  )
 })

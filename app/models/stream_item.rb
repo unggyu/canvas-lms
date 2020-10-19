@@ -61,6 +61,8 @@ class StreamItem < ActiveRecord::Base
       res.total_root_discussion_entries = data.delete(:total_root_discussion_entries)
     when 'Submission'
       data['body'] = nil
+    when 'Conversation'
+      res.latest_messages_from_stream_item = data.delete(:latest_messages)
     end
     if data.has_key?('users')
       users = data.delete('users')
@@ -115,6 +117,7 @@ class StreamItem < ActiveRecord::Base
 
   def prepare_conversation(conversation)
     res = conversation.attributes.slice('id', 'has_attachments', 'updated_at')
+    res['title'] = conversation.subject
     res['private'] = conversation.private?
     res['participant_count'] = conversation.conversation_participants.size
     # arbitrary limit. would be nice to say "John, Jane, Michael, and 6
@@ -124,6 +127,18 @@ class StreamItem < ActiveRecord::Base
     if res['participant_count'] <= 8
       res['participants'] = conversation.participants.map{ |u| prepare_user(u) }
     end
+
+    messages = conversation.conversation_messages.human.order(:created_at => :desc).limit(LATEST_ENTRY_LIMIT).to_a.reverse
+    res['latest_messages'] = messages.map do |message|
+      {
+        "id" => message.id,
+        "created_at" => message.created_at,
+        "author_id" => message.author_id,
+        "message" => message.body.present? ? message.body[0, 4.kilobytes] : "",
+        "participating_user_ids" => message.conversation_message_participants.active.pluck(:user_id).sort
+      }
+    end
+
     res
   end
 
@@ -151,7 +166,7 @@ class StreamItem < ActiveRecord::Base
     item.try(:destroy)
   end
 
-  ROOT_DISCUSSION_ENTRY_LIMIT = 3
+  LATEST_ENTRY_LIMIT = 3
   def generate_data(object)
     self.context ||= object.try(:context) unless object.is_a?(Message)
 
@@ -160,7 +175,7 @@ class StreamItem < ActiveRecord::Base
       res = object.attributes
       res['user_ids_that_can_see_responses'] = object.user_ids_who_have_posted_and_admins if object.require_initial_post?
       res['total_root_discussion_entries'] = object.root_discussion_entries.active.count
-      res[:root_discussion_entries] = object.root_discussion_entries.active.reverse[0,ROOT_DISCUSSION_ENTRY_LIMIT].reverse.map do |entry|
+      res[:root_discussion_entries] = object.root_discussion_entries.active.order(:created_at => :desc).limit(LATEST_ENTRY_LIMIT).to_a.reverse.map do |entry|
         hash = entry.attributes
         hash['user_short_name'] = entry.user.short_name if entry.user
         hash['message'] = hash['message'][0, 4.kilobytes] if hash['message'].present?
@@ -213,25 +228,32 @@ class StreamItem < ActiveRecord::Base
 
   def self.generate_or_update(object)
     item = nil
-    StreamItem.unique_constraint_retry do
-      # we can't coalesce messages that weren't ever saved to the DB
-      if !new_message?(object)
-        item = object.stream_item
-      end
-      if item
-        item.regenerate!(object)
-      else
-        item = self.new
-        item.generate_data(object)
-        item.save!
-        # prepopulate the reverse association
-        # (mostly useful for specs that regenerate stream items
-        #  multiple times without reloading the asset)
-        if !new_message?(object)
-          object.stream_item = item
+    # we can't coalesce messages that weren't ever saved to the DB
+    if !new_message?(object)
+      item = object.stream_item
+    end
+    if item
+      item.regenerate!(object)
+    else
+      item = self.new
+      item.generate_data(object)
+      StreamItem.unique_constraint_retry do |retry_count|
+        if retry_count == 0
+          item.save!
+        else
+          item = nil # if it fails just carry on - it got created somewhere else so grab it later
         end
       end
+      item ||= object.reload.stream_item
+
+      # prepopulate the reverse association
+      # (mostly useful for specs that regenerate stream items
+      #  multiple times without reloading the asset)
+      if !new_message?(object)
+        object.stream_item = item
+      end
     end
+
     item
   end
 
@@ -267,9 +289,9 @@ class StreamItem < ActiveRecord::Base
             :context_id => l_context_id,
           }
         end
-        if object.is_a?(Submission) && object.assignment.muted?
-          # set the hidden flag if an assignment and muted (for the owner of the submission)
-          if owner_insert = inserts.detect{|i| i[:user_id] == object.user_id}
+        if object.is_a?(Submission) && !object.posted?
+          # set the hidden flag if this submission is not posted
+          if (owner_insert = inserts.detect{|i| i[:user_id] == object.user_id})
             owner_insert[:hidden] = true
           end
         end
@@ -371,8 +393,9 @@ class StreamItem < ActiveRecord::Base
 
     Shackles.activate(:deploy) do
       Shard.current.database_server.unshackle do
-        StreamItem.connection.execute("VACUUM ANALYZE #{StreamItem.quoted_table_name}")
-        StreamItemInstance.connection.execute("VACUUM ANALYZE #{StreamItemInstance.quoted_table_name}")
+        StreamItem.vacuum
+        StreamItemInstance.vacuum
+        ActiveRecord::Base.connection_pool.current_pool.disconnect! unless Rails.env.test?
       end
     end
 
@@ -418,6 +441,10 @@ class StreamItem < ActiveRecord::Base
           res.total_root_discussion_entries = original_res.total_root_discussion_entries
           res.readonly!
         end
+      end
+    when Conversation
+      if res.latest_messages_from_stream_item
+        res.latest_messages_from_stream_item.select!{|m| m["participating_user_ids"].include?(viewing_user_id)}
       end
     end
 

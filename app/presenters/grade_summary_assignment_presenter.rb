@@ -27,23 +27,38 @@ class GradeSummaryAssignmentPresenter
     @originality_reports = @submission.originality_reports_for_display if @submission
   end
 
+  def upload_status
+    return unless submission
+
+    # The sort here ensures that statuses received are in the failed,
+    # pending and success order. With that security we can just pluck
+    # first one.
+    submission.attachments.
+      map { |a| AttachmentUploadStatus.upload_status(a) }.
+      sort.
+      first
+  end
+
   def originality_report?
     @originality_reports.present?
   end
 
-  def hide_distribution_graphs?
-    submission_count = @summary.assignment_stats[assignment.id]&.count || 0
-    submission_count < 5 || assignment.context.hide_distribution_graphs?
+  def show_distribution_graph?
+    @assignment.score_statistic = @summary.assignment_stats[assignment.id] # Avoid another query
+    @assignment.can_view_score_statistics?(@current_user)
   end
 
   def is_unread?
     (submission.present? ? @summary.unread_submission_ids.include?(submission.id) : false)
   end
 
+  def hide_grade_from_student?
+    submission.blank? || submission.hide_grade_from_student?
+  end
+
   def graded?
-    submission &&
-      (submission.grade || submission.excused?) &&
-      !assignment.muted?
+    return false if submission.blank?
+    (submission.grade || submission.excused?) && !hide_grade_from_student?
   end
 
   def is_letter_graded?
@@ -67,7 +82,7 @@ class GradeSummaryAssignmentPresenter
   end
 
   def has_no_score_display?
-    assignment.muted? || submission.nil?
+    hide_grade_from_student? || submission.nil?
   end
 
   def original_points
@@ -83,11 +98,13 @@ class GradeSummaryAssignmentPresenter
   end
 
   def has_scoring_details?
-    submission && submission.score && assignment.points_possible && assignment.points_possible > 0 && !assignment.muted?
+    return false unless submission&.score.present? && assignment&.points_possible.present?
+    assignment.points_possible > 0 && !hide_grade_from_student?
   end
 
   def has_grade_distribution?
-    assignment && assignment.points_possible && assignment.points_possible > 0 && !assignment.muted?
+    return false if assignment&.points_possible.blank?
+    assignment.points_possible > 0 && !hide_grade_from_student?
   end
 
   def has_rubric_assessments?
@@ -110,7 +127,7 @@ class GradeSummaryAssignmentPresenter
     assignment.special_class ? ("hard_coded " + assignment.special_class) : "editable"
   end
 
-  def show_submission_details_link?
+  def show_submission_details?
     is_assignment? && !!submission&.can_view_details?(@current_user)
   end
 
@@ -185,6 +202,7 @@ class GradeSummaryAssignmentPresenter
       plag_data = submission.originality_data
     end
     t = if is_text_entry?
+          plag_data[OriginalityReport.submission_asset_key(submission)] ||
           plag_data[submission.asset_string]
         elsif is_online_upload? && file
           plag_data[file.asset_string]

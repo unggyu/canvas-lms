@@ -20,6 +20,9 @@ import AssignmentGroup from 'compiled/models/AssignmentGroup'
 import Course from 'compiled/models/Course'
 import AssignmentGroupCollection from 'compiled/collections/AssignmentGroupCollection'
 import AssignmentGroupListView from 'compiled/views/assignments/AssignmentGroupListView'
+import AssignmentSettingsView from 'compiled/views/assignments/AssignmentSettingsView'
+import AssignmentSyncSettingsView from 'compiled/views/assignments/AssignmentSyncSettingsView'
+import AssignmentGroupWeightsView from 'compiled/views/assignments/AssignmentGroupWeightsView'
 import IndexView from 'compiled/views/assignments/IndexView'
 import ToggleShowByView from 'compiled/views/assignments/ToggleShowByView'
 import $ from 'jquery'
@@ -31,20 +34,41 @@ const fixtures = $('#fixtures')
 
 let assignmentGroups = null
 
-function assignmentIndex() {
+function assignmentIndex(opts = {withAssignmentSettings: false}) {
   $('<div id="content"></div>').appendTo(fixtures)
 
   const course = new Course({id: 1})
 
   const group1 = new AssignmentGroup({
     name: 'Group 1',
-    assignments: [{id: 1, name: 'Foo Name'}, {id: 2, name: 'Bar Title'}]
+    assignments: [
+      {id: 1, name: 'Foo Name'},
+      {id: 2, name: 'Bar Title'}
+    ]
   })
   const group2 = new AssignmentGroup({
     name: 'Group 2',
-    assignments: [{id: 1, name: 'Baz Title'}, {id: 2, name: 'Qux Name'}]
+    assignments: [
+      {id: 1, name: 'Baz Title'},
+      {id: 2, name: 'Qux Name'}
+    ]
   })
   assignmentGroups = new AssignmentGroupCollection([group1, group2], {course})
+
+  let assignmentSettingsView = false
+  let assignmentSyncSettingsView = false
+  if (opts.withAssignmentSettings)
+    assignmentSettingsView = new AssignmentSettingsView({
+      model: course,
+      assignmentGroups,
+      weightsView: AssignmentGroupWeightsView,
+      userIsAdmin: true
+    })
+  assignmentSyncSettingsView = new AssignmentSyncSettingsView({
+    collection: assignmentGroups,
+    model: course,
+    sisName: 'ENV.SIS_NAME'
+  })
 
   const assignmentGroupsView = new AssignmentGroupListView({
     collection: assignmentGroups,
@@ -63,8 +87,10 @@ function assignmentIndex() {
     assignmentGroupsView,
     collection: assignmentGroups,
     createGroupView: false,
-    assignmentSettingsView: false,
-    showByView
+    assignmentSettingsView,
+    assignmentSyncSettingsView,
+    showByView,
+    ...opts
   })
 
   return app.render()
@@ -78,7 +104,7 @@ QUnit.module('assignmentIndex', {
         assignment_sort_base_url: 'test'
       }
     })
-    this.enable_spy = this.spy(IndexView.prototype, 'enableSearch')
+    this.enable_spy = sandbox.spy(IndexView.prototype, 'enableSearch')
   },
 
   teardown() {
@@ -189,8 +215,8 @@ QUnit.module('student index view', {
   }
 })
 
-test('should clear search on toggle', function() {
-  const clear_spy = this.spy(IndexView.prototype, 'clearSearch')
+test('should clear search on toggle', () => {
+  const clear_spy = sandbox.spy(IndexView.prototype, 'clearSearch')
   const view = assignmentIndex()
   view.$('#search_term').val('something')
   view.showByView.initializeCache()
@@ -198,3 +224,43 @@ test('should clear search on toggle', function() {
   equal(view.$('#search_term').val(), '')
   ok(clear_spy.called)
 })
+
+QUnit.module('bulk edit', {
+  setup() {
+    fakeENV.setup({
+      PERMISSIONS: {manage_assignments: true},
+      FEATURES: {
+        assignment_bulk_edit: true
+      }
+    })
+  },
+
+  teardown() {
+    fakeENV.teardown()
+    fixtures.empty()
+  }
+})
+
+test('should not show bulk edit menu item if FF is off', () => {
+  ENV.FEATURES.assignment_bulk_edit = false
+  const view = assignmentIndex({withAssignmentSettings: true})
+  equal(view.$('#requestBulkEditMenuItem').length, 0)
+})
+
+test('it should show bulk edit menu if FF is on', () => {
+  const view = assignmentIndex({withAssignmentSettings: true})
+  equal(view.$('#requestBulkEditMenuItem').length, 1)
+})
+
+// If we actually try to render the bulk edit interface, we have to wait for the
+// interface to load and then mock the fetch and wait for that. Not worth it for
+// now.
+QUnit.skip(
+  'it should show only the bulk edit interface when the bulk edit menu item is clicked',
+  () => {
+    const view = assignmentIndex({withAssignmentSettings: true})
+    view.$('#requestBulkEditMenuItem')[0].click()
+    equal(view.$('#bulkEditRoot').length, 1)
+    equal(view.$('.header-bar').length, 0)
+  }
+)

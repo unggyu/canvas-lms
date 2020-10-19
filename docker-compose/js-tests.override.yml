@@ -1,7 +1,7 @@
 # to use this add docker-compose/js-tests.override.yml
 # to your COMPOSE_FILE var in .env
 
-version: '2'
+version: '2.3'
 services:
   js-tests:
     build: ./docker-compose/karma
@@ -15,7 +15,6 @@ services:
       - log:/usr/src/app/log
       - node_modules:/usr/src/app/node_modules
       - quizzes_node_modules:/usr/src/app/client_apps/canvas_quizzes/node_modules
-      - selinimum_node_modules:/usr/src/app/gems/selinimum/node_modules
       - tmp:/usr/src/app/tmp
       - yarn-cache:/home/docker/.cache/yarn
     environment:

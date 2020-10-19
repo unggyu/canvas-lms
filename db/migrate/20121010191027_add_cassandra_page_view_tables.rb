@@ -41,7 +41,6 @@ class AddCassandraPageViewTables < ActiveRecord::Migration[4.2]
         asset_type            text,
         controller            text,
         action                text,
-        contributed           boolean,
         interaction_seconds   double,
         created_at            timestamp,
         updated_at            timestamp,
@@ -53,7 +52,9 @@ class AddCassandraPageViewTables < ActiveRecord::Migration[4.2]
         participated          boolean,
         summarized            boolean,
         account_id            bigint,
-        real_user_id          bigint
+        real_user_id          bigint,
+        http_method           text,
+        remote_ip             text
       ) #{compression_params}}
 
     cassandra.execute %{
@@ -63,6 +64,16 @@ class AddCassandraPageViewTables < ActiveRecord::Migration[4.2]
         request_id text,
         PRIMARY KEY (context_and_time_bucket, ordered_id)
       ) #{compression_params}}
+
+    cassandra.execute %{
+      CREATE TABLE page_views_migration_metadata_per_account (
+        shard_id         text,
+        account_id       bigint,
+        last_created_at  timestamp,
+        last_request_id  text,
+        PRIMARY KEY      (shard_id, account_id)
+      )
+    }
   end
 
   def self.down
@@ -71,6 +82,9 @@ class AddCassandraPageViewTables < ActiveRecord::Migration[4.2]
     }
     cassandra.execute %{
       DROP TABLE page_views;
+    }
+    cassandra.execute %{
+      DROP TABLE page_views_migration_metadata_per_account;
     }
   end
 end

@@ -31,13 +31,12 @@ module Users
       real_user = claims[:real_user] if claims[:real_user] && claims[:real_user] != claims[:user]
       developer_key = claims[:developer_key]
       root_account = claims[:root_account]
-      oauth_host = claims[:oauth_host]
 
       jwt_claims = { user_id: user.global_id.to_s }
       jwt_claims[:real_user_id] = real_user.global_id.to_s if real_user
       jwt_claims[:developer_key_id] = developer_key.global_id.to_s if developer_key
       jwt_claims[:root_account_id] = root_account.global_id.to_s if root_account
-      jwt_claims[:oauth_host] = oauth_host if oauth_host
+      jwt_claims.merge!(claims.slice(:oauth_host, :return_url, :fallback_url))
 
       expires = TTL_MINUTES.minutes.from_now
       key = nil # use default key
@@ -53,26 +52,28 @@ module Users
       raise InvalidVerifier unless user && real_user
 
       if claims[:developer_key_id].present?
-        developer_key = DeveloperKey.where(id: claims[:developer_key_id]).first
+        developer_key = DeveloperKey.find_cached(claims[:developer_key_id])
         raise InvalidVerifier unless developer_key
       end
 
       if claims[:root_account_id].present?
-        root_account = Account.where(id: claims[:root_account_id]).first
+        root_account = Account.find_cached(claims[:root_account_id])
         raise InvalidVerifier unless root_account
       end
 
       oauth_host = claims[:oauth_host]
+      return_url = claims[:return_url]
 
       return {
         user: user,
         real_user: real_user,
         developer_key: developer_key,
         root_account: root_account,
-        oauth_host: oauth_host
+        oauth_host: oauth_host,
+        return_url: return_url
       }
 
-    rescue Canvas::Security::TokenExpired, Canvas::Security::InvalidToken
+    rescue Canvas::Security::InvalidToken
       raise InvalidVerifier
     end
   end

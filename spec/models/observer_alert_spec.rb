@@ -21,11 +21,15 @@ describe ObserverAlert do
   include Api
   include Api::V1::ObserverAlertThreshold
 
+  before(:each) do
+    Account.site_admin.enable_feature!(:grade_calculator_performance_improvements)
+  end
+
   describe 'validations' do
     before :once do
       @student = user_model
       @observer = user_model
-      UserObservationLink.create(student: @student, observer: @observer)
+      add_linked_observer(@student, @observer)
       @threshold = ObserverAlertThreshold.create!(student: @student, observer: @observer, alert_type: 'assignment_missing')
       @assignment = assignment_model
     end
@@ -90,6 +94,20 @@ describe ObserverAlert do
 
       expect(alert1.title).to include('Course grade: ')
       expect(alert2.title).to include('Course grade: ')
+    end
+
+    it 'creates only one alert per student if the student is enrolled in multiple sections per course' do
+      Enrollment.create!(
+        course_section: @course.course_sections.create!,
+        type: "StudentEnrollment",
+        user_id: @student1.id,
+        course: @course,
+        workflow_state: "active"
+      )
+      @assignment.grade_student(@student1, score: 90, grader: @teacher)
+      expect(
+        ObserverAlert.where(observer_alert_threshold: @threshold1, user_id: @student1.id).count
+      ).to equal(1)
     end
 
     it 'doesnt create an alert if the old score was already above the threshold' do
@@ -200,7 +218,7 @@ describe ObserverAlert do
 
       @student2 = student_in_course(active_all: true, course: @course).user
       @observer2 = course_with_observer(course: @course, associated_user_id: @student2.id, active_all: true).user
-      @link2 = UserObservationLink.create!(student: @student2, observer: @observer2, root_account: @account)
+      @link2 = add_linked_observer(@student2, @observer2)
 
       assignment_model(context: @course, due_at: 5.minutes.ago, submission_types: 'online_text_entry')
       @student3 = student_in_course(active_all: true, course: @course).user
@@ -219,10 +237,17 @@ describe ObserverAlert do
     end
 
     it 'creates an assignment_missing_alert' do
-      alert = ObserverAlert.active.where(student: @student1, alert_type: 'assignment_missing').first
+      alerts = ObserverAlert.active.where(student: @student1, alert_type: 'assignment_missing')
+      expect(alerts.count).to eq 1
+      alert = alerts.first
       expect(alert.alert_type).to eq 'assignment_missing'
       expect(alert.context.user).to eq @student1
       expect(alert.title).to include('Assignment missing:')
+    end
+
+    it 'deletes the alert if the submission is deleted' do
+      submission = ObserverAlert.active.where(student: @student1, alert_type: 'assignment_missing').first.context
+      expect { submission.destroy }.to change { ObserverAlert.count }.by(-1)
     end
 
     it 'doesnt create another alert if one already exists' do
@@ -235,11 +260,22 @@ describe ObserverAlert do
       expect(alert).to be_nil
     end
 
-    it 'doesnt create an alert for if there is no threshold' do
-      ObserverAlert.create_assignment_missing_alerts
+    it 'doesnt create an alert if there is no threshold' do
       alert = ObserverAlert.where(student: @student2).first
 
       expect(alert).to be_nil
+    end
+
+    it 'doesnt create an alert if the assignment is not published' do
+      @course = course_factory()
+      @student = student_in_course(active_all: true, course: @course).user
+      observer = course_with_observer(course: @course, associated_user_id: @student.id, active_all: true).user
+      ObserverAlertThreshold.create(observer: observer, student: @student, alert_type: 'assignment_missing')
+      assignment_model(context: @course, due_at: 5.minutes.ago, submission_types: 'online_text_entry', workflow_state: 'unpublished')
+
+      ObserverAlert.create_assignment_missing_alerts
+
+      expect(ObserverAlert.where(student: @student).count).to eq 0
     end
 
     it 'creates an alert for each observer' do
@@ -270,6 +306,63 @@ describe ObserverAlert do
 
       expect(ObserverAlert.where(student: @student).count).to eq 0
     end
+
+    context "when the assignment has no due date" do
+      let(:course) { Course.create! }
+      let(:student) { course.enroll_student(User.create!).user }
+      let(:observer) { course.enroll_user(User.create!, 'ObserverEnrollment', associated_user_id: student.id).user }
+      let(:assignment) { course.assignments.create!(title: 'missing', submission_types: 'online_text_entry') }
+
+      before(:each) do
+        ObserverAlertThreshold.create!(observer: observer, student: student, alert_type: 'assignment_missing')
+        assignment.submission_for_student(student).update!(late_policy_status: 'missing')
+      end
+
+      it "creates an alert for submissions manually marked as missing when the assignment has no due date" do
+        expect {
+          ObserverAlert.create_assignment_missing_alerts
+        }.to change {
+          ObserverAlert.where(student: student, alert_type: 'assignment_missing').count
+        }.by(1)
+      end
+
+      it "does not create an alert for missing submissions if one has already been created" do
+        ObserverAlert.create_assignment_missing_alerts
+        expect {
+          ObserverAlert.create_assignment_missing_alerts
+        }.not_to change {
+          ObserverAlert.where(student: student, alert_type: 'assignment_missing').count
+        }
+      end
+    end
+
+    it "creates an alert for assignments due within the past day" do
+      course = Course.create!
+      student = course.enroll_student(User.create!).user
+      observer = course.enroll_user(User.create!, 'ObserverEnrollment', associated_user_id: student.id).user
+      ObserverAlertThreshold.create!(observer: observer, student: student, alert_type: 'assignment_missing')
+
+      course.assignments.create!(title: 'missing', due_at: 1.hour.ago, submission_types: 'online_text_entry')
+      expect {
+        ObserverAlert.create_assignment_missing_alerts
+      }.to change {
+        ObserverAlert.where(student: student, alert_type: 'assignment_missing').count
+      }.by(1)
+    end
+
+    it "does not create an alert for assignments due more than one day ago" do
+      course = Course.create!
+      student = course.enroll_student(User.create!).user
+      observer = course.enroll_user(User.create!, 'ObserverEnrollment', associated_user_id: student.id).user
+      ObserverAlertThreshold.create!(observer: observer, student: student, alert_type: 'assignment_missing')
+
+      course.assignments.create!(title: 'missing', due_at: 2.days.ago, submission_types: 'online_text_entry')
+      expect {
+        ObserverAlert.create_assignment_missing_alerts
+      }.not_to change {
+        ObserverAlert.where(student: student, alert_type: 'assignment_missing').count
+      }
+    end
   end
 
   describe 'institution_announcement' do
@@ -295,7 +388,7 @@ describe ObserverAlert do
     end
 
     it 'doesnt create an alert if the roles dont include student or observer' do
-      role_ids = ["TeacherEnrollment", "AccountAdmin"].map{|name| Role.get_built_in_role(name).id}
+      role_ids = ["TeacherEnrollment", "AccountAdmin"].map{|name| Role.get_built_in_role(name, root_account_id: @course.root_account_id).id}
       notification = account_notification(account: @account, role_ids: role_ids)
       alert = ObserverAlert.where(context: notification).first
       expect(alert).to be_nil
@@ -317,14 +410,14 @@ describe ObserverAlert do
     end
 
     it 'creates an alert if student role is selected but not observer' do
-      role_ids = ["StudentEnrollment", "AccountAdmin"].map{|name| Role.get_built_in_role(name).id}
+      role_ids = ["StudentEnrollment", "AccountAdmin"].map{|name| Role.get_built_in_role(name, root_account_id: @course.root_account_id).id}
       notification = account_notification(account: @account, role_ids: role_ids)
       alert = ObserverAlert.where(context: notification).first
       expect(alert.context).to eq notification
     end
 
     it 'creates an alert if observer role is selected but not student' do
-      role_ids = ["ObserverEnrollment", "AccountAdmin"].map{|name| Role.get_built_in_role(name).id}
+      role_ids = ["ObserverEnrollment", "AccountAdmin"].map{|name| Role.get_built_in_role(name, root_account_id: @course.root_account_id).id}
       notification = account_notification(account: @account, role_ids: role_ids)
       alert = ObserverAlert.where(context: notification).first
       expect(alert.context).to eq notification

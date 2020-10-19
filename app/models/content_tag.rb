@@ -42,6 +42,9 @@ class ContentTag < ActiveRecord::Base
   # This allows doing a has_many_through relationship on ContentTags for linked LearningOutcomes. (see LearningOutcomeContext)
   belongs_to :learning_outcome_content, :class_name => 'LearningOutcome', :foreign_key => :content_id
   has_many :learning_outcome_results
+  belongs_to :root_account, class_name: 'Account'
+
+  after_create :clear_stream_items_if_module_is_unpublished
 
   # This allows bypassing loading context for validation if we have
   # context_id and context_type set, but still allows validating when
@@ -51,9 +54,15 @@ class ContentTag < ActiveRecord::Base
   validates_length_of :comments, :maximum => maximum_text_length, :allow_nil => true, :allow_blank => true
   before_save :associate_external_tool
   before_save :default_values
+  before_save :set_root_account
   after_save :update_could_be_locked
   after_save :touch_context_module_after_transaction
   after_save :touch_context_if_learning_outcome
+  after_save :run_due_date_cacher_for_quizzes_next
+  after_save :clear_discussion_stream_items
+  after_save :send_items_to_stream
+  after_create :update_outcome_contexts
+
   include CustomValidations
   validates_as_url :url
 
@@ -83,7 +92,7 @@ class ContentTag < ActiveRecord::Base
 
   attr_accessor :skip_touch
   def touch_context_module
-    return true if skip_touch.present?
+    return true if skip_touch.present? || self.context_module_id.nil?
     ContentTag.touch_context_modules([self.context_module_id])
   end
 
@@ -108,6 +117,13 @@ class ContentTag < ActiveRecord::Base
   def touch_context_if_learning_outcome
     if (self.tag_type == 'learning_outcome_association' || self.tag_type == 'learning_outcome') && skip_touch.blank?
       self.context_type.constantize.where(:id => self.context_id).update_all(:updated_at => Time.now.utc)
+    end
+  end
+
+  def update_outcome_contexts
+    return unless self.tag_type == 'learning_outcome_association'
+    if self.context_type == 'Account' || self.context_type == 'Course'
+      self.content.add_root_account_id_for_context!(self.context)
     end
   end
 
@@ -151,7 +167,7 @@ class ContentTag < ActiveRecord::Base
       next unless klass < ActiveRecord::Base
       next if klass < Tableless
       if klass.new.respond_to?(:could_be_locked=)
-        klass.where(:id => ids).update_all(:could_be_locked => true)
+        klass.where(id: ids).update_all_locked_in_order(could_be_locked: true)
       end
     end
   end
@@ -183,17 +199,31 @@ class ContentTag < ActiveRecord::Base
     end
   end
 
-  def content_type_class
+  def direct_shareable?
+    content_id.to_i > 0 && direct_share_type
+  end
+
+  def direct_share_type
+    ContentShare::CLASS_NAME_TO_TYPE[content_type]
+  end
+
+  def direct_share_select_class
+    direct_share_type.pluralize
+  end
+
+  def content_type_class(is_student=false)
     if self.content_type == 'Assignment'
       if self.content && self.content.submission_types == 'online_quiz'
-        'quiz'
+        is_student ? 'lti-quiz' : 'quiz'
       elsif self.content && self.content.submission_types == 'discussion_topic'
         'discussion_topic'
+      elsif self&.content&.quiz_lti?
+        'lti-quiz'
       else
         'assignment'
       end
     elsif self.content_type == 'Quizzes::Quiz'
-      'quiz'
+      is_student ? 'lti-quiz' : 'quiz'
     else
       self.content_type.underscore
     end
@@ -325,7 +355,8 @@ class ContentTag < ActiveRecord::Base
           alignment_conditions[:context_type] = self.context_type
         end
 
-        if ContentTag.learning_outcome_alignments.active.where(alignment_conditions).exists?
+        @active_alignment_tags = ContentTag.learning_outcome_alignments.active.where(alignment_conditions)
+        if @active_alignment_tags.exists?
           # then don't let them delete the link
           return false
         end
@@ -337,13 +368,16 @@ class ContentTag < ActiveRecord::Base
   alias_method :destroy_permanently!, :destroy
   def destroy
     unless can_destroy?
-      raise LastLinkToOutcomeNotDestroyed.new('Link is the last link to an aligned outcome. Remove the alignment and then try again')
+      aligned_outcome = @active_alignment_tags.map(&:learning_outcome).first.short_description
+      raise LastLinkToOutcomeNotDestroyed.new "Outcome '#{aligned_outcome}' cannot be deleted because it is aligned to content."
     end
 
     context_module.remove_completion_requirement(id) if context_module
 
     self.workflow_state = 'deleted'
     self.save!
+
+    run_due_date_cacher_for_quizzes_next(force: true)
 
     # after deleting the last native link to an unaligned outcome, delete the
     # outcome. we do this here instead of in LearningOutcome#destroy because
@@ -357,12 +391,34 @@ class ContentTag < ActiveRecord::Base
   end
 
   def locked_for?(user, opts={})
-    return unless self.context_module
+    return unless self.context_module && !self.context_module.deleted?
     self.context_module.locked_for?(user, opts.merge({:tag => self}))
   end
 
   def available_for?(user, opts={})
     self.context_module.available_for?(user, opts.merge({:tag => self}))
+  end
+
+  def send_items_to_stream
+    if self.content_type == "DiscussionTopic" && self.saved_change_to_workflow_state? && self.workflow_state == 'active'
+      content.send_items_to_stream
+    end
+  end
+
+  def clear_discussion_stream_items
+    if self.content_type == "DiscussionTopic"
+      if self.saved_change_to_workflow_state? &&
+        ['active', nil].include?(self.workflow_state_before_last_save) &&
+        self.workflow_state == 'unpublished'
+          content.clear_stream_items
+      end
+    end
+  end
+
+  def clear_stream_items_if_module_is_unpublished
+    if self.content_type == "DiscussionTopic" && context_module&.workflow_state == 'unpublished'
+      content.clear_stream_items
+    end
   end
 
   def self.update_for(asset, exclude_tag: nil)
@@ -409,7 +465,9 @@ class ContentTag < ActiveRecord::Base
   end
 
   def context_module_action(user, action, points=nil)
-    self.context_module.update_for(user, action, self, points) if self.context_module
+    Shackles.activate(:master) do
+      self.context_module.update_for(user, action, self, points) if self.context_module
+    end
   end
 
   def progression_for_user(user)
@@ -464,16 +522,23 @@ class ContentTag < ActiveRecord::Base
   scope :visible_to_students_in_course_with_da, lambda { |user_ids, course_ids|
     differentiable_classes = ['Assignment','DiscussionTopic', 'Quiz','Quizzes::Quiz', 'WikiPage']
     scope = for_non_differentiable_classes(course_ids, differentiable_classes)
-    non_cyoe_courses = Course.where(id: course_ids).reject{|course| ConditionalRelease::Service.enabled_in_context?(course)}
-    if non_cyoe_courses
+
+    cyoe_courses, non_cyoe_courses = Course.where(id: course_ids).partition{|course| ConditionalRelease::Service.enabled_in_context?(course)}
+    if non_cyoe_courses.any?
       scope = scope.union(where(context_id: non_cyoe_courses, context_type: 'Course', content_type: 'WikiPage'))
     end
+    if cyoe_courses.any?
+      scope = scope.union(
+        for_non_differentiable_wiki_pages(cyoe_courses.map(&:id)),
+        for_differentiable_wiki_pages(user_ids, cyoe_courses.map(&:id))
+      )
+    end
     scope.union(
-      for_non_differentiable_wiki_pages(course_ids),
-      for_non_differentiable_discussions(course_ids),
+      for_non_differentiable_discussions(course_ids).
+        merge(DiscussionTopic.visible_to_student_sections(user_ids)),
       for_differentiable_assignments(user_ids, course_ids),
-      for_differentiable_wiki_pages(user_ids, course_ids),
-      for_differentiable_discussions(user_ids, course_ids),
+      for_differentiable_discussions(user_ids, course_ids).
+        merge(DiscussionTopic.visible_to_student_sections(user_ids)),
       for_differentiable_quizzes(user_ids, course_ids)
     )
   }
@@ -483,11 +548,11 @@ class ContentTag < ActiveRecord::Base
   }
 
   scope :for_non_differentiable_discussions, lambda {|course_ids|
-    joins("JOIN #{DiscussionTopic.quoted_table_name} as dt ON dt.id = content_tags.content_id").
+    joins("JOIN #{DiscussionTopic.quoted_table_name} as discussion_topics ON discussion_topics.id = content_tags.content_id").
       where("content_tags.context_id IN (?)
              AND content_tags.context_type = 'Course'
              AND content_tags.content_type = 'DiscussionTopic'
-             AND dt.assignment_id IS NULL",course_ids)
+             AND discussion_topics.assignment_id IS NULL", course_ids)
   }
 
   scope :for_non_differentiable_wiki_pages, lambda {|course_ids|
@@ -519,14 +584,14 @@ class ContentTag < ActiveRecord::Base
   }
 
   scope :for_differentiable_discussions, lambda {|user_ids, course_ids|
-    joins("JOIN #{DiscussionTopic.quoted_table_name} as dt ON dt.id = content_tags.content_id
+    joins("JOIN #{DiscussionTopic.quoted_table_name} ON discussion_topics.id = content_tags.content_id
            AND content_tags.content_type = 'DiscussionTopic'").
-      joins("JOIN #{AssignmentStudentVisibility.quoted_table_name} as asv ON asv.assignment_id = dt.assignment_id").
+      joins("JOIN #{AssignmentStudentVisibility.quoted_table_name} as asv ON asv.assignment_id = discussion_topics.assignment_id").
       where("content_tags.context_id IN (?)
              AND content_tags.context_type = 'Course'
              AND asv.course_id IN (?)
              AND content_tags.content_type = 'DiscussionTopic'
-             AND dt.assignment_id IS NOT NULL
+             AND discussion_topics.assignment_id IS NOT NULL
              AND asv.user_id = ANY( '{?}'::INT8[] )
       ",course_ids,course_ids,user_ids)
   }
@@ -579,6 +644,24 @@ class ContentTag < ActiveRecord::Base
     if !self.new_record? && self.title_changed? && !@importing_migration && self.content && self.content.respond_to?(:is_child_content?) &&
       self.content.is_child_content? && self.content.editing_restricted?(:content)
         self.errors.add(:title, "cannot change title - associated content locked by Master Course")
+    end
+  end
+
+  def run_due_date_cacher_for_quizzes_next(force: false)
+    # Quizzes next should ideally only ever be attached to an
+    # assignment.  Let's ignore any other contexts.
+    return unless context_type == "Assignment"
+    DueDateCacher.recompute(context) if content.try(:quiz_lti?) && (force || workflow_state != 'deleted')
+  end
+
+  def set_root_account
+    return if self.root_account_id.present?
+
+    case self.context
+    when Account
+      self.root_account_id = self.context.resolved_root_account_id
+    else
+      self.root_account_id = self.context&.root_account_id
     end
   end
 end

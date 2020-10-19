@@ -21,22 +21,30 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require 'nokogiri'
 
 describe GradebooksHelper do
-  FakeAssignment = Struct.new(:grading_type, :quiz, :points_possible, :anonymous_grading) do
-    def anonymous_grading?
-      anonymous_grading
-    end
-  end.freeze
-  FakeSubmission = Struct.new(:assignment, :score, :grade, :submission_type,
-                              :workflow_state, :excused?).freeze
-  FakeQuiz = Struct.new(:survey, :anonymous_submissions) do
-    def survey?
-      survey
-    end
+  before do
+    FakeAssignment = Struct.new(:grading_type, :quiz, :points_possible, :anonymous_grading) do
+      def anonymous_grading?
+        anonymous_grading
+      end
+    end.freeze
+    FakeSubmission = Struct.new(:assignment, :score, :grade, :submission_type,
+                                :workflow_state, :excused?).freeze
+    FakeQuiz = Struct.new(:survey, :anonymous_submissions) do
+      def survey?
+        survey
+      end
 
-    def anonymous_survey?
-      survey? && anonymous_submissions
-    end
-  end.freeze
+      def anonymous_survey?
+        survey? && anonymous_submissions
+      end
+    end.freeze
+  end
+
+  after do
+    Object.send(:remove_const, :FakeAssignment)
+    Object.send(:remove_const, :FakeSubmission)
+    Object.send(:remove_const, :FakeQuiz)
+  end
 
   let(:assignment) { FakeAssignment.new }
   let(:submission) { FakeSubmission.new(assignment) }
@@ -76,12 +84,13 @@ describe GradebooksHelper do
 
     it 'returns true for an anonymously-graded assignment' do
       assignment = assignment_model
-      assignment.anonymous_grading = true
-      expect(helper.force_anonymous_grading?(assignment)).to eq true
+      allow(assignment).to receive(:anonymize_students?).and_return(true)
+      expect(helper.force_anonymous_grading?(assignment)).to be true
     end
 
     it 'returns false for a non-anonymously-graded assignment' do
       assignment = assignment_model
+      allow(assignment).to receive(:anonymize_students?).and_return(false)
       expect(helper.force_anonymous_grading?(assignment)).to eq false
     end
   end
@@ -98,7 +107,7 @@ describe GradebooksHelper do
 
     it 'returns anonymous grading' do
       assignment = assignment_model
-      assignment.anonymous_grading = true
+      allow(assignment).to receive(:anonymize_students?).and_return(true)
       expect(helper.force_anonymous_grading_reason(assignment)).to match(/anonymous grading/)
     end
   end
@@ -215,87 +224,6 @@ describe GradebooksHelper do
           expect(score_display).to eq '-'
         end
       end
-    end
-  end
-
-  describe '#format_grade?' do
-    it 'returns true if given grade is a string containing an integer' do
-      expect(helper.format_grade?('42')).to eq true
-    end
-
-    it 'returns true if given grade is an integer' do
-      expect(helper.format_grade?(42)).to eq true
-    end
-
-    it 'returns true if given grade is a string containing a decimal' do
-      expect(helper.format_grade?('42.32')).to eq true
-    end
-
-    it 'returns true if given grade is a decimal' do
-      expect(helper.format_grade?(42.32)).to eq true
-    end
-
-    it 'returns true if given grade is a percentage' do
-      expect(helper.format_grade?('42.32%')).to eq true
-    end
-
-    it 'returns false if given grade is a letter grade' do
-      expect(helper.format_grade?('A')).to eq false
-      expect(helper.format_grade?('B-')).to eq false
-      expect(helper.format_grade?('D+')).to eq false
-    end
-
-    it 'returns false if given grade is a mix of letters and numbers' do
-      expect(helper.format_grade?('A2')).to eq false
-      expect(helper.format_grade?('3.0D')).to eq false
-      expect(helper.format_grade?('asdf321')).to eq false
-    end
-  end
-
-  describe '#percentage?' do
-    it 'returns true if given grade is a percentage' do
-      expect(helper.percentage?('42%')).to eq true
-      expect(helper.percentage?('42.32%')).to eq true
-    end
-
-    it 'returns false if given grade is not a percentage' do
-      expect(helper.percentage?('42')).to eq false
-      expect(helper.percentage?('42.32')).to eq false
-      expect(helper.percentage?('A')).to eq false
-    end
-  end
-
-  describe '#format_grade' do
-    it 'formats integer point grades with I18n#n' do
-      expect(I18n).to receive(:n).with('1000', percentage: false).and_return('42')
-      expect(helper.format_grade('1000')).to eq '42'
-    end
-
-    it 'formats decimal point grades with I18n#n' do
-      expect(I18n).to receive(:n).with('1000.32', percentage: false).and_return('42')
-      expect(helper.format_grade('1000.32')).to eq '42'
-    end
-
-    it 'formats integer percentage grades with I18n#n' do
-      expect(I18n).to receive(:n).with('34', percentage: true).and_return('42')
-      expect(helper.format_grade('34%')).to eq '42'
-    end
-
-    it 'formats decimal percentage grades with I18n#n' do
-      expect(I18n).to receive(:n).with('34.45', percentage: true).and_return('42')
-      expect(helper.format_grade('34.45%')).to eq '42'
-    end
-
-    it 'returns letter grades as is' do
-      expect(helper.format_grade('A')).to eq 'A'
-      expect(helper.format_grade('B-')).to eq 'B-'
-      expect(helper.format_grade('D+')).to eq 'D+'
-    end
-
-    it 'returns a mix of letters and numbers as is' do
-      expect(helper.format_grade('A2')).to eq 'A2'
-      expect(helper.format_grade('B-4')).to eq 'B-4'
-      expect(helper.format_grade('30.0D+')).to eq '30.0D+'
     end
   end
 

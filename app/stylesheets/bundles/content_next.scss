@@ -46,20 +46,6 @@
   display: block !important;
 }
 
-.item-group-container {
-  min-height: 450px;
-}
-
-.header .publish-icon {
-  position: relative;
-  bottom: 7px;
-}
-
-.context_module .header {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
 .collapse_module_link, .expand_module_link {
   cursor: pointer;
 }
@@ -132,7 +118,8 @@
     flex: 0 0 auto;
     display: flex;
     align-self: center;
-
+    margin-inline-start: auto;
+    
     .completion_status {
       margin: 0 16px;
       width: 16px;
@@ -146,8 +133,6 @@
     .publish-icon {
       display: flex;
       align-items: center;
-      padding-#{direction(left)}: 10px;
-      padding-top: 12px;
     }
   }
 }
@@ -169,12 +154,6 @@
   margin-bottom: 0;
 }
 
-.context_module .header {
-  background-color: transparent;
-  border-bottom: none;
-  padding: auto;
-  color: $ic-font-color-dark;
-}
 .sortable-handle a, .draggable-handle a {
   color: #b4b7ba;
 }
@@ -232,7 +211,7 @@ input.move-module-label-spacer {
 }
 
 .form-element {
-  padding: 5px 0 5px 0;
+  padding: 5px 0;
 }
 
 .criterion {
@@ -263,21 +242,21 @@ input.move-module-label-spacer {
 }
 
 .icon-add {
-  padding: 0 5px 0 5px;
+  padding: 0 5px;
 }
 
 .form-section {
-  padding: 10px 0 15px 0;
+  padding: 10px 0 15px;
 }
 
 #add_context_module_form {
- padding: 10px 40px 0 40px;
+ padding: 10px 40px 0;
  overflow: visible;
 }
 
 .ui-dialog-titlebar.ui-widget-header.ui-corner-all.ui-helper-clearfix {
-  padding-right: 40px;
-  padding-left: 40px;
+  padding-#{direction(right)}: 40px;
+  padding-#{direction(left)}: 40px;
 }
 
 .no-requirements {

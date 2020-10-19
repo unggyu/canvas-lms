@@ -17,15 +17,24 @@
 #
 
 module Types
-  SectionType = GraphQL::ObjectType.define do
-    name "Section"
+  class SectionType < ApplicationObjectType
+    graphql_name "Section"
 
-    implements GraphQL::Relay::Node.interface
-    interfaces [Interfaces::TimestampInterface]
+    implements GraphQL::Types::Relay::Node
+    implements Interfaces::TimestampInterface
+    implements Interfaces::LegacyIDInterface
+
+    alias section object
 
     global_id_field :id
-    field :_id, !types.ID, "legacy canvas id", property: :id
 
-    field :name, !types.String
+    field :name, String, null: false
+
+    field :sis_id, String, null: true
+    def sis_id
+      load_association(:course).then do |course|
+        section.sis_source_id if course.grants_any_right?(current_user, :read_sis, :manage_sis)
+      end
+    end
   end
 end

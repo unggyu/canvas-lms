@@ -37,19 +37,21 @@ module AccountsHelper
     "#{course.course_code if show_code}#{', ' if show_term && show_code}#{course.enrollment_term.name if show_term}"
   end
 
-  def turnitin_originality_options
+  def turnitin_originality_options(account)
     [
+      account.root_account? ? nil : [I18n.t('Use parent account setting'), nil],
       [I18n.t('#turnitin_settings.originality_report_visible_immediately', "Immediately"), 'immediate'],
       [I18n.t('#turnitin_settings.originality_report_visible_after_grading', "After the assignment is graded"), 'after_grading'],
       [I18n.t('#turnitin_settings.originality_report_visible_after_due_date', "After the Due Date"), 'after_due_date'],
       [I18n.t('#turnitin_settings.originality_report_never', "Never"), 'never']
-    ]
+    ].compact
   end
 
   def dashboard_view_options(account)
     [
       [I18n.t('Card View'), 'cards'],
       [I18n.t('Recent Activity'), 'activity'],
-    ].tap { |opts| opts << [I18n.t('List View'), 'planner'] if account.root_account.feature_enabled?(:student_planner)}
+      [I18n.t('List View'), 'planner']
+    ]
   end
 end

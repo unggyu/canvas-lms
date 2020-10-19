@@ -21,151 +21,136 @@ import 'jquery.instructure_date_and_time'
 import 'jqueryui/dialog'
 import I18n from 'i18n!react_developer_keys'
 import React from 'react'
-import PropTypes from 'prop-types'
+import {bool, func, number, shape, string} from 'prop-types'
 
-import Button from '@instructure/ui-buttons/lib/components/Button'
-import CloseButton from '@instructure/ui-buttons/lib/components/CloseButton'
-import Flex, { FlexItem } from '@instructure/ui-layout/lib/components/Flex'
-import Popover, { PopoverTrigger, PopoverContent } from '@instructure/ui-overlays/lib/components/Popover'
-import Image from '@instructure/ui-elements/lib/components/Img'
-import Link from '@instructure/ui-elements/lib/components/Link'
-import ScreenReaderContent from '@instructure/ui-a11y/lib/components/ScreenReaderContent'
-import View from '@instructure/ui-layout/lib/components/View'
+import {Button, CloseButton} from '@instructure/ui-buttons'
+import {Flex, View} from '@instructure/ui-layout'
+import {IconLtiLine} from '@instructure/ui-icons'
+import {Popover, Tooltip} from '@instructure/ui-overlays'
+import {Img, Link} from '@instructure/ui-elements'
+import {Table} from '@instructure/ui-table'
+import {ScreenReaderContent} from '@instructure/ui-a11y'
 
 import DeveloperKeyActionButtons from './ActionButtons'
 import DeveloperKeyStateControl from './InheritanceStateControl'
 
-
 class DeveloperKey extends React.Component {
-  state = { showKey: false }
+  static displayName = 'Row'
+
+  state = {showKey: false}
 
   get isSiteAdmin() {
-    return this.props.ctx.params.contextId === "site_admin"
+    return this.props.ctx.params.contextId === 'site_admin'
   }
 
-  activateLinkHandler = (event) => {
+  activateLinkHandler = event => {
     event.preventDefault()
-    this.props.store.dispatch(
-      this.props.actions.activateDeveloperKey(
-        this.props.developerKey
-      )
-    )
+    this.props.store.dispatch(this.props.actions.activateDeveloperKey(this.props.developerKey))
   }
 
-  deactivateLinkHandler = (event) => {
+  deactivateLinkHandler = event => {
     event.preventDefault()
-    this.props.store.dispatch(
-      this.props.actions.deactivateDeveloperKey(
-        this.props.developerKey
-      )
-    )
+    this.props.store.dispatch(this.props.actions.deactivateDeveloperKey(this.props.developerKey))
   }
 
-  getToolName () {
+  getToolName() {
     return this.props.developerKey.name || I18n.t('Unnamed Tool')
   }
 
-  ownerEmail (developerKey) {
-    if(developerKey.email) {
+  ownerEmail(developerKey) {
+    if (developerKey.email) {
       return developerKey.email
     }
     return I18n.t('No Email')
   }
 
-  isActive (developerKey) {
-    return developerKey.workflow_state !== "inactive"
+  isActive(developerKey) {
+    return developerKey.workflow_state !== 'inactive'
   }
 
   focusDeleteLink = () => {
-    this.actionButtons.focusDeleteLink();
+    this.actionButtons.focusDeleteLink()
   }
 
   focusToggleGroup = () => {
-    this.toggleGroup.focusToggleGroup();
+    this.toggleGroup.focusToggleGroup()
   }
 
-  isDisabled = () => ( this.toggleGroup.isDisabled() )
+  isDisabled = () => this.toggleGroup.isDisabled()
 
-  makeImage (developerKey) {
+  makeImage(developerKey) {
     if (developerKey.icon_url) {
-      return <FlexItem padding="0 xx-small 0 0">
-        <Image
-          src={developerKey.icon_url}
-          cover
-          width="4rem"
-          height="4rem"
-          margin="xxx-small xx-small xxx-small"
-          alt={I18n.t("%{toolName} Logo", {toolName: this.getToolName()})}
-        />
-      </FlexItem>
+      return (
+        <Flex.Item as="div" width="4rem" height="4rem" textAlign="center" margin="0 small 0 0">
+          <Img
+            src={developerKey.icon_url}
+            constrain="contain"
+            alt={I18n.t('%{toolName} Logo', {toolName: this.getToolName()})}
+          />
+        </Flex.Item>
+      )
     }
-    return <View
-      as="div"
-      height="4rem"
-      width="4rem"
-    />
+    return <Flex.Item as="div" height="4rem" width="4rem" margin="0 small 0 0" />
   }
 
-  makeUserLink (developerKey) {
+  makeUserLink(developerKey) {
     const email = this.ownerEmail(developerKey)
-    if (!developerKey.user_id) { return email }
-    return (<Link href={`/users/${developerKey.user_id}`}>{email}</Link> );
+    if (!developerKey.user_id) {
+      return email
+    }
+    return <Link href={`/users/${developerKey.user_id}`}>{email}</Link>
   }
 
-  redirectURI (developerKey) {
-    if (!developerKey.redirect_uri) { return null }
-    const uri = I18n.t("URI: %{redirect_uri}", {redirect_uri: developerKey.redirect_uri})
-    return (<div>{uri}</div>)
+  redirectURI(developerKey) {
+    if (!developerKey.redirect_uri) {
+      return null
+    }
+    const uri = I18n.t('URI: %{redirect_uri}', {redirect_uri: developerKey.redirect_uri})
+    return <div>{uri}</div>
   }
 
-  lastUsed (developerKey) {
-    const lastUsed = I18n.t("Last Used:")
-    const lastUsedDate = developerKey.last_used_at ? developerKey.last_used_at : I18n.t("Never")
+  lastUsed(developerKey) {
+    const lastUsed = I18n.t('Last Used:')
+    const lastUsedDate = developerKey.last_used_at ? developerKey.last_used_at : I18n.t('Never')
     return `${lastUsed} ${lastUsedDate}`
   }
 
-  handleDelete = () => (
-    this.props.onDelete(this.props.developerKey.id)
-  )
+  handleDelete = () => this.props.onDelete(this.props.developerKey.id)
 
   handleShowKey = () => {
-    this.setState({showKey: !this.state.showKey})
+    this.setState(state => ({showKey: !state.showKey}))
   }
 
-  refActionButtons = (link) => { this.actionButtons = link; }
-  refToggleGroup = (link) => { this.toggleGroup = link }
+  refActionButtons = link => {
+    this.actionButtons = link
+  }
 
-  render () {
-    const { developerKey, inherited } = this.props;
+  refToggleGroup = link => {
+    this.toggleGroup = link
+  }
+
+  render() {
+    const {developerKey, inherited} = this.props
 
     return (
-      <tr>
-        <td>
+      <Table.Row>
+        <Table.Cell>
           <Flex>
             {this.makeImage(developerKey)}
-            <FlexItem shrink="true">
-            {this.getToolName(developerKey)}
-            </FlexItem>
+            <Flex.Item shrink>{this.getToolName(developerKey)}</Flex.Item>
           </Flex>
-        </td>
+        </Table.Cell>
 
-        {!inherited &&
-          <td>
-            <div>
-              {this.makeUserLink(developerKey)}
-            </div>
-          </td>
-        }
+        {!inherited && (
+          <Table.Cell style={{wordBreak: 'break-all'}}>
+            {this.makeUserLink(developerKey)}
+          </Table.Cell>
+        )}
 
-        <td>
-          <View
-            maxWidth="200px"
-            as="div"
-          >
-            <div>
-              {developerKey.id}
-            </div>
-            {!inherited &&
+        <Table.Cell>
+          <View maxWidth="200px" as="div">
+            <div>{developerKey.id}</div>
+            {!inherited && (
               <div>
                 <Popover
                   placement="top"
@@ -176,21 +161,15 @@ class DeveloperKey extends React.Component {
                   shouldReturnFocus
                   shouldCloseOnDocumentClick
                   onDismiss={this.handleShowKey}
-                  label={I18n.t("Key")}
+                  label={I18n.t('Key')}
                 >
-                  <PopoverTrigger>
+                  <Popover.Trigger>
                     <Button onClick={this.handleShowKey} size="small">
-                      {
-                        this.state.showKey ?
-                          I18n.t('Hide Key') :
-                          I18n.t('Show Key')
-                      }
-                      <ScreenReaderContent>
-                        {this.getToolName()}
-                      </ScreenReaderContent>
+                      {this.state.showKey ? I18n.t('Hide Key') : I18n.t('Show Key')}
+                      <ScreenReaderContent>{this.getToolName()}</ScreenReaderContent>
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent>
+                  </Popover.Trigger>
+                  <Popover.Content>
                     <CloseButton
                       placement="end"
                       offset="x-small"
@@ -200,35 +179,46 @@ class DeveloperKey extends React.Component {
                       {I18n.t('Close')}
                     </CloseButton>
                     <View padding="large small small small" display="block">
-                      { developerKey.api_key }
+                      {developerKey.api_key}
                     </View>
-                  </PopoverContent>
+                  </Popover.Content>
                 </Popover>
               </div>
-            }
-            {!inherited &&
-              <div>
-                {this.redirectURI(developerKey)}
-              </div>
-            }
+            )}
+            {!inherited && (
+              <div style={{wordBreak: 'break-all'}}>{this.redirectURI(developerKey)}</div>
+            )}
           </View>
-        </td>
+        </Table.Cell>
 
-        {!inherited &&
-          <td>
+        {!inherited && (
+          <Table.Cell>
             <div>
-              {I18n.t("Access Token Count: %{access_token_count}", {access_token_count: developerKey.access_token_count})}
+              {I18n.t('Access Token Count: %{access_token_count}', {
+                access_token_count: developerKey.access_token_count
+              })}
             </div>
             <div>
-              {I18n.t("Created: %{created_at}", {created_at: $.datetimeString(developerKey.created_at)})}
+              {I18n.t('Created: %{created_at}', {
+                created_at: $.datetimeString(developerKey.created_at)
+              })}
             </div>
-            <div>
-              {this.lastUsed(developerKey)}
-            </div>
-          </td>
-        }
-
-        <td>
+            <div>{this.lastUsed(developerKey)}</div>
+          </Table.Cell>
+        )}
+        <Table.Cell>
+          {developerKey.is_lti_key ? (
+            <Tooltip
+              tip={I18n.t('Developer key is an external tool.')}
+              on={['click', 'hover', 'focus']}
+            >
+              <Button variant="icon" icon={IconLtiLine}>
+                <ScreenReaderContent>{I18n.t('Toggle ToolTip')}</ScreenReaderContent>
+              </Button>
+            </Tooltip>
+          ) : null}
+        </Table.Cell>
+        <Table.Cell>
           <DeveloperKeyStateControl
             ref={this.refToggleGroup}
             developerKey={developerKey}
@@ -236,57 +226,59 @@ class DeveloperKey extends React.Component {
             actions={this.props.actions}
             ctx={this.props.ctx}
           />
-        </td>
-        {!inherited &&
-          <td>
+        </Table.Cell>
+        {!inherited && (
+          <Table.Cell>
             <DeveloperKeyActionButtons
               ref={this.refActionButtons}
               dispatch={this.props.store.dispatch}
               {...this.props.actions}
               developerKey={this.props.developerKey}
               visible={this.props.developerKey.visible}
-              toolName={this.getToolName()}
+              developerName={this.getToolName()}
               onDelete={this.handleDelete}
               showVisibilityToggle={this.isSiteAdmin}
             />
-          </td>
-        }
-      </tr>
-    );
-  };
+          </Table.Cell>
+        )}
+      </Table.Row>
+    )
+  }
 }
 
 DeveloperKey.propTypes = {
-  store: PropTypes.shape({
-    dispatch: PropTypes.func.isRequired,
+  store: shape({
+    dispatch: func.isRequired
   }).isRequired,
-  actions: PropTypes.shape({
-    makeVisibleDeveloperKey: PropTypes.func.isRequired,
-    makeInvisibleDeveloperKey: PropTypes.func.isRequired,
-    activateDeveloperKey: PropTypes.func.isRequired,
-    deactivateDeveloperKey: PropTypes.func.isRequired,
-    deleteDeveloperKey: PropTypes.func.isRequired,
-    editDeveloperKey: PropTypes.func.isRequired,
-    developerKeysModalOpen: PropTypes.func.isRequired
+  actions: shape({
+    makeVisibleDeveloperKey: func.isRequired,
+    makeInvisibleDeveloperKey: func.isRequired,
+    activateDeveloperKey: func.isRequired,
+    deactivateDeveloperKey: func.isRequired,
+    deleteDeveloperKey: func.isRequired,
+    editDeveloperKey: func.isRequired,
+    developerKeysModalOpen: func.isRequired
   }).isRequired,
-  developerKey: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    api_key: PropTypes.string,
-    created_at: PropTypes.string.isRequired,
-    visible: PropTypes.bool,
-    name: PropTypes.string,
-    user_id: PropTypes.string,
-    workflow_state: PropTypes.string
+  developerKey: shape({
+    id: string.isRequired,
+    access_token_count: number.isRequired,
+    api_key: string,
+    created_at: string.isRequired,
+    visible: bool,
+    name: string,
+    user_id: string,
+    workflow_state: string,
+    is_lti_key: bool
   }).isRequired,
-  ctx: PropTypes.shape({
-    params: PropTypes.shape({
-      contextId: PropTypes.string.isRequired
+  ctx: shape({
+    params: shape({
+      contextId: string.isRequired
     })
   }).isRequired,
-  inherited: PropTypes.bool,
-  onDelete: PropTypes.func.isRequired
-};
+  inherited: bool,
+  onDelete: func.isRequired
+}
 
-DeveloperKey.defaultProps = { inherited: false }
+DeveloperKey.defaultProps = {inherited: false}
 
 export default DeveloperKey

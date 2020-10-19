@@ -16,15 +16,14 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'uri'
-
 module AttachmentHelper
   # returns a string of html attributes suitable for use with $.loadDocPreview
   def doc_preview_attributes(attachment, attrs={})
     url_opts = {
       anonymous_instructor_annotations: attrs.delete(:anonymous_instructor_annotations),
       enable_annotations: attrs.delete(:enable_annotations),
-      moderated_grading_whitelist: attrs[:moderated_grading_whitelist]
+      moderated_grading_allow_list: attrs[:moderated_grading_allow_list],
+      submission_id: attrs.delete(:submission_id)
     }
     url_opts[:enrollment_type] = attrs.delete(:enrollment_type) if url_opts[:enable_annotations]
 
@@ -67,17 +66,36 @@ module AttachmentHelper
   end
 
   def render_or_redirect_to_stored_file(attachment:, verifier: nil, inline: false, user_agent:)
-    set_cache_header(attachment, inline)
+    can_proxy = inline && attachment.can_be_proxied?
+    must_proxy = inline && csp_enforced? && attachment.mime_class == 'html'
+    direct = attachment.stored_locally? || can_proxy || must_proxy
+
     filename = (user_agent.include?('trident') || user_agent.include?('edge')) ? URI.escape(attachment.filename) : attachment.filename
     display_name = (user_agent.include?('trident') || user_agent.include?('edge')) ? URI.escape(attachment.display_name) : attachment.display_name
+
+    # up here to preempt files domain redirect
+    if attachment.instfs_hosted? && file_location_mode? && !direct
+      url = inline ?
+        authenticated_inline_url(attachment) :
+        authenticated_download_url(attachment)
+      render_file_location(url)
+      return
+    end
+
+    set_cache_header(attachment, direct)
     if safer_domain_available?
-      redirect_to safe_domain_file_url(attachment, @safer_domain_host, verifier, !inline)
+      redirect_to safe_domain_file_url(attachment, host_and_shard: @safer_domain_host,
+        verifier: verifier, download: !inline)
     elsif attachment.stored_locally?
       @headers = false if @files_domain
       send_file(attachment.full_filename, :type => attachment.content_type_with_encoding, :disposition => (inline ? 'inline' : 'attachment'), :filename => display_name)
-    elsif inline && attachment.can_be_proxied?
-      send_file_headers!( :length=> attachment.s3object.content_length, :filename=>filename, :disposition => 'inline', :type => attachment.content_type_with_encoding)
-      render body: attachment.s3object.get.body.read
+    elsif can_proxy
+      body = attachment.open.read
+      add_csp_for_file if attachment.mime_class == 'html'
+      send_file_headers!(length: body.length, filename: filename, disposition: 'inline', type: attachment.content_type_with_encoding)
+      render body: body
+    elsif must_proxy
+      return render 400, text: t("It's not allowed to redirect to HTML files that can't be proxied while Content-Security-Policy is being enforced")
     elsif inline
       redirect_to authenticated_inline_url(attachment)
     else
@@ -96,7 +114,7 @@ module AttachmentHelper
     !!@safer_domain_host
   end
 
-  def set_cache_header(attachment, inline)
+  def set_cache_header(attachment, direct)
     # TODO [RECNVS-73]
     # instfs JWTs cannot be shared across users, so we cannot cache them across
     # users. while most browsers will only service one user and caching
@@ -105,10 +123,10 @@ module AttachmentHelper
     # investigate opportunities to reuse JWTs when the same user requests the
     # same file within a reasonable window of time, so that the URL redirected
     # too can still take advantage of browser caching.
-    unless attachment.instfs_hosted? || attachment.content_type.match(/\Atext/) || attachment.extension == '.html' || attachment.extension == '.htm'
+    unless (attachment.instfs_hosted? && !direct) || attachment.content_type.match(/\Atext/) || attachment.extension == '.html' || attachment.extension == '.htm'
       cancel_cache_buster
       # set cache to expire whenever the s3 url does (or one day if local or inline proxy), max-age take seconds, and Expires takes a date
-      ttl = attachment.stored_locally? || (inline && attachment.can_be_proxied?) ? 1.day : attachment.url_ttl
+      ttl = direct ? 1.day : attachment.url_ttl
       response.headers["Cache-Control"] = "private, max-age=#{ttl.seconds.to_s}"
       response.headers["Expires"] = ttl.from_now.httpdate
     end

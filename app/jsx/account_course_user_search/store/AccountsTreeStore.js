@@ -19,19 +19,24 @@
 import {string, shape, arrayOf} from 'prop-types'
 import createStore from './createStore'
 
+const SUB_ACCOUNT_API_PAGESIZE = 200
+
 const AccountsTreeStore = createStore({
   getUrl() {
-    return `/api/v1/accounts/${this.context.accountId}/sub_accounts`
+    return `/api/v1/accounts/${this.context.accountId}/sub_accounts?per_page=${SUB_ACCOUNT_API_PAGESIZE}`
   },
 
   loadTree() {
     // fetch the account itself first, then get its subaccounts
-    return this._load(this.getKey(), `/api/v1/accounts/${this.context.accountId}`, {}, {wrap: true}).then(() =>
-      this.loadAll(null, true)
-    )
+    return this._load(
+      this.getKey(),
+      `/api/v1/accounts/${this.context.accountId}`,
+      {},
+      {wrap: true}
+    ).then(() => this.loadAll(null, true))
   },
 
-  normalizeParams()  {
+  normalizeParams() {
     return {recursive: true}
   },
 

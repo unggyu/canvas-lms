@@ -52,7 +52,7 @@ describe DataFixup::PopulateScoresAndMetadataForAssignmentGroupsAndTeacherView d
 
     ScoreMetadata.joins(:score).where(scores: { enrollment: @concluded_student_enrollment }).delete_all
     Score.where(enrollment: @concluded_student_enrollment).where.not(assignment_group_id: nil).delete_all
-    Score.where(enrollment: @concluded_student_enrollment).update(unposted_current_score: nil, unposted_final_score: nil)
+    Score.where(enrollment: @concluded_student_enrollment).preload(:enrollment).update(unposted_current_score: nil, unposted_final_score: nil)
 
     @assignment_group_two = @course.assignment_groups.create!(:name => "some other group")
     @assignment2 = @course.assignments.create!(
@@ -105,7 +105,7 @@ describe DataFixup::PopulateScoresAndMetadataForAssignmentGroupsAndTeacherView d
   it 'creates assignment groups scores and metadata for concluded students' do
     DataFixup::PopulateScoresAndMetadataForAssignmentGroupsAndTeacherView.run
 
-    scores = @concluded_student_enrollment.scores.where.not(assignment_group_id: nil)
+    scores = @concluded_student_enrollment.scores.where.not(assignment_group_id: nil).preload(:score_metadata)
     expect(scores.count).to eq(2)
     scores.each { |score| expect(score.score_metadata).not_to be_nil }
   end
@@ -136,7 +136,7 @@ describe DataFixup::PopulateScoresAndMetadataForAssignmentGroupsAndTeacherView d
     @course.soft_conclude!
     @course.save!
     expect(DataFixup::PopulateScoresAndMetadataForAssignmentGroupsAndTeacherView).
-      to receive(:handle_concluded_students).with(@course, [@active_student.id, @concluded_student.id])
+      to receive(:handle_concluded_students).with(@course, a_collection_containing_exactly(@active_student.id, @concluded_student.id))
     DataFixup::PopulateScoresAndMetadataForAssignmentGroupsAndTeacherView.run
   end
 end

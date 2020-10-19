@@ -17,22 +17,50 @@
 #
 
 module Types
-  GroupType = GraphQL::ObjectType.define do
-    name "Group"
+  class GroupType < ApplicationObjectType
+    graphql_name "Group"
 
-    interfaces [Interfaces::TimestampInterface]
+    alias :group :object
 
-    field :_id, !types.ID, "legacy canvas id", property: :id
-    field :name, types.String
+    implements GraphQL::Types::Relay::Node
+    implements Interfaces::TimestampInterface
+    implements Interfaces::LegacyIDInterface
 
-    connection :membersConnection, GroupMembershipType.connection_type, resolve: ->(group, _, ctx) {
-      if group.grants_right? ctx[:current_user], :read_roster
-        group.group_memberships.where(
-          workflow_state: GroupMembershipsController::ALLOWED_MEMBERSHIP_FILTER
-        )
-      else
-        nil
+    global_id_field :id
+
+    field :name, String, null: true
+
+    field :members_connection, GroupMembershipType.connection_type, null: true
+    def members_connection
+      if group.grants_right?(current_user, :read_roster)
+        members_scope
       end
-    }
+    end
+
+    field :member, GroupMembershipType, null: true do
+      argument :user_id, ID,
+        prepare: GraphQLHelpers.relay_or_legacy_id_prepare_func("User"),
+        required: true
+    end
+    def member(user_id:)
+      if group.grants_right?(current_user, :read_roster)
+        Loaders::ForeignKeyLoader.for(members_scope, :user_id).load(user_id).
+          then { |memberships| memberships.first }
+      end
+    end
+
+    field :sis_id, String, null: true
+    def sis_id
+      load_association(:root_account).then do |root_account|
+        group.sis_source_id if root_account.grants_any_right?(current_user, :read_sis, :manage_sis)
+      end
+    end
+
+    def members_scope
+      group.group_memberships.where(
+        workflow_state: GroupMembershipsController::ALLOWED_MEMBERSHIP_FILTER
+      )
+    end
+    private :members_scope
   end
 end

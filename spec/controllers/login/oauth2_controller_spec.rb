@@ -23,13 +23,6 @@ describe Login::Oauth2Controller do
   before do
     aac
     allow(Canvas::Plugin.find(:facebook)).to receive(:settings).and_return({})
-
-    # replace on just this instance. this allows the tests to look directly at
-    # response.location independent of any implementation plugins may add for
-    # this method.
-    def @controller.delegated_auth_redirect_uri(uri)
-      uri
-    end
   end
 
   describe "#new" do
@@ -39,13 +32,6 @@ describe Login::Oauth2Controller do
       expect(response.location).to match(%r{^https://www.facebook.com/dialog/oauth\?})
       expect(session[:oauth2_nonce]).to_not be_blank
     end
-
-    it "wraps redirect in delegated_auth_redirect_uri" do
-      # needs the `returns` or it returns nil and causes a 500
-      expect(@controller).to receive(:delegated_auth_redirect_uri).once.and_return('/')
-      get :new, params: {auth_type: 'facebook'}
-      expect(response).to be_redirect
-    end
   end
 
   describe "#create" do
@@ -54,7 +40,7 @@ describe Login::Oauth2Controller do
       jwt = Canvas::Security.create_jwt(aac_id: aac.global_id, nonce: 'different')
       get :create, params: {state: jwt}
       # it could be a 422, or 0 if error handling isn't enabled properly in specs
-      expect(response).to_not be_success
+      expect(response).to_not be_successful
       expect(response).to_not be_redirect
     end
 
@@ -76,7 +62,7 @@ describe Login::Oauth2Controller do
       session[:sentinel] = true
 
       get :create, params: {state: ''}
-      expect(response).not_to be_success
+      expect(response).not_to be_successful
       expect(session[:sentinel]).to eq true
     end
 

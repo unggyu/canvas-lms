@@ -25,18 +25,24 @@ describe 'Global Navigation' do
       course_with_teacher_logged_in
     end
 
+    it 'should minimize and expand the global nav when clicked' do
+      get "/"
+      primary_nav_toggle = f('#primaryNavToggle')
+      primary_nav_toggle.click
+      expect(primary_nav_toggle).to have_attribute('title', /expand/i)
+      expect(f('body')).not_to have_class("primary-nav-expanded")
+      primary_nav_toggle.click
+      expect(primary_nav_toggle).to have_attribute('title', /minimize/i)
+      expect(f('body')).to have_class("primary-nav-expanded")
+    end
+
     describe 'Profile Link' do
       it 'should show the profile tray upon clicking' do
         get "/"
-        f('#global_nav_profile_link').click
-        expect(f('[aria-label="Global navigation tray"] [aria-label="User profile picture"]')).to be_displayed
-      end
-
-      # Profile links are hardcoded, so check that something is appearing for
-      # the display_name in the tray header
-      it 'should populate the profile tray with the current user display_name' do
-        get "/"
+        # Profile links are hardcoded, so check that something is appearing for
+        # the display_name in the tray header using the displayed_username helper
         expect(displayed_username).to eq(@user.name)
+        expect(f('[aria-label="Profile tray"] [aria-label="User profile picture"]')).to be_displayed
       end
     end
 
@@ -45,7 +51,7 @@ describe 'Global Navigation' do
         get "/"
         f('#global_nav_courses_link').click
         wait_for_ajaximations
-        expect(f("[aria-label='Global navigation tray']")).to be_displayed
+        expect(f("[aria-label='Courses tray']")).to be_displayed
       end
 
       it 'should populate the courses tray when using the keyboard to open it' do
@@ -53,7 +59,7 @@ describe 'Global Navigation' do
         driver.execute_script('$("#global_nav_courses_link").focus()')
         f('#global_nav_courses_link').send_keys(:enter)
         wait_for_ajaximations
-        links = ff('[aria-label="Global navigation tray"] li a')
+        links = ff('[aria-label="Courses tray"] li a')
         expect(links.count).to eql 2
       end
     end
@@ -76,15 +82,13 @@ describe 'Global Navigation' do
         get "/"
         f('#global_nav_groups_link').click
         wait_for_ajaximations
-        links = ff('[aria-label="Global navigation tray"] li a')
+        links = ff('[aria-label="Groups tray"] li a')
         expect(links.map(&:text)).to eq(['Z Current Group', 'All Groups'])
       end
     end
 
     describe 'LTI Tools' do
       it 'should show a custom logo/link for LTI tools' do
-        Account.default.enable_feature! :lor_for_account
-        @teacher.enable_feature! :lor_for_user
         @tool = Account.default.context_external_tools.new({
           :name => "Commons",
           :domain => "canvaslms.com",
@@ -101,17 +105,6 @@ describe 'Global Navigation' do
         @tool.save!
         get "/"
         expect(f('.ic-icon-svg--lti')).to be_displayed
-      end
-    end
-    describe 'Navigation Expand/Collapse Link' do
-      it 'should collapse and expand the navigation when clicked' do
-        get "/"
-        f('#primaryNavToggle').click
-        wait_for_ajaximations
-        expect(f('body')).not_to have_class("primary-nav-expanded")
-        f('#primaryNavToggle').click
-        wait_for_ajaximations
-        expect(f('body')).to have_class("primary-nav-expanded")
       end
     end
   end

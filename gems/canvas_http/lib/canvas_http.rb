@@ -18,6 +18,8 @@
 require 'uri'
 require 'ipaddr'
 require 'resolv'
+require 'canvas_http/circuit_breaker'
+require 'logger'
 
 module CanvasHttp
   class Error < ::StandardError; end
@@ -29,8 +31,10 @@ module CanvasHttp
       @code = code
     end
   end
-  class RelativeUriError < ArgumentError; end
-  class InsecureUriError < ArgumentError; end
+  class RelativeUriError < CanvasHttp::Error; end
+  class InsecureUriError < CanvasHttp::Error; end
+  class UnresolvableUriError < CanvasHttp::Error; end
+  class CircuitBreakerError < CanvasHttp::Error; end
 
   def self.put(*args, &block)
     CanvasHttp.request(Net::HTTP::Put, *args, &block)
@@ -60,39 +64,46 @@ module CanvasHttp
   # the body having been read yet -- this allows for streaming the response
   # rather than reading it all into memory.
   #
+  # redirect_spy allows you to see redirects as they happen. it accepts one
+  # parameter, which is the redirect response.
+  #
   # Eventually it may be expanded to optionally do cert verification as well.
   def self.request(request_class, url_str, other_headers = {}, redirect_limit: 3, form_data: nil, multipart: false,
-    body: nil, content_type: nil)
+    streaming: false, body: nil, content_type: nil, redirect_spy: nil)
     last_scheme = nil
     last_host = nil
-
+    current_host = nil
+    request_cost = 0
+    logger.info("CANVAS_HTTP START REQUEST CHAIN | method: #{request_class} | url: #{url_str}")
     loop do
       raise(TooManyRedirectsError) if redirect_limit <= 0
 
       _, uri = CanvasHttp.validate_url(url_str, host: last_host, scheme: last_scheme, check_host: true) # uses the last host and scheme for relative redirects
+      current_host = uri.host
+      raise CircuitBreakerError if CircuitBreaker.tripped?(current_host)
       http = CanvasHttp.connection_for_uri(uri)
 
-      multipart_query = nil
-      if form_data && multipart
-        multipart_query, multipart_headers = Multipart::Post.new.prepare_query(form_data)
-        other_headers = other_headers.merge(multipart_headers)
-      end
-
       request = request_class.new(uri.request_uri, other_headers)
-      add_form_data(request, form_data) if form_data && !multipart
+      add_form_data(request, form_data, multipart: multipart, streaming: streaming) if form_data
       request.body = body if body
       request.content_type = content_type if content_type
 
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      args = [request]
-      args << multipart_query if multipart
-      http.request(*args) do |response|
+      logger.info("CANVAS_HTTP INITIATE REQUEST | url: #{url_str}")
+      start_time = Time.now
+      http.request(request) do |response|
+        end_time = Time.now
+        elapsed_time = (end_time - start_time) # seconds
+        request_cost += elapsed_time
         if response.is_a?(Net::HTTPRedirection) && !response.is_a?(Net::HTTPNotModified)
+          redirect_spy.call(response) if redirect_spy.is_a?(Proc)
           last_host = uri.host
           last_scheme = uri.scheme
           url_str = response['Location']
+          logger.info("CANVAS_HTTP CONSUME REDIRECT | url: #{url_str} | elapsed: #{elapsed_time} s")
           redirect_limit -= 1
         else
+          logger.info("CANVAS_HTTP RESOLVE RESPONSE | url: #{url_str} | elapsed: #{elapsed_time} s")
           if block_given?
             yield response
           else
@@ -104,10 +115,23 @@ module CanvasHttp
         end
       end
     end
+  rescue Net::ReadTimeout, Net::OpenTimeout
+    CircuitBreaker.trip_if_necessary(current_host)
+    raise
+  ensure
+    increment_cost(request_cost)
   end
 
-  def self.add_form_data(request, form_data)
-    if form_data.is_a?(String)
+  def self.add_form_data(request, form_data, multipart:, streaming:)
+    if multipart
+      if streaming
+        request.body_stream, header = Multipart::Post.new.prepare_query_stream(form_data)
+        request.content_length = request.body_stream.size
+      else
+        request.body, header = Multipart::Post.new.prepare_query(form_data)
+      end
+      request.content_type = header['Content-type']
+    elsif form_data.is_a?(String)
       request.body = form_data
       request.content_type = 'application/x-www-form-urlencoded'
     else
@@ -119,7 +143,17 @@ module CanvasHttp
   def self.validate_url(value, host: nil, scheme: nil, allowed_schemes: %w{http https}, check_host: false)
     value = value.strip
     raise ArgumentError if value.empty?
-    uri = URI.parse(value)
+    uri = nil
+    begin
+      uri = URI.parse(value)
+    rescue URI::InvalidURIError => e
+      if e.message =~ /URI must be ascii only/
+        uri = URI.parse(Addressable::URI.normalized_encode(value).chomp("/"))
+        value = uri.to_s
+      else
+        raise
+      end
+    end
     uri.host ||= host
     unless uri.scheme
       scheme ||= "http"
@@ -140,13 +174,34 @@ module CanvasHttp
 
   def self.insecure_host?(host)
     return unless filters = self.blocked_ip_filters
-    addrs = Resolv.getaddresses(host).map { |ip| ::IPAddr.new(ip) rescue nil}.compact
-    return true unless addrs.any?
-
-    filters.any? do |filter|
-      addr_range = ::IPAddr.new(filter) rescue nil
-      addr_range && addrs.any?{|addr| addr_range.include?(addr)}
+    resolved_addrs = Resolv.getaddresses(host)
+    unless resolved_addrs.any?
+      # this is actually a different condition than the host being insecure,
+      # and having separate telemetry is helpful for understanding transient failures.
+      raise UnresolvableUriError, "#{host} cannot be resolved to any address"
     end
+    ip_addrs = resolved_addrs.map do |ip|
+      ::IPAddr.new(ip)
+    rescue IPAddr::InvalidAddressError
+      # this should never happen, Resolv should only be passing back IPs, but
+      # let's make sure we can see if the impossible occurs
+      logger.warn("CANVAS_HTTP WARNING | host: #{host} | invalid_ip: #{ip}")
+      nil
+    end.compact
+    unless ip_addrs.any?
+      raise UnresolvableUriError, "#{host} resolves to only unparseable IPs..."
+    end
+
+    filters.each do |filter|
+      addr_range = ::IPAddr.new(filter)
+      ip_addrs.any? do |addr|
+        if addr_range.include?(addr)
+          logger.warn("CANVAS_HTTP WARNING insecure address | host: #{host} | insecure_address: #{addr} | filter: #{filter}")
+          return true
+        end
+      end
+    end
+    false
   end
 
   # returns a Net::HTTP connection object for the given URI object
@@ -170,8 +225,26 @@ module CanvasHttp
     @blocked_ip_filters.respond_to?(:call) ? @blocked_ip_filters.call : @blocked_ip_filters
   end
 
+  def self.logger
+    (@logger.respond_to?(:call) ? @logger.call : @logger) || default_logger
+  end
+
+  def self.default_logger
+    @_default_logger ||= Logger.new(STDOUT)
+  end
+
   class << self
-    attr_writer :open_timeout, :read_timeout, :blocked_ip_filters
+    attr_writer :open_timeout, :read_timeout, :blocked_ip_filters, :logger
+    attr_accessor :cost
+
+    def reset_cost!
+      self.cost = 0
+    end
+
+    def increment_cost(amount)
+      self.cost ||= 0
+      self.cost += amount
+    end
   end
 
   # returns a tempfile with a filename based on the uri (same extension, if

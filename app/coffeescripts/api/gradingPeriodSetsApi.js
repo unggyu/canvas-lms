@@ -17,12 +17,14 @@
 
 import $ from 'jquery'
 import _ from 'underscore'
-import I18n from 'i18n!grading_periods'
-import DateHelper from 'jsx/shared/helpers/dateHelper'
-import gradingPeriodsApi from './gradingPeriodsApi'
 import axios from 'axios'
-import Depaginate from 'jsx/shared/CheatDepaginator'
+
 import 'jquery.instructure_misc_helpers'
+import I18n from 'i18n!gradingPeriodSetsApi'
+
+import DateHelper from 'jsx/shared/helpers/dateHelper'
+import NaiveRequestDispatch from 'jsx/shared/network/NaiveRequestDispatch'
+import gradingPeriodsApi from './gradingPeriodsApi'
 
 const listUrl = () => ENV.GRADING_PERIOD_SETS_URL
 
@@ -30,7 +32,7 @@ const createUrl = () => ENV.GRADING_PERIOD_SETS_URL
 
 const updateUrl = id => $.replaceTags(ENV.GRADING_PERIOD_SET_UPDATE_URL, 'id', id)
 
-const serializeSet = (set) => {
+const serializeSet = set => {
   const gradingPeriodSetAttrs = {
     title: set.title,
     weighted: set.weighted,
@@ -52,7 +54,7 @@ const baseDeserializeSet = set => ({
   createdAt: new Date(set.created_at)
 })
 
-const gradingPeriodSetTitle = (set) => {
+const gradingPeriodSetTitle = set => {
   if (set.title && set.title.trim()) {
     return set.title.trim()
   } else {
@@ -61,36 +63,39 @@ const gradingPeriodSetTitle = (set) => {
   }
 }
 
-const deserializeSet = function (set) {
+const deserializeSet = function(set) {
   const newSet = baseDeserializeSet(set)
   newSet.enrollmentTermIDs = set.enrollment_term_ids
   return newSet
 }
 
 const deserializeSets = setGroups =>
-  _.flatten(_.map(setGroups, group =>
-    _.map(group.grading_period_sets, set => baseDeserializeSet(set))
+  _.flatten(
+    _.map(setGroups, group => _.map(group.grading_period_sets, set => baseDeserializeSet(set)))
   )
-)
 
 export default {
   deserializeSet,
 
-  list () {
-    return new Promise((resolve, reject) =>
-      Depaginate(listUrl())
+  list() {
+    return new Promise((resolve, reject) => {
+      const dispatch = new NaiveRequestDispatch()
+      /* eslint-disable promise/catch-or-return */
+      dispatch
+        .getDepaginated(listUrl())
         .then(response => resolve(deserializeSets(response)))
         .fail(error => reject(error))
-    )
+      /* eslint-enable promise/catch-or-return */
+    })
   },
 
-  create (set) {
-    return axios.post(createUrl(), serializeSet(set))
-                .then(response => deserializeSet(response.data.grading_period_set))
+  create(set) {
+    return axios
+      .post(createUrl(), serializeSet(set))
+      .then(response => deserializeSet(response.data.grading_period_set))
   },
 
-  update (set) {
-    return axios.patch(updateUrl(set.id), serializeSet(set))
-                .then(response => set)
+  update(set) {
+    return axios.patch(updateUrl(set.id), serializeSet(set)).then(response => set)
   }
 }

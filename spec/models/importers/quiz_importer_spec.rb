@@ -56,7 +56,7 @@ describe "Importers::QuizImporter" do
     data = get_import_data ['vista', 'quiz'], 'text_only_quiz_data'
     Importers::QuizImporter.import_from_migration(data, context, @migration, question_data)
     quiz = Quizzes::Quiz.where(migration_id: data[:migration_id]).first
-    expect(quiz.unpublished_question_count).to eq 2
+    expect(quiz.unpublished_question_count).to eq 1 # text-only questions don't count
     expect(quiz.quiz_questions.active.count).to eq 2
     sorted_questions = quiz.quiz_questions.active.sort_by(&:id)
     expect(sorted_questions.first.question_data[:question_text]).to eq data[:questions].first[:question_text]
@@ -187,4 +187,15 @@ describe "Importers::QuizImporter" do
     expect(quiz.lock_at).not_to be_nil
   end
 
+  it 'sets root_account_id correctly' do
+    context = course_model
+    question_data = import_example_questions context
+    data = get_import_data ['vista', 'quiz'], 'simple_quiz_data'
+    Importers::QuizImporter.import_from_migration(data, context, @migration, question_data)
+    quiz = Quizzes::Quiz.where(migration_id: data[:migration_id]).first
+
+    expect(quiz.root_account_id).not_to be_nil
+    expect(quiz.quiz_questions.first.root_account_id).to eq quiz.root_account_id
+    expect(quiz.root_account_id).to eq @course.root_account_id
+  end
 end

@@ -1,11 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders the item to update if provided 1`] = `
-<div>
+<div
+  className="UpdateItemTray-styles__root"
+>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
     padding="large medium medium"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <FormFieldGroup
       as="fieldset"
@@ -24,14 +35,16 @@ exports[`renders the item to update if provided 1`] = `
       vAlign="middle"
     >
       <TextInput
-        disabled={false}
-        inline={false}
+        display="block"
+        inputContainerRef={[Function]}
         inputRef={[Function]}
-        label="Title"
-        layout="stacked"
+        isRequired={false}
         messages={Array []}
+        onBlur={[Function]}
         onChange={[Function]}
-        readOnly={false}
+        onFocus={[Function]}
+        renderLabel={[Function]}
+        shouldNotWrap={false}
         size="medium"
         textAlign="start"
         type="text"
@@ -62,38 +75,28 @@ exports[`renders the item to update if provided 1`] = `
         timezone="Asia/Tokyo"
         value="2017-04-25T08:49:00.000Z"
       />
-      <Select
-        allowEmpty={true}
-        closeOnSelect={true}
-        editable={false}
-        emptyOption="---"
-        filter={[Function]}
-        formatSelectedOption={[Function]}
-        inputRef={[Function]}
+      <CanvasSelect
+        id="to-do-item-course-select"
         label="Course"
-        loadingText={null}
+        noOptionsLabel="---"
         onChange={[Function]}
-        optionsMaxWidth={null}
-        selectedOption={
-          Object {
-            "label": "a course",
-            "value": "1",
-          }
-        }
-        size="medium"
-        visibleOptionsCount={8}
+        value="1"
       >
-        <option
+        <CanvasSelectOption
+          id="none"
+          key="none"
           value="none"
         >
           Optional: Add Course
-        </option>
-        <option
+        </CanvasSelectOption>
+        <CanvasSelectOption
+          id="1"
+          key="1"
           value="1"
         >
           a course
-        </option>
-      </Select>
+        </CanvasSelectOption>
+      </CanvasSelect>
       <TextArea
         autoGrow={false}
         disabled={false}
@@ -104,6 +107,7 @@ exports[`renders the item to update if provided 1`] = `
         messages={Array []}
         onChange={[Function]}
         readOnly={false}
+        required={false}
         resize="none"
         size="medium"
         textareaRef={[Function]}
@@ -112,32 +116,47 @@ exports[`renders the item to update if provided 1`] = `
     </FormFieldGroup>
     <View
       as="div"
+      borderColor="default"
+      debug={false}
       display="auto"
+      focusColor="info"
+      focusPosition="offset"
+      focused={false}
       margin="small 0 0"
+      overflowX="visible"
+      overflowY="visible"
+      position="static"
+      shouldAnimateFocus={true}
       textAlign="end"
     >
       <Button
         as="button"
-        buttonRef={[Function]}
-        fluidWidth={false}
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
         margin="0 x-small 0 0"
         onClick={[Function]}
         size="medium"
+        textAlign="center"
         type="button"
         variant="light"
+        withBackground={true}
       >
         Delete
       </Button>
       <Button
         as="button"
-        buttonRef={[Function]}
+        cursor="pointer"
         disabled={false}
-        fluidWidth={false}
+        display="inline-block"
+        elementRef={[Function]}
         margin="0 0 0 x-small"
         onClick={[Function]}
         size="medium"
+        textAlign="center"
         type="button"
         variant="primary"
+        withBackground={true}
       >
         Save
       </Button>
@@ -147,11 +166,22 @@ exports[`renders the item to update if provided 1`] = `
 `;
 
 exports[`updates state when new note is passed in 1`] = `
-<div>
+<div
+  className="UpdateItemTray-styles__root"
+>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
     padding="large medium medium"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <FormFieldGroup
       as="fieldset"
@@ -170,14 +200,16 @@ exports[`updates state when new note is passed in 1`] = `
       vAlign="middle"
     >
       <TextInput
-        disabled={false}
-        inline={false}
+        display="block"
+        inputContainerRef={[Function]}
         inputRef={[Function]}
-        label="Title"
-        layout="stacked"
+        isRequired={false}
         messages={Array []}
+        onBlur={[Function]}
         onChange={[Function]}
-        readOnly={false}
+        onFocus={[Function]}
+        renderLabel={[Function]}
+        shouldNotWrap={false}
         size="medium"
         textAlign="start"
         type="text"
@@ -208,43 +240,35 @@ exports[`updates state when new note is passed in 1`] = `
         timezone="Asia/Tokyo"
         value="2017-04-28T11:00:00.000Z"
       />
-      <Select
-        allowEmpty={true}
-        closeOnSelect={true}
-        editable={false}
-        emptyOption="---"
-        filter={[Function]}
-        formatSelectedOption={[Function]}
-        inputRef={[Function]}
+      <CanvasSelect
+        id="to-do-item-course-select"
         label="Course"
-        loadingText={null}
+        noOptionsLabel="---"
         onChange={[Function]}
-        optionsMaxWidth={null}
-        selectedOption={
-          Object {
-            "label": "first course",
-            "value": "1",
-          }
-        }
-        size="medium"
-        visibleOptionsCount={8}
+        value="1"
       >
-        <option
+        <CanvasSelectOption
+          id="none"
+          key="none"
           value="none"
         >
           Optional: Add Course
-        </option>
-        <option
+        </CanvasSelectOption>
+        <CanvasSelectOption
+          id="1"
+          key="1"
           value="1"
         >
           first course
-        </option>
-        <option
+        </CanvasSelectOption>
+        <CanvasSelectOption
+          id="2"
+          key="2"
           value="2"
         >
           second course
-        </option>
-      </Select>
+        </CanvasSelectOption>
+      </CanvasSelect>
       <TextArea
         autoGrow={false}
         disabled={false}
@@ -255,6 +279,7 @@ exports[`updates state when new note is passed in 1`] = `
         messages={Array []}
         onChange={[Function]}
         readOnly={false}
+        required={false}
         resize="none"
         size="medium"
         textareaRef={[Function]}
@@ -263,32 +288,47 @@ exports[`updates state when new note is passed in 1`] = `
     </FormFieldGroup>
     <View
       as="div"
+      borderColor="default"
+      debug={false}
       display="auto"
+      focusColor="info"
+      focusPosition="offset"
+      focused={false}
       margin="small 0 0"
+      overflowX="visible"
+      overflowY="visible"
+      position="static"
+      shouldAnimateFocus={true}
       textAlign="end"
     >
       <Button
         as="button"
-        buttonRef={[Function]}
-        fluidWidth={false}
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
         margin="0 x-small 0 0"
         onClick={[Function]}
         size="medium"
+        textAlign="center"
         type="button"
         variant="light"
+        withBackground={true}
       >
         Delete
       </Button>
       <Button
         as="button"
-        buttonRef={[Function]}
+        cursor="pointer"
         disabled={false}
-        fluidWidth={false}
+        display="inline-block"
+        elementRef={[Function]}
         margin="0 0 0 x-small"
         onClick={[Function]}
         size="medium"
+        textAlign="center"
         type="button"
         variant="primary"
+        withBackground={true}
       >
         Save
       </Button>
@@ -298,11 +338,22 @@ exports[`updates state when new note is passed in 1`] = `
 `;
 
 exports[`updates state when new note is passed in 2`] = `
-<div>
+<div
+  className="UpdateItemTray-styles__root"
+>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
     padding="large medium medium"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <FormFieldGroup
       as="fieldset"
@@ -321,14 +372,16 @@ exports[`updates state when new note is passed in 2`] = `
       vAlign="middle"
     >
       <TextInput
-        disabled={false}
-        inline={false}
+        display="block"
+        inputContainerRef={[Function]}
         inputRef={[Function]}
-        label="Title"
-        layout="stacked"
+        isRequired={false}
         messages={Array []}
+        onBlur={[Function]}
         onChange={[Function]}
-        readOnly={false}
+        onFocus={[Function]}
+        renderLabel={[Function]}
+        shouldNotWrap={false}
         size="medium"
         textAlign="start"
         type="text"
@@ -359,43 +412,35 @@ exports[`updates state when new note is passed in 2`] = `
         timezone="Asia/Tokyo"
         value="2017-04-28T11:00:00.000Z"
       />
-      <Select
-        allowEmpty={true}
-        closeOnSelect={true}
-        editable={false}
-        emptyOption="---"
-        filter={[Function]}
-        formatSelectedOption={[Function]}
-        inputRef={[Function]}
+      <CanvasSelect
+        id="to-do-item-course-select"
         label="Course"
-        loadingText={null}
+        noOptionsLabel="---"
         onChange={[Function]}
-        optionsMaxWidth={null}
-        selectedOption={
-          Object {
-            "label": "second course",
-            "value": "2",
-          }
-        }
-        size="medium"
-        visibleOptionsCount={8}
+        value="2"
       >
-        <option
+        <CanvasSelectOption
+          id="none"
+          key="none"
           value="none"
         >
           Optional: Add Course
-        </option>
-        <option
+        </CanvasSelectOption>
+        <CanvasSelectOption
+          id="1"
+          key="1"
           value="1"
         >
           first course
-        </option>
-        <option
+        </CanvasSelectOption>
+        <CanvasSelectOption
+          id="2"
+          key="2"
           value="2"
         >
           second course
-        </option>
-      </Select>
+        </CanvasSelectOption>
+      </CanvasSelect>
       <TextArea
         autoGrow={false}
         disabled={false}
@@ -406,6 +451,7 @@ exports[`updates state when new note is passed in 2`] = `
         messages={Array []}
         onChange={[Function]}
         readOnly={false}
+        required={false}
         resize="none"
         size="medium"
         textareaRef={[Function]}
@@ -414,32 +460,47 @@ exports[`updates state when new note is passed in 2`] = `
     </FormFieldGroup>
     <View
       as="div"
+      borderColor="default"
+      debug={false}
       display="auto"
+      focusColor="info"
+      focusPosition="offset"
+      focused={false}
       margin="small 0 0"
+      overflowX="visible"
+      overflowY="visible"
+      position="static"
+      shouldAnimateFocus={true}
       textAlign="end"
     >
       <Button
         as="button"
-        buttonRef={[Function]}
-        fluidWidth={false}
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
         margin="0 x-small 0 0"
         onClick={[Function]}
         size="medium"
+        textAlign="center"
         type="button"
         variant="light"
+        withBackground={true}
       >
         Delete
       </Button>
       <Button
         as="button"
-        buttonRef={[Function]}
+        cursor="pointer"
         disabled={false}
-        fluidWidth={false}
+        display="inline-block"
+        elementRef={[Function]}
         margin="0 0 0 x-small"
         onClick={[Function]}
         size="medium"
+        textAlign="center"
         type="button"
         variant="primary"
+        withBackground={true}
       >
         Save
       </Button>

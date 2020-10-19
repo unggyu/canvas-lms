@@ -72,13 +72,25 @@ module BroadcastPolicies
       user_has_visibility?
     end
 
+    def should_dispatch_submission_posted?
+      return false unless assignment.course.post_policies_enabled? &&
+        submission.grade_posting_in_progress &&
+        context_sendable?
+
+      submission.reload
+      posted_recently?
+    end
+
     private
+    def context_sendable?
+      course.available? && !course.concluded?
+    end
+
     def broadcasting_grades?
-      course.available? &&
-      !course.concluded? &&
-      !assignment.muted? &&
+      context_sendable? &&
+      submission.posted? &&
       assignment.published? &&
-      submission.quiz_submission.nil? &&
+      submission.quiz_submission_id.nil? &&
       user_active_or_invited?
     end
 
@@ -109,6 +121,10 @@ module BroadcastPolicies
 
     def graded_recently?
       submission.assignment_graded_in_the_last_hour?
+    end
+
+    def posted_recently?
+      submission.posted_at.present? && submission.posted_at > 1.hour.ago
     end
 
     def user_has_visibility?

@@ -18,13 +18,13 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Simulate} from 'react-addons-test-utils'
+import {Simulate} from 'react-dom/test-utils'
 import $ from 'jquery'
 import FileRenameForm from 'jsx/files/FileRenameForm'
 
 QUnit.module('FileRenameForm', {
   setup() {
-    const props = {
+    const defaultProps = {
       fileOptions: {
         file: {
           id: 999,
@@ -33,61 +33,81 @@ QUnit.module('FileRenameForm', {
         name: 'options_name.txt'
       }
     }
-    this.form = ReactDOM.render(
-      React.createFactory(FileRenameForm)(props),
-      $('<div>').appendTo('#fixtures')[0]
-    )
+    this.renderForm = props => {
+      this.form = ReactDOM.render(
+        <FileRenameForm {...defaultProps} {...props} />,
+        $('<div>').appendTo('#fixtures')[0]
+      )
+    }
   },
   teardown() {
-    ReactDOM.unmountComponentAtNode(this.form.getDOMNode().parentNode)
+    ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this.form).parentNode)
     $('#fixtures').empty()
   }
 })
 
 test('switches to editing file name state with button click', function() {
-  Simulate.click(this.form.refs.renameBtn.getDOMNode())
+  this.renderForm()
+  Simulate.click(this.form.refs.renameBtn)
   ok(this.form.state.isEditing)
-  ok(this.form.refs.newName.getDOMNode())
+  ok(this.form.refs.newName)
 })
 
 test('isEditing displays options name by default', function() {
-  Simulate.click(this.form.refs.renameBtn.getDOMNode())
+  this.renderForm()
+  Simulate.click(this.form.refs.renameBtn)
   ok(this.form.state.isEditing)
-  equal(this.form.refs.newName.getDOMNode().value, 'options_name.txt')
+  equal(this.form.refs.newName.value, 'options_name.txt')
 })
 
 test('isEditing displays file name when no options name exists', function() {
-  this.form.setProps({fileOptions: {file: {name: 'file_name.md'}}})
-  Simulate.click(this.form.refs.renameBtn.getDOMNode())
+  this.renderForm({fileOptions: {file: {name: 'file_name.md'}}})
+  Simulate.click(this.form.refs.renameBtn)
   ok(this.form.state.isEditing)
-  equal(this.form.refs.newName.getDOMNode().value, 'file_name.md')
+  equal(this.form.refs.newName.value, 'file_name.md')
 })
 
 test('can go back from isEditing to initial view with button click', function() {
-  Simulate.click(this.form.refs.renameBtn.getDOMNode())
+  this.renderForm()
+  Simulate.click(this.form.refs.renameBtn)
   ok(this.form.state.isEditing)
-  ok(this.form.refs.newName.getDOMNode())
-  Simulate.click(this.form.refs.backBtn.getDOMNode())
+  ok(this.form.refs.newName)
+  Simulate.click(this.form.refs.backBtn)
   ok(!this.form.state.isEditing)
-  ok(this.form.refs.replaceBtn.getDOMNode())
+  ok(this.form.refs.replaceBtn)
 })
 
 test('calls passed in props method to resolve conflict', function() {
   expect(2)
-  this.form.setProps({
+  this.renderForm({
     fileOptions: {file: {name: 'file_name.md'}},
     onNameConflictResolved(options) {
       ok(options.name)
     }
   })
-  Simulate.click(this.form.refs.renameBtn.getDOMNode())
+  Simulate.click(this.form.refs.renameBtn)
   ok(this.form.state.isEditing)
-  Simulate.click(this.form.refs.commitChangeBtn.getDOMNode())
+  Simulate.click(this.form.refs.commitChangeBtn)
+})
+
+test('onNameConflictResolved preserves expandZip option when skipping', function() {
+  expect(1)
+  this.renderForm({
+    fileOptions: {
+      file: {name: 'file_name.md'},
+      expandZip: 'true'
+    },
+    onNameConflictResolved(options) {
+      equal(options.expandZip, 'true')
+    },
+    allowSkip: true
+  })
+  Simulate.click(this.form.refs.skipBtn)
 })
 
 test('onNameConflictResolved preserves expandZip option when renaming', function() {
   expect(2)
-  this.form.setProps({
+  this.renderForm({
     fileOptions: {
       file: {name: 'file_name.md'},
       expandZip: 'true'
@@ -96,14 +116,14 @@ test('onNameConflictResolved preserves expandZip option when renaming', function
       equal(options.expandZip, 'true')
     }
   })
-  Simulate.click(this.form.refs.renameBtn.getDOMNode())
+  Simulate.click(this.form.refs.renameBtn)
   ok(this.form.state.isEditing)
-  Simulate.click(this.form.refs.commitChangeBtn.getDOMNode())
+  Simulate.click(this.form.refs.commitChangeBtn)
 })
 
 test('onNameConflictResolved preserves expandZip option when replacing', function() {
   expect(1)
-  this.form.setProps({
+  this.renderForm({
     fileOptions: {
       file: {name: 'file_name.md'},
       expandZip: 'true'
@@ -112,5 +132,53 @@ test('onNameConflictResolved preserves expandZip option when replacing', functio
       equal(options.expandZip, 'true')
     }
   })
-  Simulate.click(this.form.refs.replaceBtn.getDOMNode())
+  Simulate.click(this.form.refs.replaceBtn)
+})
+
+test('renders default rename file message', function() {
+  this.renderForm()
+  equal(
+    this.form.refs.bodyContent.textContent,
+    'An item named "options_name.txt" already exists in this location. Do you want to replace the existing file?'
+  )
+})
+
+test('override rename file message', function() {
+  this.renderForm({
+    onRenameFileMessage: nameToUse => `rename ${nameToUse} please`
+  })
+  equal(this.form.refs.bodyContent.textContent, 'rename options_name.txt please')
+})
+
+test('renders default lock file message', function() {
+  this.renderForm({
+    fileOptions: {
+      file: {
+        id: 999,
+        name: 'original_name.txt'
+      },
+      name: 'options_name.txt',
+      cannotOverwrite: true
+    }
+  })
+  ok(
+    this.form.refs.bodyContent.textContent.match(
+      /A locked item named "options_name.txt" already exists in this location. Please enter a new name./
+    )
+  )
+})
+
+test('override lock file message', function() {
+  this.renderForm({
+    fileOptions: {
+      file: {
+        id: 999,
+        name: 'original_name.txt'
+      },
+      name: 'options_name.txt',
+      cannotOverwrite: true
+    },
+    onLockFileMessage: nameToUse => `rename locked file ${nameToUse} please`
+  })
+  ok(this.form.refs.bodyContent.textContent.match(/rename locked file options_name.txt please/))
 })

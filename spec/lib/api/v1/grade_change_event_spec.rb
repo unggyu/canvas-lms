@@ -80,14 +80,14 @@ describe Api::V1::GradeChangeEvent do
 
     @assignment = @course.assignments.create!(:title => 'Assignment', :points_possible => 10)
     @submission = @assignment.grade_student(@student, grade: 8, grader: @teacher).first
-    @events << Auditors::GradeChange.record(@submission)
+    @events << Auditors::GradeChange.record(submission: @submission)
 
     @submission = @assignment.grade_student(@student, grade: 7, grader: @teacher).first
-    @events << Auditors::GradeChange.record(@submission)
+    @events << Auditors::GradeChange.record(submission: @submission)
     @previous_grade = @submission.grade
 
     @submission = @assignment.grade_student(@student, grade: 6, grader: @teacher, graded_anonymously: true).first
-    @event = Auditors::GradeChange.record(@submission)
+    @event = Auditors::GradeChange.record(submission: @submission)
     @events << @event
   end
 
@@ -107,14 +107,19 @@ describe Api::V1::GradeChangeEvent do
     expect(event[:points_possible_after]).to eq @event.points_possible_after
     expect(event[:links][:assignment]).to eq Shard.relative_id_for(@assignment, Shard.current, Shard.current)
     expect(event[:links][:course]).to eq Shard.relative_id_for(@course, Shard.current, Shard.current)
-    expect(event[:links][:student]).to eq Shard.relative_id_for(@student, Shard.current, Shard.current)
-    expect(event[:links][:grader]).to eq Shard.relative_id_for(@teacher, Shard.current, Shard.current)
+    expect(event[:links][:student]).to eq Shard.relative_id_for(@student, Shard.current, Shard.current).to_s
+    expect(event[:links][:grader]).to eq Shard.relative_id_for(@teacher, Shard.current, Shard.current).to_s
     expect(event[:links][:page_view]).to eq @page_view.id
+  end
+
+  it "does not include a value for 'course_override_grade'" do
+    event = subject.grade_change_event_json(@event, @student, @session)
+    expect(event).not_to have_key(:course_override_grade)
   end
 
   it "formats excused submissions" do
     @excused = @assignment.grade_student(@student, grader: @teacher, excused: true).first
-    @event = Auditors::GradeChange.record(@excused)
+    @event = Auditors::GradeChange.record(submission: @excused)
 
     event = subject.grade_change_event_json(@event, @student, @session)
     expect(event[:grade_before]).to eq @submission.grade
@@ -125,9 +130,9 @@ describe Api::V1::GradeChangeEvent do
 
   it "formats formerly excused submissions" do
     @excused = @assignment.grade_student(@student, grader: @teacher, excused: true).first
-    Auditors::GradeChange.record(@excused)
+    Auditors::GradeChange.record(submission: @excused)
     @unexcused = @assignment.grade_student(@student, grader: @teacher, excused: false).first
-    @event = Auditors::GradeChange.record(@unexcused)
+    @event = Auditors::GradeChange.record(submission: @unexcused)
 
     event = subject.grade_change_event_json(@event, @student, @session)
     expect(event[:grade_before]).to eq nil
@@ -176,5 +181,29 @@ describe Api::V1::GradeChangeEvent do
     expect(linked[:courses].size).to be_zero
     expect(linked[:users].size).to be_zero
     expect(linked[:page_views].size).to be_zero
+  end
+
+  describe "override grade change events" do
+    let(:override_event) do
+      override_grade_change = Auditors::GradeChange::OverrideGradeChange.new(
+        grader: @teacher,
+        old_grade: nil,
+        old_score: nil,
+        score: @course.student_enrollments.first.find_score
+      )
+      Auditors::GradeChange.record(override_grade_change: override_grade_change)
+    end
+
+    let(:override_event_json) do
+      subject.grade_change_events_compound_json([override_event], @teacher, @session)
+    end
+
+    it "does not link to an assignment" do
+      expect(override_event_json.dig(:events, 0, :links)).not_to have_key(:assignment)
+    end
+
+    it "includes true as the value of 'course_override_grade'" do
+      expect(override_event_json.dig(:events, 0, :course_override_grade)).to be true
+    end
   end
 end

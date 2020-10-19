@@ -22,7 +22,7 @@ module Api::V1::Section
 
   def section_json(section, user, session, includes, options = {})
     res = section.as_json(:include_root => false,
-                          :only => %w(id name course_id nonxlist_course_id start_at end_at restrict_enrollments_to_section_dates))
+                          :only => %w(id name course_id nonxlist_course_id start_at end_at restrict_enrollments_to_section_dates created_at))
     if options[:allow_sis_ids] || section.course.grants_any_right?(user, :read_sis, :manage_sis)
       res['sis_section_id'] = section.sis_source_id
       res['sis_course_id'] = section.course.sis_source_id
@@ -46,7 +46,7 @@ module Api::V1::Section
     end
 
     if includes.include?('user_count')
-      res['user_count'] = section.enrollments.not_fake.active_or_pending_by_date_ignoring_access.count
+      res['user_count'] = Shackles.activate(:slave) { section.enrollments.not_fake.active_or_pending_by_date_ignoring_access.count }
     end
 
     res

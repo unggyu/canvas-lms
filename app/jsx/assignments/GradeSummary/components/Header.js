@@ -18,16 +18,17 @@
 
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
-import {bool, func, oneOf, shape, string} from 'prop-types'
-import Alert from '@instructure/ui-alerts/lib/components/Alert'
-import Heading from '@instructure/ui-elements/lib/components/Heading'
-import Text from '@instructure/ui-elements/lib/components/Text'
-import View from '@instructure/ui-layout/lib/components/View'
+import {arrayOf, func, oneOf, shape, string} from 'prop-types'
+import {Alert} from '@instructure/ui-alerts'
+import {Flex} from '@instructure/ui-layout'
+import {Heading, Text} from '@instructure/ui-elements'
+
 import I18n from 'i18n!assignment_grade_summary'
 
 import * as AssignmentActions from '../assignment/AssignmentActions'
-import DisplayToStudentsButton from './DisplayToStudentsButton'
-import PostButton from './PostButton'
+import GradersTable from './GradersTable'
+import PostToStudentsButton from './PostToStudentsButton'
+import ReleaseButton from './ReleaseButton'
 
 /* eslint-disable no-alert */
 
@@ -40,38 +41,34 @@ class Header extends Component {
     assignment: shape({
       title: string.isRequired
     }).isRequired,
-    publishGrades: func.isRequired,
-    publishGradesStatus: oneOf(enumeratedStatuses(AssignmentActions)),
-    showNoGradersMessage: bool.isRequired,
+    graders: arrayOf(
+      shape({
+        graderName: string,
+        graderId: string.isRequired
+      })
+    ).isRequired,
+    releaseGrades: func.isRequired,
+    releaseGradesStatus: oneOf(enumeratedStatuses(AssignmentActions)),
     unmuteAssignment: func.isRequired,
     unmuteAssignmentStatus: oneOf(enumeratedStatuses(AssignmentActions))
   }
 
   static defaultProps = {
-    publishGradesStatus: null,
+    releaseGradesStatus: null,
     unmuteAssignmentStatus: null
   }
 
-  constructor(props) {
-    super(props)
-
-    this.handlePublishClick = this.handlePublishClick.bind(this)
-    this.handleUnmuteClick = this.handleUnmuteClick.bind(this)
-  }
-
-  handlePublishClick() {
+  handleReleaseClick = () => {
     const message = I18n.t(
       'Are you sure you want to do this? It cannot be undone and will override existing grades in the gradebook.'
     )
     if (window.confirm(message)) {
-      this.props.publishGrades()
+      this.props.releaseGrades()
     }
   }
 
-  handleUnmuteClick() {
-    const message = I18n.t(
-      'Are you sure you want to display grades for this assignment to students?'
-    )
+  handleUnmuteClick = () => {
+    const message = I18n.t('Are you sure you want to post grades for this assignment to students?')
     if (window.confirm(message)) {
       this.props.unmuteAssignment()
     }
@@ -83,15 +80,7 @@ class Header extends Component {
         {this.props.assignment.gradesPublished && (
           <Alert margin="0 0 medium 0" variant="info">
             <Text weight="bold">{I18n.t('Attention!')}</Text>{' '}
-            {I18n.t('Grades cannot be modified from this page as they have already been posted.')}
-          </Alert>
-        )}
-
-        {this.props.showNoGradersMessage && (
-          <Alert margin="0 0 medium 0" variant="warning">
-            {I18n.t(
-              'Moderation is unable to occur at this time due to grades not being submitted.'
-            )}
+            {I18n.t('Grades cannot be modified from this page as they have already been released.')}
           </Alert>
         )}
 
@@ -101,40 +90,54 @@ class Header extends Component {
 
         <Text size="x-large">{this.props.assignment.title}</Text>
 
-        <View as="div" margin="large 0 0 0" textAlign="end">
-          <PostButton
-            gradesPublished={this.props.assignment.gradesPublished}
-            margin="0 x-small 0 0"
-            onClick={this.handlePublishClick}
-            publishGradesStatus={this.props.publishGradesStatus}
-          />
+        <Flex as="div" margin="large 0 0 0">
+          {this.props.graders.length > 0 && (
+            <Flex.Item as="div" flex="1" grow>
+              <GradersTable />
+            </Flex.Item>
+          )}
 
-          <DisplayToStudentsButton
-            assignment={this.props.assignment}
-            onClick={this.handleUnmuteClick}
-            unmuteAssignmentStatus={this.props.unmuteAssignmentStatus}
-          />
-        </View>
+          <Flex.Item align="end" as="div" flex="2" grow>
+            <Flex as="div" justifyItems="end">
+              <Flex.Item>
+                <ReleaseButton
+                  gradesReleased={this.props.assignment.gradesPublished}
+                  margin="0 x-small 0 0"
+                  onClick={this.handleReleaseClick}
+                  releaseGradesStatus={this.props.releaseGradesStatus}
+                />
+              </Flex.Item>
+
+              <Flex.Item>
+                <PostToStudentsButton
+                  assignment={this.props.assignment}
+                  onClick={this.handleUnmuteClick}
+                  unmuteAssignmentStatus={this.props.unmuteAssignmentStatus}
+                />
+              </Flex.Item>
+            </Flex>
+          </Flex.Item>
+        </Flex>
       </header>
     )
   }
 }
 
 function mapStateToProps(state) {
-  const {assignment, publishGradesStatus, unmuteAssignmentStatus} = state.assignment
+  const {assignment, releaseGradesStatus, unmuteAssignmentStatus} = state.assignment
 
   return {
     assignment,
-    publishGradesStatus,
-    showNoGradersMessage: !assignment.gradesPublished && state.context.graders.length === 0,
+    graders: state.context.graders,
+    releaseGradesStatus,
     unmuteAssignmentStatus
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    publishGrades() {
-      dispatch(AssignmentActions.publishGrades())
+    releaseGrades() {
+      dispatch(AssignmentActions.releaseGrades())
     },
 
     unmuteAssignment() {
@@ -147,3 +150,4 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(Header)
+/* eslint-enable no-alert */

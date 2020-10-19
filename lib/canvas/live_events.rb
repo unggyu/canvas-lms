@@ -17,6 +17,7 @@
 
 module Canvas::LiveEvents
   def self.post_event_stringified(event_name, payload, context = nil)
+    payload.compact! if LiveEvents.get_context&.dig(:compact_live_events)&.present?
     StringifyIds.recursively_stringify_ids(payload)
     StringifyIds.recursively_stringify_ids(context)
     LiveEvents.post_event(
@@ -42,6 +43,21 @@ module Canvas::LiveEvents
       })
     end
     ctx
+  end
+
+  def self.conversation_created(conversation)
+    post_event_stringified('conversation_created', {
+      conversation_id: conversation.id,
+      updated_at: conversation.updated_at
+    })
+  end
+
+  def self.conversation_forwarded(conversation)
+    post_event_stringified('conversation_forwarded', {
+      conversation_id: conversation.id,
+      updated_at: conversation.updated_at
+      },
+      amended_context(nil))
   end
 
   def self.get_course_data(course)
@@ -72,29 +88,60 @@ module Canvas::LiveEvents
     })
   end
 
+  def self.conversation_message_created(conversation_message)
+    post_event_stringified('conversation_message_created', {
+      author_id: conversation_message.author_id,
+      conversation_id: conversation_message.conversation_id,
+      created_at: conversation_message.created_at,
+      message_id: conversation_message.id
+    })
+  end
+
   def self.discussion_entry_created(entry)
+    post_event_stringified('discussion_entry_created', get_discussion_entry_data(entry))
+  end
+
+  def self.discussion_entry_submitted(entry, assignment_id, submission_id)
+    payload = get_discussion_entry_data(entry)
+    payload[:assignment_id] = assignment_id unless assignment_id.nil?
+    payload[:submission_id] = submission_id unless submission_id.nil?
+    post_event_stringified('discussion_entry_submitted', payload)
+  end
+
+  def self.get_discussion_entry_data(entry)
     payload = {
-      discussion_entry_id: entry.global_id,
-      discussion_topic_id: entry.global_discussion_topic_id,
+      user_id:  entry.user_id,
+      created_at: entry.created_at,
+      discussion_entry_id: entry.id,
+      discussion_topic_id: entry.discussion_topic_id,
       text: LiveEvents.truncate(entry.message)
     }
 
-    if entry.parent_id
-      payload.merge!({
-        parent_discussion_entry_id: entry.global_parent_id
-      })
-    end
-
-    post_event_stringified('discussion_entry_created', payload)
+    payload[:parent_discussion_entry_id] = entry.parent_id if entry.parent_id
+    payload
   end
 
   def self.discussion_topic_created(topic)
-    post_event_stringified('discussion_topic_created', {
+    post_event_stringified('discussion_topic_created', get_discussion_topic_data(topic))
+  end
+
+  def self.discussion_topic_updated(topic)
+    post_event_stringified('discussion_topic_updated', get_discussion_topic_data(topic))
+  end
+
+  def self.get_discussion_topic_data(topic)
+    {
       discussion_topic_id: topic.global_id,
       is_announcement: topic.is_announcement,
       title: LiveEvents.truncate(topic.title),
-      body: LiveEvents.truncate(topic.message)
-    })
+      body: LiveEvents.truncate(topic.message),
+      assignment_id: topic.assignment_id,
+      context_id: topic.context_id,
+      context_type: topic.context_type,
+      workflow_state: topic.workflow_state,
+      lock_at: topic.lock_at,
+      updated_at: topic.updated_at
+    }
   end
 
   def self.account_notification_created(notification)
@@ -170,10 +217,12 @@ module Canvas::LiveEvents
   end
 
   def self.get_assignment_data(assignment)
-    {
+    event = {
       assignment_id: assignment.global_id,
       context_id: assignment.global_context_id,
+      context_uuid: assignment.context.uuid,
       context_type: assignment.context_type,
+      assignment_group_id: assignment.global_assignment_group_id,
       workflow_state: assignment.workflow_state,
       title: LiveEvents.truncate(assignment.title),
       description: LiveEvents.truncate(assignment.description),
@@ -184,8 +233,23 @@ module Canvas::LiveEvents
       points_possible: assignment.points_possible,
       lti_assignment_id: assignment.lti_context_id,
       lti_resource_link_id: assignment.lti_resource_link_id,
-      lti_resource_link_id_duplicated_from: assignment.duplicate_of&.lti_resource_link_id
+      lti_resource_link_id_duplicated_from: assignment.duplicate_of&.lti_resource_link_id,
+      submission_types: assignment.submission_types
     }
+    actl = assignment.assignment_configuration_tool_lookups.take
+    domain = assignment.root_account&.domain(ApplicationController.test_cluster_name)
+    event[:domain] = domain if domain
+    if actl
+      if (tool_proxy = Lti::ToolProxy.proxies_in_order_by_codes(
+        context: assignment.course,
+        vendor_code: actl.tool_vendor_code,
+        product_code: actl.tool_product_code,
+        resource_type_code: actl.tool_resource_type_code
+      ).first)
+        event[:associated_integration_id] = [actl.tool_vendor_code, actl.tool_product_code, tool_proxy.event_endpoint].join('_')
+      end
+    end
+    event
   end
 
   def self.assignment_created(assignment)
@@ -196,8 +260,70 @@ module Canvas::LiveEvents
     post_event_stringified('assignment_updated', get_assignment_data(assignment))
   end
 
-  def self.get_submission_data(submission)
+  def self.assignment_group_created(assignment_group)
+    post_event_stringified('assignment_group_created', get_assignment_group_data(assignment_group))
+  end
+
+  def self.assignment_group_updated(assignment_group)
+    post_event_stringified('assignment_group_updated', get_assignment_group_data(assignment_group))
+  end
+
+  def self.get_assignment_group_data(assignment_group)
     {
+      assignment_group_id: assignment_group.id,
+      context_id: assignment_group.context_id,
+      context_type: assignment_group.context_type,
+      name: assignment_group.name,
+      position: assignment_group.position,
+      group_weight: assignment_group.group_weight,
+      sis_source_id: assignment_group.sis_source_id,
+      integration_data: assignment_group.integration_data,
+      rules: assignment_group.rules,
+      workflow_state: assignment_group.workflow_state
+    }
+  end
+
+  def self.assignments_bulk_updated(assignment_ids)
+    Assignment.where(:id => assignment_ids).each{|a| assignment_updated(a)}
+  end
+
+  def self.submissions_bulk_updated(submissions)
+    Submission.where(id: submissions).preload(:assignment).find_each { |submission| submission_updated(submission) }
+  end
+
+  def self.get_assignment_override_data(override)
+    data_hash = {
+      assignment_override_id: override.id,
+      assignment_id: override.assignment_id,
+      due_at: override.due_at,
+      all_day: override.all_day,
+      all_day_date: override.all_day_date,
+      unlock_at: override.unlock_at,
+      lock_at: override.lock_at,
+      type: override.set_type,
+      workflow_state: override.workflow_state,
+    }
+
+    case override.set_type
+    when 'CourseSection'
+      data_hash[:course_section_id] = override.set_id
+    when 'Group'
+      data_hash[:group_id] = override.set_id
+    end
+
+    data_hash
+  end
+
+  def self.assignment_override_created(override)
+    post_event_stringified('assignment_override_created', get_assignment_override_data(override))
+  end
+
+  def self.assignment_override_updated(override)
+    post_event_stringified('assignment_override_updated', get_assignment_override_data(override))
+  end
+
+  def self.get_submission_data(submission)
+    event = {
       submission_id: submission.global_id,
       assignment_id: submission.global_assignment_id,
       user_id: submission.global_user_id,
@@ -211,9 +337,28 @@ module Canvas::LiveEvents
       body: LiveEvents.truncate(submission.body),
       url: submission.url,
       attempt: submission.attempt,
+      late: submission.late?,
+      missing: submission.missing?,
       lti_assignment_id: submission.assignment.lti_context_id,
-      group_id: submission.group_id
+      group_id: submission.group_id,
+      posted_at: submission.posted_at,
     }
+    actl = submission.assignment.assignment_configuration_tool_lookups.take
+    if actl
+      if (tool_proxy = Lti::ToolProxy.proxies_in_order_by_codes(
+        context: submission.course,
+        vendor_code: actl.tool_vendor_code,
+        product_code: actl.tool_product_code,
+        resource_type_code: actl.tool_resource_type_code
+      ).first)
+        event[:associated_integration_id] = [actl.tool_vendor_code, actl.tool_product_code, tool_proxy.event_endpoint].join('_')
+      end
+    end
+    event
+  end
+
+  def self.submission_event(event_type, submission)
+    post_event_stringified(event_type, get_submission_data(submission), amended_context(submission.context))
   end
 
   def self.get_attachment_data(attachment)
@@ -233,15 +378,27 @@ module Canvas::LiveEvents
   end
 
   def self.submission_created(submission)
-    post_event_stringified('submission_created', get_submission_data(submission))
+    submission_event('submission_created', submission)
   end
 
   def self.submission_updated(submission)
-    post_event_stringified('submission_updated', get_submission_data(submission))
+    submission_event('submission_updated', submission)
+  end
+
+  def self.submission_comment_created(comment)
+    payload = {
+      submission_comment_id: comment.id,
+      submission_id: comment.submission_id,
+      user_id: comment.author_id,
+      created_at: comment.created_at,
+      attachment_ids: comment.attachment_ids.blank? ? [] : comment.attachment_ids.split(','),
+      body: LiveEvents.truncate(comment.comment)
+    }
+    post_event_stringified('submission_comment_created', payload)
   end
 
   def self.plagiarism_resubmit(submission)
-    post_event_stringified('plagiarism_resubmit', get_submission_data(submission))
+    submission_event('plagiarism_resubmit', submission)
   end
 
   def self.get_user_data(user)
@@ -252,7 +409,9 @@ module Canvas::LiveEvents
       short_name: user.short_name,
       workflow_state: user.workflow_state,
       created_at: user.created_at,
-      updated_at: user.updated_at
+      updated_at: user.updated_at,
+      user_login: user.primary_pseudonym&.unique_id,
+      user_sis_id: user.primary_pseudonym&.sis_user_id
     }
   end
 
@@ -317,7 +476,7 @@ module Canvas::LiveEvents
       account_uuid: assoc.account.uuid,
       created_at: assoc.created_at,
       updated_at: assoc.updated_at,
-      is_admin: !(assoc.account.root_account.all_account_users_for(assoc.user).empty?),
+      is_admin: !(assoc.account.root_account.cached_all_account_users_for(assoc.user).empty?),
     })
   end
 
@@ -327,6 +486,7 @@ module Canvas::LiveEvents
     ctx[:user_login] = pseudonym.unique_id
     ctx[:user_account_id] = pseudonym.account.global_id
     ctx[:user_sis_id] = pseudonym.sis_user_id
+    ctx[:session_id] = session[:session_id] if session[:session_id]
     post_event_stringified('logged_in', {
       redirect_url: session[:return_to]
     }, ctx)
@@ -400,11 +560,14 @@ module Canvas::LiveEvents
       grader_id = submission.global_grader_id
     end
 
-    sis_pseudonym = SisPseudonym.for(submission.user, submission.assignment.root_account, type: :trusted, require_sis: false)
+    sis_pseudonym = Shackles.activate(:slave) do
+      SisPseudonym.for(submission.user, submission.assignment.context, type: :trusted, require_sis: false)
+    end
 
     post_event_stringified('grade_change', {
       submission_id: submission.global_id,
       assignment_id: submission.global_assignment_id,
+      assignment_name: submission.assignment.name,
       grade: submission.grade,
       old_grade: old_submission.try(:grade),
       score: submission.score,
@@ -416,11 +579,11 @@ module Canvas::LiveEvents
       student_sis_id: sis_pseudonym&.sis_user_id,
       user_id: submission.global_user_id,
       grading_complete: submission.graded?,
-      muted: submission.muted_assignment?
+      muted: !submission.posted?
     }, amended_context(submission.assignment.context))
   end
 
-  def self.asset_access(asset, category, role, level)
+  def self.asset_access(asset, category, role, level, context: nil, context_membership: nil)
     asset_subtype = nil
     if asset.is_a?(Array)
       asset_subtype = asset[0]
@@ -429,14 +592,27 @@ module Canvas::LiveEvents
       asset_obj = asset
     end
 
-    post_event_stringified('asset_accessed', {
-      asset_type: asset_obj.class.reflection_type_name,
-      asset_id: asset_obj.global_id,
-      asset_subtype: asset_subtype,
-      category: category,
-      role: role,
-      level: level
-    })
+    enrollment_data = {}
+    if context_membership&.is_a?(Enrollment)
+      enrollment_data = {
+        enrollment_id: context_membership.id,
+        section_id: context_membership.course_section_id
+      }
+    end
+
+    post_event_stringified(
+      'asset_accessed',
+      {
+        asset_name: asset_obj.try(:name) || asset_obj.try(:title),
+        asset_type: asset_obj.class.reflection_type_name,
+        asset_id: asset_obj.global_id,
+        asset_subtype: asset_subtype,
+        category: category,
+        role: role,
+        level: level
+      }.merge(LiveEvents::EventSerializerProvider.serialize(asset_obj)).merge(enrollment_data),
+      amended_context(context)
+    )
   end
 
   def self.quiz_export_complete(content_export)
@@ -456,7 +632,7 @@ module Canvas::LiveEvents
     context = content_migration.context
     import_quizzes_next =
       content_migration.migration_settings&.[](:import_quizzes_next) == true
-    {
+    payload = {
       content_migration_id: content_migration.global_id,
       context_id: context.global_id,
       context_type: context.class.to_s,
@@ -464,6 +640,12 @@ module Canvas::LiveEvents
       context_uuid: context.uuid,
       import_quizzes_next: import_quizzes_next
     }
+
+    if context.respond_to?(:root_account)
+      payload[:domain] = context.root_account&.domain(ApplicationController.test_cluster_name)
+    end
+
+    payload
   end
 
   def self.course_section_created(section)
@@ -535,6 +717,194 @@ module Canvas::LiveEvents
       context_type: context_module_item.context_type,
       position: context_module_item.position,
       workflow_state: context_module_item.workflow_state
+    }
+  end
+
+  def self.course_completed(context_module_progression)
+    post_event_stringified('course_completed', get_course_completed_data(context_module_progression.context_module.course, context_module_progression.user))
+  end
+
+  def self.course_progress(context_module_progression)
+    post_event_stringified('course_progress', get_course_completed_data(context_module_progression.context_module.course, context_module_progression.user))
+  end
+
+  def self.get_course_completed_data(course, user)
+    {
+      progress: CourseProgress.new(course, user, read_only: true).to_json,
+      user: user.slice(%i[id name email]),
+      course: course.slice(%i[id name account_id sis_source_id])
+    }
+  end
+
+  def self.get_learning_outcome_result_data(result)
+    {
+      learning_outcome_id: result.learning_outcome_id,
+      mastery: result.mastery,
+      score: result.score,
+      created_at: result.created_at,
+      attempt: result.attempt,
+      possible: result.possible,
+      original_score: result.original_score,
+      original_possible: result.original_possible,
+      original_mastery: result.original_mastery,
+      assessed_at: result.assessed_at,
+      title: result.title,
+      percent: result.percent
+    }
+  end
+
+  def self.learning_outcome_result_updated(result)
+    post_event_stringified('learning_outcome_result_updated', get_learning_outcome_result_data(result).merge(updated_at: result.updated_at))
+  end
+
+  def self.learning_outcome_result_created(result)
+    post_event_stringified('learning_outcome_result_created', get_learning_outcome_result_data(result))
+  end
+
+  def self.get_learning_outcome_data(outcome)
+    {
+      learning_outcome_id: outcome.id,
+      context_type: outcome.context_type,
+      context_id: outcome.context_id,
+      display_name: outcome.display_name,
+      short_description: outcome.short_description,
+      description: outcome.description,
+      vendor_guid: outcome.vendor_guid,
+      calculation_method: outcome.calculation_method,
+      calculation_int: outcome.calculation_int,
+      rubric_criterion: outcome.rubric_criterion,
+      title: outcome.title,
+      workflow_state: outcome.workflow_state
+    }
+  end
+
+  def self.learning_outcome_updated(outcome)
+    post_event_stringified('learning_outcome_updated', get_learning_outcome_data(outcome).merge(updated_at: outcome.updated_at))
+  end
+
+  def self.learning_outcome_created(outcome)
+    post_event_stringified('learning_outcome_created', get_learning_outcome_data(outcome))
+  end
+
+  def self.get_learning_outcome_group_data(group)
+    {
+      learning_outcome_group_id: group.id,
+      context_id: group.context_id,
+      context_type: group.context_type,
+      title: group.title,
+      description: group.description,
+      vendor_guid: group.vendor_guid,
+      parent_outcome_group_id: group.learning_outcome_group_id,
+      workflow_state: group.workflow_state
+    }
+  end
+
+  def self.learning_outcome_group_updated(group)
+    post_event_stringified('learning_outcome_group_updated', get_learning_outcome_group_data(group).merge(updated_at: group.updated_at))
+  end
+
+  def self.learning_outcome_group_created(group)
+    post_event_stringified('learning_outcome_group_created', get_learning_outcome_group_data(group))
+  end
+
+  def self.get_learning_outcome_link_data(link)
+    {
+      learning_outcome_link_id: link.id,
+      learning_outcome_id: link.content_id,
+      learning_outcome_group_id: link.associated_asset_id,
+      context_id: link.context_id,
+      context_type: link.context_type,
+      workflow_state: link.workflow_state
+    }
+  end
+
+  def self.learning_outcome_link_created(link)
+    post_event_stringified('learning_outcome_link_created', get_learning_outcome_link_data(link))
+  end
+
+  def self.learning_outcome_link_updated(link)
+    post_event_stringified('learning_outcome_link_updated', get_learning_outcome_link_data(link).merge(updated_at: link.updated_at))
+  end
+
+  def self.grade_override(score, old_score, enrollment, course)
+    return unless score.course_score && score.override_score != old_score
+    data = {
+      score_id: score.id,
+      enrollment_id: score.enrollment_id,
+      user_id: enrollment.user_id,
+      course_id: enrollment.course_id,
+      grading_period_id: score.grading_period_id,
+      override_score: score.override_score,
+      old_override_score: old_score,
+      updated_at: score.updated_at,
+    }
+    post_event_stringified('grade_override', data, amended_context(course))
+  end
+
+  def self.course_grade_change(score, old_score_values, enrollment)
+    data = {
+      user_id: enrollment.user_id,
+      course_id: enrollment.course_id,
+      workflow_state: score.workflow_state,
+      created_at: score.created_at,
+      updated_at: score.updated_at,
+      current_score: score.current_score,
+      old_current_score: old_score_values[:current_score],
+      final_score: score.final_score,
+      old_final_score: old_score_values[:final_score],
+      unposted_current_score: score.unposted_current_score,
+      old_unposted_current_score: old_score_values[:unposted_current_score],
+      unposted_final_score: score.unposted_final_score,
+      old_unposted_final_score: old_score_values[:unposted_final_score]
+    }
+    post_event_stringified('course_grade_change', data, amended_context(score.course))
+  end
+
+  def self.sis_batch_payload(batch)
+    {
+      sis_batch_id: batch.id,
+      account_id: batch.account_id,
+      workflow_state: batch.workflow_state
+    }
+  end
+
+  def self.sis_batch_created(batch)
+    post_event_stringified('sis_batch_created', sis_batch_payload(batch))
+  end
+
+  def self.sis_batch_updated(batch)
+    post_event_stringified('sis_batch_updated', sis_batch_payload(batch))
+  end
+
+  def self.outcome_proficiency_created(proficiency)
+    post_event_stringified('outcome_proficiency_created', get_outcome_proficiency_data(proficiency))
+  end
+
+  def self.outcome_proficiency_updated(proficiency)
+    post_event_stringified('outcome_proficiency_updated', get_outcome_proficiency_data(proficiency).merge(updated_at: proficiency.updated_at))
+  end
+
+  def self.get_outcome_proficiency_data(proficiency)
+    ratings = proficiency.outcome_proficiency_ratings.map do |rating|
+      get_outcome_proficiency_rating_data(rating)
+    end
+    {
+      outcome_proficiency_id: proficiency.id,
+      context_type: proficiency.context_type,
+      context_id: proficiency.context_id,
+      workflow_state: proficiency.workflow_state,
+      outcome_proficiency_ratings: ratings
+    }
+  end
+
+  def self.get_outcome_proficiency_rating_data(rating)
+    {
+      outcome_proficiency_rating_id: rating.id,
+      description: rating.description,
+      points: rating.points,
+      mastery: rating.mastery,
+      color: rating.color,
+      workflow_state: rating.workflow_state
     }
   end
 end

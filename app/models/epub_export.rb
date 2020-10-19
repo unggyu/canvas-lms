@@ -54,18 +54,24 @@ class EpubExport < ActiveRecord::Base
     state :deleted
   end
 
+  def course_broadcast_data
+    course.broadcast_data
+  end
+
   set_broadcast_policy do |p|
     p.dispatch :content_export_finished
     p.to { [user] }
     p.whenever do |record|
       record.changed_state(:generated)
     end
+    p.data { course_broadcast_data }
 
     p.dispatch :content_export_failed
     p.to { [user] }
     p.whenever do |record|
       record.changed_state(:failed)
     end
+    p.data { course_broadcast_data }
   end
 
   after_create do
@@ -153,6 +159,11 @@ class EpubExport < ActiveRecord::Base
   # Epub Exportable overrides
   def content_cartridge
     self.content_export.attachment
+  end
+
+  def self.fail_stuck_epub_exports(exports)
+    cutoff = Setting.get("epub_generation_expiration_minutes", "120").to_i.minutes.ago
+    exports.select{|e| (e.generating? || e.exporting?) && e.updated_at < cutoff }.each(&:mark_as_failed)
   end
 
   def convert_to_epub

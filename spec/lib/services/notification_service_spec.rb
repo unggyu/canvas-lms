@@ -36,7 +36,8 @@ module Services
 
       before(:each) do
         @queue = double('notification queue')
-        allow(NotificationService).to receive(:notification_queue).and_return(@queue)
+        allow(NotificationService).to receive(:notification_sqs).and_return(@queue)
+        allow(NotificationService).to receive(:choose_queue_url).and_return('default')
       end
 
       it "processes email message type" do
@@ -55,6 +56,17 @@ module Services
       it "processes twilio message type" do
         expect(@queue).to receive(:send_message).once
         @message.path_type = "sms"
+        expect{@message.deliver}.not_to raise_error
+      end
+
+      it 'processes slack message type' do
+        encrypted_slack_key, salt = Canvas::Security.encrypt_password('testkey'.to_s, 'instructure_slack_encrypted_key')
+        @account.settings[:encrypted_slack_key] = encrypted_slack_key
+        @account.settings[:encrypted_slack_key_salt] = salt
+        @account.save!
+        @au.reload
+        expect(@queue).to receive(:send_message).once
+        @message.path_type = "slack"
         expect{@message.deliver}.not_to raise_error
       end
 
@@ -79,6 +91,23 @@ module Services
         @message.path_type = "sms"
         @message.to = "+18015550100"
         expect{@message.deliver}.not_to raise_error
+      end
+
+      it 'expects slack to not call mailer create_message' do
+        encrypted_slack_key, salt = Canvas::Security.encrypt_password('testkey'.to_s, 'instructure_slack_encrypted_key')
+        @account.settings[:encrypted_slack_key] = encrypted_slack_key
+        @account.settings[:encrypted_slack_key_salt] = salt
+        @account.save!
+        @au.reload
+        expect(@queue).to receive(:send_message).once
+        expect(Mailer).to receive(:create_message).never
+        @message.path_type = "slack"
+        @message.to = "test@email.com"
+        expect{@message.deliver}.not_to raise_error
+      end
+
+      it 'expects slack to not enqueue without slack api token' do
+        expect(@queue).to receive(:send_message).never
       end
 
       it "processes push notification message type" do
@@ -126,7 +155,7 @@ module Services
           }.with_indifferent_access
 
           spy = SendMessageSpy.new
-          allow(NotificationService).to receive(:notification_queue).and_return(spy)
+          allow(NotificationService).to receive(:notification_sqs).and_return(spy)
 
           NotificationService.process(1, 'hello', 'email', 'alice@example.com')
           expect(expected).to eq spy.sent_hash

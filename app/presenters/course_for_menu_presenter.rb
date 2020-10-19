@@ -19,22 +19,27 @@ class CourseForMenuPresenter
   include I18nUtilities
   include Rails.application.routes.url_helpers
 
-  DASHBOARD_CARD_TABS = [
-    Course::TAB_DISCUSSIONS, Course::TAB_ASSIGNMENTS,
-    Course::TAB_ANNOUNCEMENTS, Course::TAB_FILES
-  ].freeze
-
-  def initialize(course, available_section_tabs, user = nil, context = nil)
+  def initialize(course, user = nil, context = nil, session = nil, opts={})
     @course = course
     @user = user
     @context = context
-    @available_section_tabs = (available_section_tabs || []).select do |tab|
-      DASHBOARD_CARD_TABS.include?(tab[:id])
-    end
+    @session = session
+    @opts = opts
   end
-  attr_reader :course, :available_section_tabs
+  attr_reader :course
+
+
+  def default_url_options
+    { protocol: HostUrl.protocol, host: HostUrl.context_host(@course.root_account) }
+  end
 
   def to_h
+    position = @user.dashboard_positions[course.asset_string]
+
+    observee = if course.primary_enrollment_type == 'ObserverEnrollment'
+      ObserverEnrollment.observed_students(course, @user)&.keys&.map(&:name).join(', ')
+    end
+
     {
       longName: "#{course.name} - #{course.short_name}",
       shortName: course.nickname_for(@user),
@@ -42,29 +47,42 @@ class CourseForMenuPresenter
       courseCode: course.course_code,
       assetString: course.asset_string,
       href: course_path(course, invitation: course.read_attribute(:invitation)),
-      informStudentsOfOverdueSubmissions: course.feature_enabled?(:new_gradebook),
       term: term || nil,
       subtitle: subtitle,
+      enrollmentType: course.primary_enrollment_type,
+      observee: observee,
       id: course.id,
+      isFavorited: course.favorite_for_user?(@user),
       image: course.feature_enabled?(:course_card_images) ? course.image : nil,
-      imagesEnabled: course.feature_enabled?(:course_card_images),
-      rights: {
-        can_manage: course.grants_right?(@user, :read_as_admin)
-      },
-      position: (@context && @context.feature_enabled?(:dashcard_reordering)) ? @user.dashboard_positions[course.asset_string] : nil,
-      links: available_section_tabs.map do |tab|
-        presenter = SectionTabPresenter.new(tab, course)
-        presenter.to_h
+      position: position.present? ? position.to_i : nil
+    }.tap do |hash|
+      if @opts[:tabs]
+        tabs = course.tabs_available(@user, {
+          session: @session,
+          only_check: @opts[:tabs],
+          precalculated_permissions: {
+            # we can assume they can read the course at this point
+            read: true,
+          },
+          include_external: false,
+          include_hidden_unused: false,
+        })
+        hash[:links] = tabs.map do |tab|
+          presenter = SectionTabPresenter.new(tab, course)
+          presenter.to_h
+        end
       end
-
-    }
+      if @context.root_account.feature_enabled?(:unpublished_courses)
+        hash[:published] = course.published?
+        hash[:canChangeCourseState] = course.grants_right?(@user, :change_course_state)
+        hash[:defaultView] = course.default_view
+        hash[:pagesUrl] = polymorphic_url([course, :wiki_pages])
+        hash[:frontPageTitle] = course&.wiki&.front_page&.title
+      end
+    end
   end
 
   private
-  def role
-    Role.get_role_by_id(Shard.relative_id_for(course.primary_enrollment_role_id, course.shard, Shard.current)) ||
-      Enrollment.get_built_in_role_for_type(course.primary_enrollment_type)
-  end
 
   def subtitle
     label = if course.primary_enrollment_state == 'invited'
@@ -72,7 +90,7 @@ class CourseForMenuPresenter
     else
       before_label('#shared.menu_enrollment.labels.enrolled_as', 'enrolled as')
     end
-    [ label, role.try(:label) ].join(' ')
+    [ label, course.primary_enrollment_role.try(:label) ].join(' ')
   end
 
   def term

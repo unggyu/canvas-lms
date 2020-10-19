@@ -32,6 +32,12 @@ class SRGB
       f('#switch_to_default_gradebook')
     end
 
+    def switch_to_default_gradebook
+      f('[data-component="GradebookSelector"] input').click
+      wait_for_animations
+      fj("[role=\"option\"]:contains(\"Gradebook…\")").click
+    end
+
     def assignment_sorting_dropdown
       f(assignment_sort_order_selector)
     end
@@ -58,6 +64,14 @@ class SRGB
 
     def final_grade
       f('#student_information .total-grade')
+    end
+
+    def final_grade_override
+      f("#final-grade-override")
+    end
+
+    def final_grade_override_input
+      f("#final-grade-override-input")
     end
 
     def assignment_muted_checkbox
@@ -111,6 +125,10 @@ class SRGB
 
     def show_notes_option
       f('#show_notes')
+    end
+
+    def allow_final_grade_override_option
+      f('#allow_final_grade_override')
     end
 
     def all_content
@@ -168,7 +186,7 @@ class SRGB
     end
 
     def select_student(student)
-      click_option(student_dropdown, student.name)
+      click_option(student_dropdown, student.sortable_name)
     end
 
     def select_grading_period(grading_period)
@@ -178,6 +196,11 @@ class SRGB
     def enter_grade(grade)
       replace_content(main_grade_input, grade)
       tab_out_of_input(main_grade_input)
+    end
+
+    def enter_override_grade(grade)
+      replace_content(final_grade_override_input, grade)
+      tab_out_of_input(final_grade_override_input)
     end
 
     def current_grade
@@ -216,4 +239,3 @@ class SRGB
 
   end
 end
-

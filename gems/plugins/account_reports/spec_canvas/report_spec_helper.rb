@@ -23,6 +23,15 @@ require 'csv'
 module ReportSpecHelper
   def read_report(type = @type, options = {})
     account_report = run_report(type, options)
+    if account_report.workflow_state == 'error' || !account_report.attachment_id
+      error_report = ErrorReport.last
+      # using the cerror_class was often leading to different args needed or other
+      # failures that made attempting to use the class less helpful
+      error_class = error_report&.category&.constantize
+      error = ReportSpecHelperError.new([error_class, error_report&.message].join('_'))
+      error.set_backtrace(error_report&.backtrace&.split("\n") || caller)
+      raise error
+    end
     parse_report(account_report, options)
   end
 
@@ -35,7 +44,9 @@ module ReportSpecHelper
     account_report.parameters = parameters
     account_report.save!
     if AccountReport.available_reports[type]
-      AccountReports.generate_report(account_report)
+      AccountReports.generate_report(account_report, send_message: false)
+    else
+      raise ReportSpecHelperError.new("report is not properly configured in engine.")
     end
     run_jobs
     account_report.reload
@@ -75,6 +86,8 @@ module ReportSpecHelper
     all_parsed.unshift(header) if options[:header]
     all_parsed
   end
+
+  class ReportSpecHelperError < StandardError; end
 end
 
 RSpec::Matchers.define :eq_stringified_array do |expected|

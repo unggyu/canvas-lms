@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-require_dependency 'canvas/dynamic_settings/cache'
+require_dependency 'local_cache'
 require_dependency 'canvas/dynamic_settings/fallback_proxy'
 require_dependency 'canvas/dynamic_settings/prefix_proxy'
 require 'imperium'
@@ -28,6 +28,9 @@ module Canvas
 
     CONSUL_READ_OPTIONS = %i{recurse stale}.freeze
     KV_NAMESPACE = "config/canvas".freeze
+    CACHE_KEY_PREFIX = "dynamic_settings/".freeze
+
+    Canvas::Reloader.on_reload { @root_fallback_proxy = nil }
 
     class << self
       attr_accessor :config, :environment
@@ -49,9 +52,12 @@ module Canvas
 
           @environment = conf_hash['environment']
           @kv_client = Imperium::KV.default_client
+          @data_center = conf_hash.fetch('global_dc', nil)
+          @default_service = conf_hash.fetch('service', :canvas)
         else
           @environment = nil
           @kv_client = nil
+          @default_service = :canvas
         end
       end
 
@@ -69,7 +75,7 @@ module Canvas
       end
 
       def root_fallback_proxy
-        @root_fallback_proxy ||= DynamicSettings::FallbackProxy.new(ConfigFile.load("dynamic_settings"))
+        @root_fallback_proxy ||= DynamicSettings::FallbackProxy.new(ConfigFile.load("dynamic_settings").dup)
       end
 
       # Build an object used to interacting with consul for the given
@@ -86,19 +92,27 @@ module Canvas
       # @param cluster [String] An optional cluster to override region or global settings
       # @param default_ttl [ActiveSupport::Duration] How long to retain cached
       #   values
-      def find(prefix = nil,
-                     tree: :config,
-                     service: :canvas,
-                     cluster: nil,
-                     default_ttl: DynamicSettings::PrefixProxy::DEFAULT_TTL)
+      # @param data_center [String] location of the data_center the proxy is pointing to
+      def find( prefix = nil,
+                tree: :config,
+                service: nil,
+                cluster: nil,
+                default_ttl: DynamicSettings::PrefixProxy::DEFAULT_TTL,
+                data_center: nil
+              )
+        service ||= @default_service || :canvas
         if kv_client
-          PrefixProxy.new(prefix,
+          PrefixProxy.new(
+            prefix,
             tree: tree,
             service: service,
             environment: @environment,
             cluster: cluster,
             default_ttl: default_ttl,
-            kv_client: kv_client)
+            kv_client: kv_client,
+            data_center: @data_center,
+            query_logging: @config.fetch('query_logging', true)
+          )
         else
           proxy = root_fallback_proxy
           proxy = proxy.for_prefix(tree)
@@ -107,13 +121,14 @@ module Canvas
           proxy
         end
       end
+      alias kv_proxy find
 
       def kv_client
         @kv_client
       end
 
       def reset_cache!
-        Canvas::DynamicSettings::Cache.reset!
+        LocalCache.delete_matched(/^#{CACHE_KEY_PREFIX}/)
       end
     end
   end

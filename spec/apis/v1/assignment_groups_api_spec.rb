@@ -200,6 +200,25 @@ describe AssignmentGroupsController, type: :request do
     expect(json).to eq expected
   end
 
+  it "includes submissions for observed users when requested with all assignments" do
+    course_with_observer(active_all: true)
+    @observed_student = create_users(1, return_type: :record).first
+    @course.enroll_student(@observed_student, :enrollment_state => 'active')
+    @course.enroll_user(@observer, "ObserverEnrollment", :associated_user_id => @observed_student.id, :enrollment_state => 'active')
+
+    assignment = @course.assignments.create!(:title => "title", :submission_types => "online_url")
+    assignment.grade_student(@observed_student, grade: 10, grader: @teacher)
+
+    json = api_call_as_user(@observer, :get,
+      "/api/v1/courses/#{@course.id}/assignment_groups?include[]=assignments&include[]=observed_users&include[]=submission",
+      { :controller => 'assignment_groups',
+        :action => 'index', :format => 'json',
+        :course_id => @course.id,
+        :include => [ "assignments", "observed_users", "submission" ]})
+
+    expect(json.first['assignments'].first['submission'].map{|s| s['user_id']}).to eql [@observed_student.id]
+  end
+
   it "optionally includes 'grades_published' for moderated assignments" do
     group = @course.assignment_groups.create!(name: "Homework")
     group.update_attribute(:position, 10)
@@ -461,10 +480,10 @@ describe AssignmentGroupsController, type: :request do
     a1.reload
 
     json = api_call(:get,
-          "/api/v1/courses/#{@course.id}/assignment_groups.json?include[]=assignments&include[]=all_dates",
+          "/api/v1/courses/#{@course.id}/assignment_groups.json?include[]=assignments&include[]=all_dates&include[]=can_edit",
           { controller: 'assignment_groups', action: 'index',
             format: 'json', course_id: @course.id.to_s,
-            include: ['assignments', 'all_dates'] })
+            include: ['assignments', 'all_dates', 'can_edit'] })
 
     expected = [
       {
@@ -477,8 +496,8 @@ describe AssignmentGroupsController, type: :request do
         'integration_data' => {},
         'sis_source_id' => nil,
         'assignments' => [
-          controller.assignment_json(a1, @user,session, include_all_dates: true).as_json,
-          controller.assignment_json(a2, @user,session, include_all_dates: true).as_json
+          controller.assignment_json(a1, @user,session, include_all_dates: true, include_can_edit: true).as_json,
+          controller.assignment_json(a2, @user,session, include_all_dates: true, include_can_edit: true).as_json
         ]
       }
     ]
@@ -946,7 +965,7 @@ describe AssignmentGroupsApiController, type: :request do
         Factories::GradingPeriodHelper.new.create_for_group(@grading_period_group, {
           start_date: 2.weeks.ago, end_date: 2.days.ago, close_date: 1.day.ago
         })
-        @assignment_group.update_attributes(group_weight: 50)
+        @assignment_group.update(group_weight: 50)
       end
 
       context "as a teacher" do
@@ -1064,6 +1083,26 @@ describe AssignmentGroupsApiController, type: :request do
       group3.reload
       expect(group3.assignments.count).to eq 4
       expect(@assignment_group.reload.workflow_state).to eq 'deleted'
+    end
+
+    it 'should recalculate results if move_assignments_to is provided' do
+      @course.assignment_groups.create!(name: 'Another group', position: 2)
+      group3 = @course.assignment_groups.create!(name: 'Yet Another group', position: 3)
+
+      @course.assignments.create!(title: "test1", assignment_group: @assignment_group, points_possible: 10)
+      @course.assignments.create!(title: "test2", assignment_group: @assignment_group, points_possible: 12)
+
+      expect_any_instance_of(Course).to receive(:recompute_student_scores).once
+
+      api_call(:delete, "/api/v1/courses/#{@course.id}/assignment_groups/#{@assignment_group.id}",
+        {
+          controller: 'assignment_groups_api',
+          action: 'destroy',
+          format: 'json',
+          course_id: @course.id.to_s,
+          assignment_group_id: @assignment_group.id.to_s
+        },
+        {move_assignments_to: group3.id})
     end
   end
 end

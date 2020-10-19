@@ -17,21 +17,81 @@
 #
 
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
-require File.expand_path(File.dirname(__FILE__) + '/../../helpers/graphql_type_tester')
+require_relative "../graphql_spec_helper"
 
 describe Types::GroupType do
   before(:once) do
     course_with_student(active_all: true)
+    @student_not_in_group = @student
+
+    student_in_course(active_all: true)
+    @student_in_group = @student
+
     @group_set = @course.group_categories.create! name: "asdf"
-    @group = @group_set.groups.create! name: "group 1", context: @course
-    @group.add_user(@student)
+    @group = @group_set.groups.create! name: "group 1", context: @course, sis_source_id: "sisGroup"
+    @membership = @group.add_user(@student_in_group)
   end
 
-  let(:group_type) { GraphQLTypeTester.new(Types::GroupType, @group) }
+  let(:group_type) { GraphQLTypeTester.new(@group, current_user: @teacher) }
 
   it "works" do
-    expect(group_type._id).to eq @group.id
-    expect(group_type.name).to eq @group.name
-    expect(group_type.membersConnection(current_user: @teacher)).to eq @group.group_memberships
+    expect(group_type.resolve("_id")).to eq @group.id.to_s
+    expect(group_type.resolve("name")).to eq @group.name
+    expect(group_type.resolve("membersConnection { edges { node { _id } } }")).
+      to eq @group.group_memberships.map(&:to_param)
+  end
+
+  it "requires read permission" do
+    user = user_factory(active_all: true)
+    expect(group_type.resolve("_id", current_user: user)).to be_nil
+  end
+
+  describe "membersConnection" do
+    it "works" do
+      expect(group_type.resolve("membersConnection { nodes { user { _id } } }")).to eq [@membership.user_id.to_s]
+      expect(group_type.resolve("membersConnection { nodes { state } }")).to eq [@membership.workflow_state]
+    end
+
+    it "requires permission" do
+      expect(
+        group_type.resolve("membersConnection { nodes { _id } }",
+                           current_user: @student_not_in_group)
+      ).to be_nil
+    end
+  end
+
+  describe "member" do
+    it "works" do
+      expect(
+        group_type.resolve(%|member(userId: "#{@student_in_group.id}") { _id }|)
+      ).to eq @membership.id.to_s
+    end
+
+    it "requires permission" do
+      expect(
+        group_type.resolve(%|member(userId: "#{@student_in_group.id}") { _id }|,
+                           current_user: @student_not_in_group)
+      ).to be_nil
+    end
+  end
+
+  context "sis field" do
+    let(:manage_admin) { account_admin_user_with_role_changes(role_changes: { read_sis: false })}
+    let(:read_admin) { account_admin_user_with_role_changes(role_changes: { manage_sis: false })}
+
+    it "returns sis_id if you have read_sis permissions" do
+      tester = GraphQLTypeTester.new(@group, current_user: read_admin)
+      expect(tester.resolve("sisId")).to eq "sisGroup"
+    end
+
+    it "returns sis_id if you have manage_sis permissions" do
+      tester = GraphQLTypeTester.new(@group, current_user: manage_admin)
+      expect(tester.resolve("sisId")).to eq "sisGroup"
+    end
+
+    it "doesn't return sis_id if you don't have read_sis or management_sis permissions" do
+      tester = GraphQLTypeTester.new(@group, current_user: @student_in_group)
+      expect(tester.resolve("sisId")).to be_nil
+    end
   end
 end

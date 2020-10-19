@@ -52,15 +52,16 @@ module Assignments
 
     def count
       assignment.shard.activate do
-        # the needs_grading_count trigger should change assignment.updated_at, invalidating the cache
-        Rails.cache.fetch(['assignment_user_grading_count', assignment, user].cache_key) do
+        # the needs_grading_count trigger should clear the assignment's needs_grading cache
+        Rails.cache.fetch_with_batched_keys(['assignment_user_grading_count', assignment.cache_key(:needs_grading), user].cache_key,
+            batch_object: user, batched_keys: :todo_list) do
           if assignment.moderated_grading? && !assignment.grades_published?
             needs_moderated_grading_count
           else
             case visibility_level
             when :full, :limited
               manual_count
-            when :sections
+            when :sections, :sections_limited
               section_filtered_submissions.distinct.count(:id)
             else
               0
@@ -72,7 +73,7 @@ module Assignments
 
     def needs_moderated_grading_count
       level = visibility_level
-      return 0 unless [:full, :limited, :sections].include?(level)
+      return 0 unless [:full, :limited, :sections, :sections_limited].include?(level)
 
       # ignore submissions this user has graded
       graded_sub_ids = assignment.submissions.joins(:provisional_grades).
@@ -103,7 +104,8 @@ module Assignments
 
     def count_by_section
       assignment.shard.activate do
-        Rails.cache.fetch(['assignment_user_grading_count_by_section', assignment, user].cache_key) do
+        Rails.cache.fetch(['assignment_user_grading_count_by_section', assignment.cache_key(:needs_grading), user].cache_key,
+            batch_object: user, batched_keys: :todo_list) do
           if visibility_level == :sections
             submissions = section_filtered_submissions
           else
@@ -120,9 +122,7 @@ module Assignments
 
     def manual_count
       assignment.shard.activate do
-        Rails.cache.fetch(['assignment_user_grading_manual_count', assignment, user].cache_key) do
-          all_submissions.distinct.count(:id)
-        end
+        all_submissions.distinct.count(:id)
       end
     end
 
@@ -132,7 +132,7 @@ module Assignments
     end
 
     def all_submissions
-      string = <<-SQL
+      string = <<~SQL
         submissions.assignment_id = ?
           AND e.course_id = ?
           AND e.type IN ('StudentEnrollment', 'StudentViewEnrollment')

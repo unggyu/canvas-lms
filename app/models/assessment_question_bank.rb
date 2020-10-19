@@ -17,6 +17,7 @@
 #
 
 class AssessmentQuestionBank < ActiveRecord::Base
+  extend RootAccountResolver
   include Workflow
 
   belongs_to :context, polymorphic: [:account, :course]
@@ -27,6 +28,7 @@ class AssessmentQuestionBank < ActiveRecord::Base
   before_save :infer_defaults
   after_save :update_alignments
   validates_length_of :title, :maximum => maximum_string_length, :allow_nil => true
+  resolves_root_account through: :context
 
   include MasterCourses::Restrictor
   restrict_columns :content, [:title]
@@ -126,7 +128,7 @@ class AssessmentQuestionBank < ActiveRecord::Base
     # 1. select a random set of questions from the DB
     questions = assessment_questions.active
     questions = questions.where.not(id: exclude_ids) unless exclude_ids.empty?
-    questions = questions.reorder("RANDOM()").limit(count)
+    questions = questions.reorder(Arel.sql("RANDOM()")).limit(count)
     # 2. process the questions in :id order to minimize the risk of deadlock
     aqs = questions.to_a.sort_by(&:id)
     quiz_questions = AssessmentQuestion.find_or_create_quiz_questions(aqs, quiz_id, quiz_group_id, duplicate_index)

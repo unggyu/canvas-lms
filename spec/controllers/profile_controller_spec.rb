@@ -75,23 +75,61 @@ describe ProfileController do
   describe "update" do
     it "should allow changing the default e-mail address and nothing else" do
       user_session(@user, @pseudonym)
-      expect(@cc.position).to eq 1
-      @cc2 = @user.communication_channels.create!(:path => 'email2@example.com', :workflow_state => 'active')
-      expect(@cc2.position).to eq 2
-      put 'update', params: {:user_id => @user.id, :default_email_id => @cc2.id}, format: 'json'
-      expect(response).to be_success
-      expect(@cc2.reload.position).to eq 1
-      expect(@cc.reload.position).to eq 2
+      cc = @cc
+      expect(cc.position).to eq 1
+      cc2 = communication_channel(@user, {username: 'email2@example.com', active_cc: true})
+      expect(cc2.position).to eq 2
+      put 'update', params: {:user_id => @user.id, :default_email_id => cc2.id}, format: 'json'
+      expect(response).to be_successful
+      expect(cc2.reload.position).to eq 1
+      expect(cc.reload.position).to eq 2
     end
 
     it "should clear email cache" do
       enable_cache do
         @user.email # prime cache
         user_session(@user, @pseudonym)
-        @cc2 = @user.communication_channels.create!(:path => 'email2@example.com', :workflow_state => 'active')
+        @cc2 = communication_channel(@user, {username: 'email2@example.com', active_cc: true})
         put 'update', params: {:user_id => @user.id, :default_email_id => @cc2.id}, format: 'json'
-        expect(response).to be_success
+        expect(response).to be_successful
         expect(@user.email).to eq @cc2.path
+      end
+    end
+
+    describe "personal pronouns" do
+      before :once do
+        @user.account.settings = { :can_add_pronouns => true }
+        @user.account.save!
+      end
+
+      it "should allow changing pronouns" do
+        user_session(@user, @pseudonym)
+        expect(@user.pronouns).to eq nil
+        put 'update', params: {:user => {:pronouns => "  He/Him "}}, format: 'json'
+        expect(response).to be_successful
+        @user.reload
+        expect(@user.read_attribute(:pronouns)).to eq "he_him"
+        expect(@user.pronouns).to eq "He/Him"
+      end
+
+      it "should allow unsetting pronouns" do
+        user_session(@user, @pseudonym)
+        @user.pronouns = " Dude/Guy  "
+        @user.save!
+        expect(@user.pronouns).to eq "Dude/Guy"
+        put 'update', params: {:user => {:pronouns => ''}}, format: 'json'
+        expect(response).to be_successful
+        @user.reload
+        expect(@user.pronouns).to eq nil
+      end
+
+      it "should not allow setting pronouns not on the approved list" do
+        user_session(@user, @pseudonym)
+        expect(@user.pronouns).to eq nil
+        put 'update', params: {:user => {:pronouns => "Pro/Noun"}}, format: 'json'
+        expect(response).to be_successful
+        @user.reload
+        expect(@user.pronouns).to eq nil
       end
     end
 
@@ -100,20 +138,22 @@ describe ProfileController do
       @account.settings = { :users_can_edit_name => false }
       @account.save!
       user_session(@user, @pseudonym)
-      expect(@cc.position).to eq 1
-      @cc2 = @user.communication_channels.create!(:path => 'email2@example.com', :workflow_state => 'active')
-      expect(@cc2.position).to eq 2
-      put 'update', params: {:user_id => @user.id, :default_email_id => @cc2.id}, format: 'json'
-      expect(response).to be_success
-      expect(@cc2.reload.position).to eq 1
-      expect(@cc.reload.position).to eq 2
+      cc = @cc
+      expect(cc.position).to eq 1
+      cc2 = communication_channel(@user, {username: 'email2@example.com', active_cc: true})
+      expect(cc2.position).to eq 2
+      put 'update', params: {:user_id => @user.id, :default_email_id => cc2.id}, format: 'json'
+      expect(response).to be_successful
+      expect(cc2.reload.position).to eq 1
+      expect(cc.reload.position).to eq 2
     end
 
     it "should not let an unconfirmed e-mail address be set as default" do
       user_session(@user, @pseudonym)
-      @cc2 = @user.communication_channels.create!(:path => 'email2@example.com', :workflow_state => 'unconfirmed')
-      put 'update', params: {:user_id => @user.id, :default_email_id => @cc2.id}, format: 'json'
-      expect(@user.email).to eq @cc.path
+      cc = @cc
+      cc2 = communication_channel(@user, {username: 'email2@example.com', cc_state: 'unconfirmed'})
+      put 'update', params: {:user_id => @user.id, :default_email_id => cc2.id}, format: 'json'
+      expect(@user.email).to eq cc.path
     end
 
     it "should not allow a student view student profile to be edited" do
@@ -133,11 +173,11 @@ describe ProfileController do
       # works, but for now we just make sure that that state does not cause an error for the
       # user when they go to their notification preferences.
       user_session(@user)
-      cc = @user.communication_channels.create!(:path => 'user@example.com', :path_type => 'email') { |cc| cc.workflow_state = 'active' }
+      cc = communication_channel(@user, {username: 'user@example.com', active_cc: true})
       cc.notification_policies.create!(:notification => nil, :frequency => 'daily')
 
       get 'communication'
-      expect(response).to be_success
+      expect(response).to be_successful
     end
   end
 
@@ -157,7 +197,7 @@ describe ProfileController do
           params: {:user => {:short_name => 'Monsturd', :name => 'Jenkins'},
           :user_profile => {:bio => '...', :title => '!!!'}},
           format: 'json'
-      expect(response).to be_success
+      expect(response).to be_successful
 
       @user.reload
       expect(@user.short_name).to eql 'Monsturd'
@@ -177,7 +217,7 @@ describe ProfileController do
           params: {:user => {:short_name => 'Monsturd', :name => 'Jenkins'},
           :user_profile => {:bio => '...', :title => '!!!'}},
           format: 'json'
-      expect(response).to be_success
+      expect(response).to be_successful
 
       @user.reload
       expect(@user.short_name).to eql old_name
@@ -194,7 +234,7 @@ describe ProfileController do
         params: {:user_profile => {:bio => '...'},
         :user_services => {:twitter => "1", :skype => "false"}},
         format: 'json'
-      expect(response).to be_success
+      expect(response).to be_successful
 
       @user.reload
       expect(@user.user_services.where(service: 'skype').first.visible?).to be_falsey
@@ -204,16 +244,103 @@ describe ProfileController do
     it "should let you set your profile links" do
       put 'update_profile',
         params: {:user_profile => {:bio => '...'},
-        :link_urls => ['example.com', 'foo.com', ''],
-        :link_titles => ['Example.com', 'Foo', '']},
+        :link_urls => ['example.com', 'foo.com', '', '///////invalid'],
+        :link_titles => ['Example.com', 'Foo', '', 'invalid']},
         format: 'json'
-      expect(response).to be_success
+      expect(response).to be_successful
 
       @user.reload
       expect(@user.profile.links.map { |l| [l.url, l.title] }).to eq [
         %w(http://example.com Example.com),
         %w(http://foo.com Foo)
       ]
+    end
+  end
+
+  describe "content_shares" do
+    before :once do
+      teacher_in_course(:active_all => true)
+      student_in_course(:active_all => true)
+    end
+
+    describe "direct_share flag is enabled" do
+      before :once do
+        @teacher.account.enable_feature!(:direct_share)
+      end
+
+      it "should show if user has any non-student enrollments" do
+        allow(Canvas::DynamicSettings).to receive(:find).and_return({'base_url' => 'the_ccv_url'})
+        user_session(@teacher)
+        get 'content_shares', params: {user_id: @teacher.id}
+        expect(response).to render_template('content_shares')
+        expect(assigns.dig(:js_env, :COMMON_CARTRIDGE_VIEWER_URL)).to eq('the_ccv_url')
+      end
+
+      it "should show if the user has an account membership" do
+        user_session(account_admin_user)
+        get 'content_shares', params: {user_id: @admin.id}
+        expect(response).to render_template('content_shares')
+      end
+
+      it "should 404 if user has only student enrollments" do
+        user_session(@student)
+        get 'content_shares', params: {user_id: @student.id}
+        expect(response).to be_not_found
+      end
+    end
+
+    describe "direct_share flag is disabled" do
+      before :once do
+        @user.account.disable_feature!(:direct_share)
+      end
+
+      it "should 404 even if user has non-student enrollments" do
+        teacher_in_course(:active_all => true)
+        user_session(@teacher)
+        get 'content_shares', params: {user_id: @teacher.id}
+        expect(response).to be_not_found
+      end
+    end
+  end
+
+  describe "GET #qr_mobile_login" do
+    context "mobile_qr_login setting is enabled" do
+      before :once do
+        Account.default.settings[:mobile_qr_login_is_enabled] = true
+        Account.default.save
+      end
+
+      it "should render empty html layout" do
+        user_session(@user)
+        get "qr_mobile_login"
+        expect(response).to render_template "layouts/application"
+        expect(response.body).to eq ""
+      end
+
+      it "should redirect to login if no active session" do
+        get "qr_mobile_login"
+        expect(response).to redirect_to "/login"
+      end
+
+      it "should 404 if IMP is missing" do
+        allow_any_instance_of(ProfileController).to receive(:instructure_misc_plugin_available?).and_return(false)
+        user_session(@user)
+        get "qr_mobile_login"
+        expect(response).to be_not_found
+      end
+    end
+
+    context "mobile_qr_login setting is disabled" do
+      before :once do
+        Account.default.settings[:mobile_qr_login_is_enabled] = false
+        Account.default.save
+      end
+
+      it "should 404" do
+        user_session(@user)
+        get "qr_mobile_login"
+        expect(response).to be_not_found
+      end
     end
   end
 end

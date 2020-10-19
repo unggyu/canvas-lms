@@ -21,35 +21,57 @@ import $ from 'jquery'
 // configure MathJax to use 'color' extension fo LaTeX coding
 const localConfig = {
   TeX: {
-    extensions: ["color.js"]
+    extensions: ['color.js']
   }
-};
+}
 
-export function loadMathJax (config_file, cb = null) {
-  if (!isMathJaxLoaded() && shouldLoadMathJax()) {
+export function loadMathJax(configFile = 'TeX-MML-AM_HTMLorMML', cb = null) {
+  if (!isMathJaxLoaded()) {
+    const locale = ENV.LOCALE || 'en'
     // signal local config to mathjax as it loads
-    window.MathJax = localConfig;
-    $.getScript(`//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=${config_file}`, cb);
+    window.MathJax = localConfig
+    $.getScript(
+      `//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=${configFile}&locale=${locale}`,
+      () => {
+        window.MathJax.Hub.Register.MessageHook('End Math', function(message) {
+          message[1]
+            .querySelectorAll('.math_equation_latex')
+            .forEach(m => m.classList.add('fade-in-equation'))
+        })
+
+        cb?.()
+      }
+    )
+  } else {
+    // Make sure we always call the callback if it is loaded already and make sure we
+    // also reprocess the page since chances are if we are requesting MathJax again,
+    // something has changed on the page and needs to get pulled into the MathJax ecosystem
+    window.MathJax.Hub.Reprocess()
+    cb?.()
   }
 }
 
-export function isMathMLOnPage () {
-  return $('math').length > 0
+export function isMathMLOnPage() {
+  // handle the change from image + hidden mathml to mathjax formatted latex
+  if (document.querySelector('.math_equation_latex')) {
+    return true
+  }
+  const mathElements = document.getElementsByTagName('math')
+  for (let i = 0; i < mathElements.length; i++) {
+    const $el = $(mathElements[i])
+    if ($el.is(':visible') && $el.parent('.hidden-readable').length <= 0) return true
+  }
 }
 
-export function isMathJaxLoaded () {
-  return !(typeof MathJax === 'undefined')
-}
-
-export function shouldLoadMathJax() {
-  return ($(document.documentElement).find("img.equation_image").length <= 0)
+export function isMathJaxLoaded() {
+  return !!window.MathJax?.Hub
 }
 
 /*
  * elem: string with elementId or en elem object
  */
 export function reloadElement(elem) {
-  if (MathJax) {
-    MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem])
+  if (isMathJaxLoaded()) {
+    window.MathJax.Hub.Queue(['Typeset', window.MathJax.Hub, elem])
   }
 }

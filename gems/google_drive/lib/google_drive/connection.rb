@@ -18,12 +18,16 @@
 
 # See Google Drive API documentation here:
 # https://developers.google.com/drive/v2/web/about-sdk
+
+require 'google/api_client/errors'
+
 module GoogleDrive
   class Connection
-    def initialize(refresh_token, access_token, timeout = nil)
+    def initialize(refresh_token, access_token, timeout = nil, retries: 3)
       @refresh_token = refresh_token
       @access_token = access_token
       @timeout = timeout
+      @retries = retries
     end
 
     def retrieve_access_token
@@ -41,11 +45,11 @@ module GoogleDrive
     end
 
     def client_execute(options)
-      with_timeout_protection { api_client.execute(options) }
+      with_timeout_protection { with_retries { api_client.execute(options) } }
     end
 
     def client_execute!(options)
-      with_timeout_protection { api_client.execute!(options) }
+      with_timeout_protection { with_retries { api_client.execute!(options) } }
     end
 
     def force_token_update
@@ -60,18 +64,27 @@ module GoogleDrive
 
       file = response.data.to_hash
       entry = GoogleDrive::Entry.new(file, extensions)
-      result = client_execute(:uri => entry.download_url)
-      if result.status == 200
-        file_name = file['title']
-        name_extension = file_name[/\.([a-z]+$)/, 1]
-        file_extension = name_extension || file_extension_from_header(result.headers, entry)
+      @uri = entry.download_url
+      redirect_limit = 3
+      loop do
+        raise(ConnectionException) if redirect_limit <= 0
+        result = client_execute(:uri => @uri)
 
-        # file_name should contain the file_extension
-        file_name += ".#{file_extension}" unless name_extension
-        content_type = result.headers['Content-Type'].sub(/; charset=[^;]+/, '')
-        [result, file_name, file_extension, content_type]
-      else
-        raise ConnectionException, result.error_message
+        if result.status == 200
+          file_name = file['title']
+          name_extension = file_name[/\.([a-z]+$)/, 1]
+          file_extension = name_extension || file_extension_from_header(result.headers, entry)
+
+          # file_name should contain the file_extension
+          file_name += ".#{file_extension}" unless name_extension
+          content_type = result.headers['Content-Type'].sub(/; charset=[^;]+/, '')
+          return [result, file_name, file_extension, content_type]
+        elsif result.status == 307
+          @uri = result.response['Location']
+          redirect_limit -= 1
+        else
+          raise ConnectionException, result.error_message
+        end
       end
     end
 
@@ -147,7 +160,7 @@ module GoogleDrive
         result = client_execute(
           :api_method => drive.permissions.insert,
           :body_object => new_permission,
-          :parameters => { :fileId => normalize_document_id(document_id) }
+          :parameters => { :fileId => normalize_document_id(document_id)}
         )
         if result.error?
           raise ConnectionException, result.error_message
@@ -178,6 +191,19 @@ module GoogleDrive
     end
 
     private
+
+    # Retry on 4xx and 5xx status codes
+    def with_retries
+      attempts ||= 0
+      yield
+    rescue Google::APIClient::ClientError, Google::APIClient::ServerError
+      if (attempts += 1) <= @retries
+        sleep attempts ** 2
+        retry
+      end
+
+      raise
+    end
 
     def list(extensions)
       client_params = {

@@ -18,9 +18,9 @@
 
 import React from 'react'
 import {bool, func, string} from 'prop-types'
-import Menu, {MenuItem} from '@instructure/ui-menu/lib/components/Menu'
-import Text from '@instructure/ui-elements/lib/components/Text'
-import I18n from 'i18n!gradebook'
+import {Menu} from '@instructure/ui-menu'
+import {Text} from '@instructure/ui-elements'
+import I18n from 'i18n!SpeedGraderSettingsMenu'
 
 // We're foregoing the use of InstUI buttons or instructure-icons icons here to be consistent
 // with the look/styling of this button's siblings. When those siblings have been updated to
@@ -39,36 +39,56 @@ const menuTrigger = (
 )
 
 export default function SpeedGraderSettingsMenu(props) {
-  function handleModerationPageSelect () {
+  function handleModerationPageSelect() {
     const url = `/courses/${props.courseID}/assignments/${props.assignmentID}/moderate`
     window.open(url, '_blank')
   }
 
-  function handleHelpSelect () {
+  function handleHelpSelect() {
     SpeedGraderSettingsMenu.setURL(props.helpURL)
   }
 
+  function handleToggle(isOpen) {
+    if (isOpen) {
+      props.onMenuShow()
+    }
+  }
 
   return (
-    <Menu contentRef={props.menuContentRef} placement="bottom end" trigger={menuTrigger}>
-      <MenuItem name="options" onSelect={props.openOptionsModal} value="options">
+    <Menu
+      contentRef={props.menuContentRef}
+      onToggle={handleToggle}
+      placement="bottom end"
+      trigger={menuTrigger}
+    >
+      <Menu.Item name="options" onSelect={props.openOptionsModal} value="options">
         <Text>{I18n.t('Options')}</Text>
-      </MenuItem>
+      </Menu.Item>
 
       {props.showModerationMenuItem && (
-        <MenuItem name="moderationPage" onSelect={handleModerationPageSelect} value="moderationPage">
+        <Menu.Item
+          name="moderationPage"
+          onSelect={handleModerationPageSelect}
+          value="moderationPage"
+        >
           <Text>{I18n.t('Moderation Page')}</Text>
-        </MenuItem>
+        </Menu.Item>
       )}
 
-      <MenuItem name="keyboardShortcuts" onSelect={props.openKeyboardShortcutsModal} value="keyboardShortcuts">
-        <Text>{I18n.t('Keyboard Shortcuts')}</Text>
-      </MenuItem>
+      {props.showKeyboardShortcutsMenuItem && (
+        <Menu.Item
+          name="keyboardShortcuts"
+          onSelect={props.openKeyboardShortcutsModal}
+          value="keyboardShortcuts"
+        >
+          <Text>{I18n.t('Keyboard Shortcuts')}</Text>
+        </Menu.Item>
+      )}
 
       {props.showHelpMenuItem && (
-        <MenuItem name="help" onSelect={handleHelpSelect} value="help">
+        <Menu.Item name="help" onSelect={handleHelpSelect} value="help">
           <Text>{I18n.t('Help')}</Text>
-        </MenuItem>
+        </Menu.Item>
       )}
     </Menu>
   )
@@ -79,16 +99,19 @@ SpeedGraderSettingsMenu.propTypes = {
   courseID: string.isRequired,
   helpURL: string.isRequired,
   menuContentRef: func,
+  onMenuShow: func,
   openOptionsModal: func.isRequired,
   openKeyboardShortcutsModal: func.isRequired,
   showHelpMenuItem: bool.isRequired,
-  showModerationMenuItem: bool.isRequired
+  showModerationMenuItem: bool.isRequired,
+  showKeyboardShortcutsMenuItem: bool.isRequired
 }
 
 SpeedGraderSettingsMenu.defaultProps = {
-  menuContentRef: null
+  menuContentRef: null,
+  onMenuShow() {}
 }
 
-SpeedGraderSettingsMenu.setURL = function (url) {
+SpeedGraderSettingsMenu.setURL = function(url) {
   window.location.href = url
 }

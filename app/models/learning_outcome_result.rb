@@ -34,10 +34,13 @@ class LearningOutcomeResult < ActiveRecord::Base
        { quiz: 'Quizzes::Quiz', assessment: 'LiveAssessments::Assessment' }],
       polymorphic_prefix: true
   belongs_to :context, polymorphic: [:course]
+  belongs_to :root_account, class_name: 'Account'
   has_many :learning_outcome_question_results, dependent: :destroy
   simply_versioned
 
   before_save :infer_defaults
+  before_save :ensure_user_uuid
+  before_save :set_root_account_id
 
   def calculate_percent!
     scale_data = scale_params
@@ -123,6 +126,21 @@ class LearningOutcomeResult < ActiveRecord::Base
   scope :for_association, lambda { |association| where(:association_type => association.class.to_s, :association_id => association.id) }
   scope :for_associated_asset, lambda { |associated_asset| where(:associated_asset_type => associated_asset.class.to_s, :associated_asset_id => associated_asset.id) }
   scope :active, lambda { where("content_tags.workflow_state <> 'deleted'").joins(:alignment) }
+  # rubocop:disable Metrics/LineLength
+  scope :exclude_muted_associations, -> {
+    joins("LEFT JOIN #{RubricAssociation.quoted_table_name} rassoc ON rassoc.id = learning_outcome_results.association_id AND learning_outcome_results.association_type = 'RubricAssociation'").
+      joins("LEFT JOIN #{Assignment.quoted_table_name} ra ON ra.id = rassoc.association_id AND rassoc.association_type = 'Assignment' AND rassoc.purpose = 'grading'").
+      joins("LEFT JOIN #{Quizzes::Quiz.quoted_table_name} ON quizzes.id = learning_outcome_results.association_id AND learning_outcome_results.association_type = 'Quizzes::Quiz'").
+      joins("LEFT JOIN #{Assignment.quoted_table_name} qa ON qa.id = quizzes.assignment_id").
+      joins("LEFT JOIN #{Assignment.quoted_table_name} sa ON sa.id = learning_outcome_results.association_id AND learning_outcome_results.association_type = 'Assignment'").
+      joins("LEFT JOIN #{Submission.quoted_table_name} ON submissions.user_id = learning_outcome_results.user_id AND submissions.assignment_id in (ra.id, qa.id, sa.id)").
+      where('(ra.id IS NULL AND qa.id IS NULL AND sa.id IS NULL)'\
+            ' OR submissions.posted_at IS NOT NULL'\
+            ' OR ra.grading_type = \'not_graded\''\
+            ' OR qa.grading_type = \'not_graded\''\
+            ' OR sa.grading_type = \'not_graded\'')
+  }
+  # rubocop:enable Metrics/LineLength
 
   private
 
@@ -134,6 +152,15 @@ class LearningOutcomeResult < ActiveRecord::Base
     self.original_mastery = self.mastery if self.original_mastery == nil
     calculate_percent!
     true
+  end
+
+  def ensure_user_uuid
+    self.user_uuid = self.user&.uuid if self.user_uuid.blank?
+  end
+
+  def set_root_account_id
+    return if self.root_account_id.present?
+    self.root_account_id = self.context&.resolved_root_account_id
   end
 
   def calculate_by_scale(scale_data)

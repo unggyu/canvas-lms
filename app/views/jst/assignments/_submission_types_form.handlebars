@@ -6,24 +6,35 @@
   </div>
   <div class="form-column-right">
     <div class="border border-trbl border-round">
-
       {{!-- Submission type accepted --}}
       <select id="assignment_submission_type"
         name="submission_type"
         aria-controls="assignment_online_submission_types,assignment_external_tool_settings,assignment_group_selector,assignment_peer_reviews_fields"
         {{disabledIfIncludes frozenAttributes "submission_types"}}>
-        <option value="none" {{selectedIf submissionType "none"}}>
+        {{#if defaultToolName}}
+          <option value="default_external_tool" {{selectedIf isDefaultTool}}>
+            {{defaultToolName}}
+          </option>
+        {{/if}}
+        <option value="none" {{selectedIf defaultToNone}}>
           {{#t "submission_types.no_submission"}}No Submission{{/t}}
         </option>
-        <option value="online" {{selectedIf submissionType "online"}}>
+        <option value="online" {{selectedIf defaultToOnline}}>
           {{#t "submission_types.online"}}Online{{/t}}
         </option>
-        <option value="on_paper" {{selectedIf submissionType "on_paper"}}>
+        <option value="on_paper" {{selectedIf defaultToOnPaper}}>
           {{#t "submission_types.on_paper"}}On Paper{{/t}}
         </option>
-        <option value="external_tool" {{selectedIf submissionType "external_tool"}}>
+        <option value="external_tool" {{selectedIf isGenericExternalTool}}>
           {{#t "submission_types.external_tool"}}External Tool{{/t}}
         </option>
+        {{#if submissionTypeSelectionTools}}
+          {{#each submissionTypeSelectionTools}}
+            <option value="external_tool_placement_{{this.id}}" {{selectedIf this.id ../selectedSubmissionTypeToolId}}>
+              {{this.base_title}}
+            </option>
+          {{/each}}
+        {{/if}}
       </select>
       {{#if submissionTypesFrozen }}
         <input type="hidden" name="submission_type" value="{{submissionType}}" />
@@ -161,8 +172,40 @@
         </div>
       </div>
 
+      {{!-- LTI launch button for getting additional data for external tool assignments (when selected via placement) --}}
+      <div id="assignment_submission_type_selection_tool_launch_container" style="{{hiddenUnless selectedSubmissionTypeToolId}}">
+        <div class="pad-box">
+          <div class="ic-Form-control">
+            <button class="Button btn-primary" type="button" id="assignment_submission_type_selection_launch_button">
+                <i class="icon-link sr-hide" />
+                <span id="assignment_submission_type_selection_launch_button_text"></span>
+            </button>
+          </div>
+          <input type="hidden" id="assignment_submission_type_external_data" name="external_tool_tag_attributes[external_data]" value="{{externalToolDataStringified}}"/>
+          {{!-- this is very specific to Mastery Connect currently.  We could potentially make this a dynamic partial based on the type of external data --}}
+          <div>
+            <h3>
+              <span id="mc_external_data_assessment">{{name}}</span>
+            </h3>
+            <div id="mc_external_data_points">{{externalToolData.points}} {{#if externalToolData.points}} {{#t}}Points{{/t}} {{/if}}</div>
+            <div id="mc_external_data_objectives">{{externalToolData.objectives}}</div>
+            <div> </div>
+            <h4>
+              <span id="mc_external_data_tracker">{{externalToolData.trackerName}}</span>
+            </h4>
+            <div id="mc_external_data_tracker_alignment">{{externalToolData.trackerAlignment}}</div>
+            <div id="mc_external_data_students">{{externalToolData.studentCount}} {{externalToolDataStudentLabelText}}</div>
+          </div>
+        </div>
+      </div>
+      <div id="assignment_submission_type_selection_tool_dialog"></div>
+
+      {{!-- Default external tool configuration --}}
+      <div id="default_external_tool_container" data-component="DefaultToolForm" style="{{hiddenUnless isNonPlacementExternalTool}}">
+      </div>
+
       {{!-- External tool submissions --}}
-      <div id="assignment_external_tool_settings" style="{{hiddenUnless isExternalTool}}">
+      <div id="assignment_external_tool_settings" style="{{hiddenUnless isNonPlacementExternalTool}}">
         <div class="subtitle">
           <strong>
             {{#t 'external_tool_options'}}External Tool Options{{/t}}
@@ -202,16 +245,6 @@
                  style="display: none"/>
         </div>
 
-        {{#unless isQuizLTIAssignment}}
-          <label for="assignment_external_tool_tag_attributes_new_tab" class="checkbox">
-            {{checkbox "externalToolNewTab"
-              id="assignment_external_tool_tag_attributes_new_tab"
-              name="external_tool_tag_attributes[new_tab]"
-              disabled=submissionTypesFrozen}}
-            {{#t "label.external_tool_new_tab"}}Load This Tool In A New Tab{{/t}}
-          </label>
-        {{/unless}}
-
         {{#if groupCategoryId}}
           <div class="alert assignment-edit-external-tool-alert">
             {{#t "external_tool_group_warning"}}
@@ -221,6 +254,17 @@
           </div>
         {{/if}}
       </div>
+      {{#unless isQuizLTIAssignment}}
+        <div id="external_tool_new_tab_container" style="display: none;">
+          <label for="assignment_external_tool_tag_attributes_new_tab" class="checkbox">
+            {{checkbox "externalToolNewTab"
+                       id="assignment_external_tool_tag_attributes_new_tab"
+                       name="external_tool_tag_attributes[new_tab]"
+                       disabled=submissionTypesFrozen}}
+            {{#t "label.external_tool_new_tab"}}Load This Tool In A New Tab{{/t}}
+          </label>
+        </div>
+      {{/unless}}
     </div>
   </div>
 </fieldset>

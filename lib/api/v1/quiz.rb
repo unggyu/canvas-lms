@@ -47,6 +47,7 @@ module Api::V1::Quiz
       show_correct_answers_last_attempt
       shuffle_answers
       time_limit
+      disable_timer_autosubmission
       title
       unlock_at
     ) + [{'hide_results' => ArbitraryStrongishParams::ANYTHING}] # because sometimes this is a hash :/
@@ -54,7 +55,9 @@ module Api::V1::Quiz
   }.freeze
 
   def quizzes_json(quizzes, context, user, session, options={})
-    options[:description_formatter] = description_formatter(context, user)
+    # bulk preload all description attachments to prevent N+1 query
+    preloaded_attachments = api_bulk_load_user_content_attachments(quizzes.map(&:description), context)
+    options[:description_formatter] = description_formatter(context, user, preloaded_attachments)
     if context.grants_right?(user, session, :manage_assignments)
       options[:master_course_status] = setup_master_course_restrictions(quizzes, context)
     end
@@ -84,11 +87,11 @@ module Api::V1::Quiz
     end
   end
 
-  def description_formatter(context, user)
+  def description_formatter(context, user, preloaded_attachments = {})
     # adds verifiers - lambda here (as opposed to
     # inside the serializer) to capture context
     lambda do |description|
-      api_user_content(description, context, user)
+      api_user_content(description, context, user, preloaded_attachments)
     end
   end
 
@@ -124,6 +127,10 @@ module Api::V1::Quiz
     quiz_params = accepts_jsonapi? ? Array(params[:quizzes]).first : params[:quiz]
     return nil unless quiz.is_a?(Quizzes::Quiz) && quiz_params.is_a?(ActionController::Parameters)
     update_params = filter_params(quiz_params)
+
+    if update_params.key?('description')
+      update_params['description'] = process_incoming_html_content(update_params['description'])
+    end
 
     # make sure assignment_group_id belongs to context
     if update_params.has_key?("assignment_group_id")

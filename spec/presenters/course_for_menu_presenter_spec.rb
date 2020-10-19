@@ -19,26 +19,14 @@
 require File.expand_path(File.dirname(__FILE__) + '/../sharding_spec_helper')
 
 describe CourseForMenuPresenter do
-  let_once(:course) { course_model }
-  let_once(:available_section_tabs) do
-    Course.default_tabs.select do |tab|
-      [ Course::TAB_ASSIGNMENTS, Course::TAB_HOME ].include?(tab[:id])
-    end
-  end
-  let_once(:presenter) do
-    CourseForMenuPresenter.new(
-      course, available_section_tabs
-    )
-  end
+  let_once(:account) { Account.default }
+  let_once(:course) { Course.create!(account: account) }
+  let_once(:user) { User.create! }
 
-  describe '#initialize' do
-    it 'should limit available_section_tabs to be those for dashboard' do
-      available_section_tab_ids = presenter.available_section_tabs.map do |tab|
-        tab[:id]
-      end
-      expect(available_section_tab_ids).to include(Course::TAB_ASSIGNMENTS)
-      expect(available_section_tab_ids).not_to include(Course::TAB_HOME)
-    end
+  let(:dashboard_card_tabs) { UsersController::DASHBOARD_CARD_TABS }
+
+  let_once(:presenter) do
+    CourseForMenuPresenter.new(course, user, account, nil, {tabs: dashboard_card_tabs})
   end
 
   describe '#to_h' do
@@ -46,68 +34,102 @@ describe CourseForMenuPresenter do
       expect(presenter.to_h).to be_a Hash
     end
 
-    it 'should include available_section_tabs as link element of hash' do
-      expect(presenter.to_h[:links].length).to eq presenter.available_section_tabs.length
+    it 'shouldnt include tab links to unenrolled users' do
+      expect(presenter.to_h[:links]).to be_empty
+    end
+
+    it 'should show all the tab links to a teacher' do
+      course.enroll_teacher(user).accept
+      course.assignments.create!
+      course.discussion_topics.create!
+      course.announcements.create! title: 'hear ye!', message: 'wat'
+      course.attachments.create! filename: 'blah', uploaded_data: StringIO.new('blah')
+
+      expect(presenter.to_h[:links]).to match_array([
+        a_hash_including({css_class: "announcements", icon: "icon-announcement", label: "Announcements"}),
+        a_hash_including({css_class: "discussions", icon: "icon-discussion", label: "Discussions"}),
+        a_hash_including({css_class: "assignments", icon: "icon-assignment", label: "Assignments"}),
+        a_hash_including({css_class: "files", icon: "icon-folder", label: "Files"})
+      ])
+    end
+
+    it 'should only show the tabs a student has access to to students' do
+      course.enroll_student(user).accept
+      course.assignments.create!
+      course.attachments.create! filename: 'blah', uploaded_data: StringIO.new('blah')
+
+      expect(presenter.to_h[:links]).to match_array([
+        a_hash_including({css_class: "assignments", icon: "icon-assignment", label: "Assignments"}),
+        a_hash_including({css_class: "files", icon: "icon-folder", label: "Files"})
+      ])
     end
 
     it 'returns the course nickname if one is set' do
-      user = user_model
-      user.course_nicknames[course.id] = 'nickname'
-      user.save!
-      cs_presenter = CourseForMenuPresenter.new(course, nil, user)
+      user.set_preference(:course_nicknames, course.id, 'nickname')
+      cs_presenter = CourseForMenuPresenter.new(course, user, account)
       h = cs_presenter.to_h
       expect(h[:originalName]).to eq course.name
       expect(h[:shortName]).to eq 'nickname'
     end
 
-    it 'returns false for informStudentsOfOverdueSubmissions if the course is not using New Gradebook' do
-      expect(presenter.to_h[:informStudentsOfOverdueSubmissions]).to be false
+    it 'sets isFavorited to true if course is favorited' do
+      course.enroll_student(user)
+      Favorite.create!(user: user, context: course)
+      cs_presenter = CourseForMenuPresenter.new(course, user, account)
+      h = cs_presenter.to_h
+      expect(h[:isFavorited]).to eq true
     end
 
-    it 'returns true for informStudentsOfOverdueSubmissions if the course is using New Gradebook' do
-      course.enable_feature!(:new_gradebook)
-      expect(presenter.to_h[:informStudentsOfOverdueSubmissions]).to be true
+    it 'sets isFavorited to false if course is unfavorited' do
+      course.enroll_student(user)
+      cs_presenter = CourseForMenuPresenter.new(course, user, account)
+      h = cs_presenter.to_h
+      expect(h[:isFavorited]).to eq false
     end
 
-    context 'with Dashcard Reordering feature enabled' do
+    context 'with the `unpublished_courses` FF enabled' do
       before(:each) do
-        @account = Account.default
-        @account.enable_feature! :dashcard_reordering
+        course.root_account.enable_feature!(:unpublished_courses)
       end
 
+      it 'sets additional keys' do
+        cs_presenter = CourseForMenuPresenter.new(course, user, account)
+        h = cs_presenter.to_h
+        expect(h.key?(:published)).to eq true
+        expect(h.key?(:canChangeCourseState)).to eq true
+        expect(h.key?(:defaultView)).to eq true
+        expect(h.key?(:pagesUrl)).to eq true
+        expect(h.key?(:frontPageTitle)).to eq true
+      end
+    end
+
+    context 'Dashcard Reordering' do
       it 'returns a position if one is set' do
-        user = user_model
-        user.dashboard_positions[course.asset_string] = 3
-        user.save!
-        cs_presenter = CourseForMenuPresenter.new(course, nil, user, @account)
+        user.set_dashboard_positions(course.asset_string => 3)
+        cs_presenter = CourseForMenuPresenter.new(course, user, account)
         h = cs_presenter.to_h
         expect(h[:position]).to eq 3
       end
 
       it 'returns nil when no position is set' do
-        user = user_model
-        cs_presenter = CourseForMenuPresenter.new(course, nil, user, @account)
+        cs_presenter = CourseForMenuPresenter.new(course, user, account)
         h = cs_presenter.to_h
         expect(h[:position]).to eq nil
       end
     end
 
-  end
+    context 'Using courses from a trusted account' do
+      it 'returns correct published value if the current account has FF enabled' do
+        account.enable_feature!(:unpublished_courses)
+        a2 = account_model(name: "second account")
+        a2.trust_links.create!(managing_account: account)
+        account.trust_links.create!(managing_account: a2)
+        course2 = a2.courses.create!(name: "course02")
 
-  describe '#role' do
-    specs_require_sharding
-    it "should retrieve the correct role for cross-shard enrollments" do
-      @shard1.activate do
-        account = Account.create
-        @role = account.roles.create :name => "1337 Student"
-        @role.base_role_type = 'StudentEnrollment'
-        @role.save!
-
-        @cs_course = account.courses.create!
-        @cs_course.primary_enrollment_role_id = @role.local_id
+        cs_presenter = CourseForMenuPresenter.new(course2, user, account)
+        h = cs_presenter.to_h
+        expect(h.key?(:published)).to eq true
       end
-      cs_presenter = CourseForMenuPresenter.new(@cs_course, available_section_tabs)
-      expect(cs_presenter.send(:role)).to eq @role
     end
   end
 end

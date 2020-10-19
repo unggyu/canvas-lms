@@ -38,28 +38,32 @@ module CustomWaitMethods
   def wait_for_ajax_requests
     result = driver.execute_async_script(<<-JS)
       var callback = arguments[arguments.length - 1];
-      if (typeof($) == 'undefined') {
+      // see code in app/jsx/appBootstrap.js for where
+      // __CANVAS_IN_FLIGHT_XHR_REQUESTS__ and 'canvasXHRComplete' come from
+      if (typeof window.__CANVAS_IN_FLIGHT_XHR_REQUESTS__  === 'undefined') {
         callback(-1);
-      } else if ($.active == 0) {
+      } else if (window.__CANVAS_IN_FLIGHT_XHR_REQUESTS__ === 0) {
         callback(0);
       } else {
         var fallbackCallback = window.setTimeout(function() {
           callback(-2);
-        }, #{SeleniumDriverSetup.timeouts[:script] * 1000 - 500});
-        $(document).bind('ajaxStop.canvasTestAjaxWait', function() {
+        }, #{SeleniumDriverSetup.timeouts[:script] * 1000 - 500})
+
+        function onXHRCompleted () {
           // while there are no outstanding requests, a new one could be
           // chained immediately afterwards in this thread of execution,
           // e.g. $.get(url).then(() => $.get(otherUrl))
           //
           // so wait a tick just to be sure we're done
           setTimeout(function() {
-            if ($.active == 0) {
-              $(document).unbind('ajaxStop.canvasTestAjaxWait');
+            if (window.__CANVAS_IN_FLIGHT_XHR_REQUESTS__ === 0) {
+              window.removeEventListener('canvasXHRComplete', onXHRCompleted)
               window.clearTimeout(fallbackCallback);
-              callback(0);
+              callback(0)
             }
-          }, 0);
-        });
+          }, 0)
+        }
+        window.addEventListener('canvasXHRComplete', onXHRCompleted)
       }
     JS
     result
@@ -117,7 +121,7 @@ module CustomWaitMethods
   end
 
   def keep_trying_until(seconds = SeleniumDriverSetup::SECONDS_UNTIL_GIVING_UP)
-    frd_error = Selenium::WebDriver::Error::TimeOutError.new
+    frd_error = Selenium::WebDriver::Error::TimeoutError.new
     wait_for(timeout: seconds, method: :keep_trying_until) do
       begin
         yield
@@ -161,8 +165,8 @@ module CustomWaitMethods
     ::SeleniumExtensions::FinderWaiting.wait_for(*args, &block)
   end
 
-  def wait_for_no_such_element(method: nil)
-    wait_for(method: method, ignore: []) do
+  def wait_for_no_such_element(method: nil, timeout: SeleniumExtensions::FinderWaiting.timeout)
+    wait_for(method: method, timeout: timeout, ignore: []) do
       # so find_element calls return ASAP
       disable_implicit_wait do
         yield

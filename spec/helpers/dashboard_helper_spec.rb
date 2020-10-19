@@ -49,14 +49,7 @@ describe DashboardHelper do
       expect(user_dashboard_view).to eq 'activity'
     end
 
-    it "should default to 'cards' if 'planner' was set but the feature flag is disabled" do
-      @current_user.dashboard_view = 'planner'
-      @current_user.save!
-      expect(user_dashboard_view).to eq 'cards'
-    end
-
-    it "should return 'planner' if set and feature is enabled" do
-      @course.root_account.enable_feature!(:student_planner)
+    it "should return 'planner' if set" do
       @current_user.dashboard_view = 'planner'
       @current_user.save!
       expect(user_dashboard_view).to eq 'planner'
@@ -76,6 +69,72 @@ describe DashboardHelper do
       @current_user.dashboard_view = 'activity'
       @current_user.save!
       expect(user_dashboard_view).to eq 'activity'
+    end
+  end
+
+  describe "map_courses_for_menu" do
+    context "Dashcard Reordering" do
+      before(:each) do
+        @account = Account.default
+        @domain_root_account = @account
+      end
+
+      it "returns the list of courses sorted by position" do
+        course1 = @account.courses.create!
+        course2 = @account.courses.create!
+        course3 = @account.courses.create!
+        user = user_model
+        course1.enroll_student(user)
+        course2.enroll_student(user)
+        course3.enroll_student(user)
+        courses = [course1, course2, course3]
+        user.set_dashboard_positions(
+          course1.asset_string => 3,
+          course2.asset_string => 2,
+          course3.asset_string => 1
+        )
+        @current_user = user
+        mapped_courses = map_courses_for_menu(courses)
+        expect(mapped_courses.map {|h| h[:id]}).to eq [course3.id, course2.id, course1.id]
+      end
+
+      it "handles sorting even when positions are strings" do
+        course1 = @account.courses.create!
+        course2 = @account.courses.create!
+        course3 = @account.courses.create!
+        user = user_model
+        course1.enroll_student(user)
+        course2.enroll_student(user)
+        course3.enroll_student(user)
+        courses = [course1, course2, course3]
+        user.set_dashboard_positions(
+          course1.asset_string => 3,
+          course2.asset_string => "2",
+          course3.asset_string => 1
+        )
+        @current_user = user
+        mapped_courses = map_courses_for_menu(courses)
+        expect(mapped_courses.map {|h| h[:id]}).to eq [course3.id, course2.id, course1.id]
+      end
+
+      it "handles sorting even when positions are nil" do
+        course1 = @account.courses.create!
+        course2 = @account.courses.create!
+        course3 = @account.courses.create!
+        user = user_model
+        course1.enroll_student(user)
+        course2.enroll_student(user)
+        course3.enroll_student(user)
+        courses = [course1, course2, course3]
+        user.set_dashboard_positions(
+          course1.asset_string => nil,
+          course2.asset_string => 2,
+          course3.asset_string => 1
+        )
+        @current_user = user
+        mapped_courses = map_courses_for_menu(courses)
+        expect(mapped_courses.map {|h| h[:id]}).to eq [course3.id, course2.id, course1.id]
+      end
     end
   end
 end

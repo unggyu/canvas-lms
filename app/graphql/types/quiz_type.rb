@@ -21,10 +21,11 @@ module Types
   class QuizType < ApplicationObjectType
     graphql_name "Quiz"
 
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
     implements Interfaces::TimestampInterface
+    implements Interfaces::ModuleItemInterface
+    implements Interfaces::LegacyIDInterface
 
     global_id_field :id
-    field :_id, ID, "legacy canvas id", method: :id, null: false
   end
 end

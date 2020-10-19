@@ -28,6 +28,7 @@ describe "Group Categories API", type: :request do
       'self_signup' => category.self_signup,
       'context_type' => category.context_type,
       "#{category.context_type.downcase}_id" => category.context_id,
+      'created_at' => category.created_at.iso8601,
       'group_limit' => category.group_limit,
       'groups_count' => category.groups.size,
       'unassigned_users_count' => category.unassigned_users.count(:all),
@@ -108,10 +109,10 @@ describe "Group Categories API", type: :request do
         expect(response.code).to eq '401'
       end
 
-      it "returns an error when search_term is fewer than 3 characters" do
-        json = api_call(:get, api_url, api_route, {:search_term => 'ab'}, {}, :expected_status => 400)
+      it "returns an error when search_term is fewer than 2 characters" do
+        json = api_call(:get, api_url, api_route, {:search_term => 'a'}, {}, :expected_status => 400)
         error = json["errors"].first
-        verify_json_error(error, "search_term", "invalid", "3 or more characters is required")
+        verify_json_error(error, "search_term", "invalid", "2 or more characters is required")
       end
 
       it "returns a list of users" do
@@ -466,7 +467,7 @@ describe "Group Categories API", type: :request do
                      @category_path_options.merge(:action => 'assign_unassigned_members',
                                                   :group_category_id => category.to_param),
                      {'sync' => true}
-        expect(response).to be_success
+        expect(response).to be_successful
       end
 
       it "should otherwise assign ungrouped users to groups in the category" do
@@ -484,7 +485,7 @@ describe "Group Categories API", type: :request do
                      @category_path_options.merge(:action => 'assign_unassigned_members',
                                                   :group_category_id => category.to_param)
 
-        expect(response).to be_success
+        expect(response).to be_successful
 
         run_jobs
 
@@ -500,7 +501,7 @@ describe "Group Categories API", type: :request do
                        @category_path_options.merge(:action => 'assign_unassigned_members',
                                                     :group_category_id => category.to_param)
 
-          expect(response).to be_success
+          expect(response).to be_successful
           json = JSON.parse(response.body)
           expect(json['url']).to match Regexp.new("http://www.example.com/api/v1/progress/\\d+")
           expect(json['completion']).to eq 0
@@ -613,7 +614,7 @@ describe "Group Categories API", type: :request do
         let(:json) { api_call(:get, "/api/v1/accounts/#{@account.to_param}/group_categories.json",
                               @category_path_options.merge(action:'index',
                                                            account_id: @account.to_param)) }
-        let(:admin) { Role.get_built_in_role("AccountAdmin") }
+        let(:admin) { admin_role(root_account_id: @account.resolved_root_account_id) }
 
         before :each do
           @user = User.create!(name: 'billy')

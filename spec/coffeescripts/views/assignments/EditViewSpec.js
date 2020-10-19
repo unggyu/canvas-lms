@@ -19,6 +19,7 @@
 import $ from 'jquery'
 import React from 'react'
 import _ from 'underscore'
+import RCELoader from 'jsx/shared/rce/serviceRCELoader'
 import SectionCollection from 'compiled/collections/SectionCollection'
 import Assignment from 'compiled/models/Assignment'
 import DueDateList from 'compiled/models/DueDateList'
@@ -32,11 +33,11 @@ import PeerReviewsSelector from 'compiled/views/assignments/PeerReviewsSelector'
 import fakeENV from 'helpers/fakeENV'
 import userSettings from 'compiled/userSettings'
 import assertions from 'helpers/assertions'
-import tinymce from 'compiled/editor/stocktiny'
 import 'helpers/jquery.simulate'
 
 const s_params = 'some super secure params'
 const fixtures = document.getElementById('fixtures')
+const currentOrigin = window.location.origin
 
 const nameLengthHelper = function(
   view,
@@ -58,8 +59,8 @@ const editView = function(assignmentOpts = {}) {
     assignment_overrides: []
   }
   assignmentOpts = {
-    ...assignmentOpts,
-    ...defaultAssignmentOpts
+    ...defaultAssignmentOpts,
+    ...assignmentOpts
   }
   const assignment = new Assignment(assignmentOpts)
 
@@ -119,12 +120,15 @@ QUnit.module('EditView', {
       MODERATED_GRADING_ENABLED: true,
       MODERATED_GRADING_MAX_GRADER_COUNT: 2,
       VALID_DATE_RANGE: {},
+      use_rce_enhancements: true,
       COURSE_ID: 1
     })
-    // Sometimes TinyMCE has stuff on the dom that causes issues, likely from things that
-    // don't clean up properly, we make sure that these run in a clean tiny state each time
-    tinymce.remove()
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
+
+    RCELoader.RCE = null
+
+    return RCELoader.loadRCE()
   },
   teardown() {
     this.server.restore()
@@ -315,7 +319,7 @@ test('does not allow point value of "" if grading type is letter', function() {
     'Points possible must be 0 or more for selected grading type'
   )
 
-  //removes student group
+  // removes student group
   view.$('#has_group_category').click()
   equal(view.getFormData().groupCategoryId, null)
 })
@@ -328,6 +332,13 @@ test('does not allow blank external tool url', function() {
     errors['external_tool_tag_attributes[url]'][0].message,
     'External Tool URL cannot be left blank'
   )
+})
+
+test('does not allow blank default external tool url', function() {
+  const view = this.editView()
+  const data = {submission_type: 'external_tool'}
+  const errors = view._validateExternalTool(data, [])
+  equal(errors['default-tool-launch-button'][0].message, 'External Tool URL cannot be left blank')
 })
 
 test('does not validate allowed extensions if file uploads is not a submission type', function() {
@@ -359,20 +370,39 @@ test('routes to discussion details normally', function() {
 })
 
 test('routes to return_to', function() {
-  const view = this.editView({html_url: 'http://foo'})
-  equal(view.locationAfterSave({return_to: 'http://bar'}), 'http://bar')
+  const view = this.editView({html_url: currentOrigin + '/foo'})
+  equal(view.locationAfterSave({return_to: currentOrigin + '/bar'}), currentOrigin + '/bar')
+})
+
+test('does not route to return_to with javascript protocol', function() {
+  const view = this.editView({html_url: currentOrigin + '/foo'})
+  // eslint-disable-next-line no-script-url
+  equal(view.locationAfterSave({return_to: 'javascript:alert(1)'}), currentOrigin + '/foo')
 })
 
 test('cancels to env normally', function() {
-  ENV.CANCEL_TO = 'http://foo'
+  ENV.CANCEL_TO = currentOrigin + '/foo'
   const view = this.editView()
-  equal(view.locationAfterCancel({}), 'http://foo')
+  equal(view.locationAfterCancel({}), currentOrigin + '/foo')
 })
 
 test('cancels to return_to', function() {
-  ENV.CANCEL_TO = 'http://foo'
+  ENV.CANCEL_TO = currentOrigin + '/foo'
   const view = this.editView()
-  equal(view.locationAfterCancel({return_to: 'http://bar'}), 'http://bar')
+  equal(view.locationAfterCancel({return_to: currentOrigin + '/bar'}), currentOrigin + '/bar')
+})
+
+test('does not cancel to return_to with javascript protocol', function() {
+  ENV.CANCEL_TO = currentOrigin + '/foo'
+  const view = this.editView()
+  // eslint-disable-next-line no-script-url
+  equal(view.locationAfterCancel({return_to: 'javascript:alert(1)'}), currentOrigin + '/foo')
+})
+
+test('does not follow a cross-origin return_to', function() {
+  ENV.CANCEL_TO = currentOrigin + '/foo'
+  const view = this.editView()
+  equal(view.locationAfterCancel({return_to: 'http://evil.com'}), currentOrigin + '/foo')
 })
 
 test('disables fields when inClosedGradingPeriod', function() {
@@ -410,7 +440,7 @@ test('disableCheckbox is called for a disabled checkbox', function() {
   $('<input type="checkbox" id="checkbox_fixture"/>').appendTo($(view.$el))
 
   // because we're stubbing so late we must call disableFields() again
-  const disableCheckboxStub = this.stub(view, 'disableCheckbox')
+  const disableCheckboxStub = sandbox.stub(view, 'disableCheckbox')
   view.disableFields()
   equal(disableCheckboxStub.called, true)
 })
@@ -422,7 +452,7 @@ test('ignoreClickHandler is called for a disabled radio', function() {
   $('<input type="radio" id="fixture_radio"/>').appendTo($(view.$el))
 
   // because we're stubbing so late we must call disableFields() again
-  const ignoreClickHandlerStub = this.stub(view, 'ignoreClickHandler')
+  const ignoreClickHandlerStub = sandbox.stub(view, 'ignoreClickHandler')
   view.disableFields()
 
   view.$el.find('#fixture_radio').click()
@@ -438,7 +468,7 @@ test('lockSelectValueHandler is called for a disabled select', function() {
   view.$el.appendTo($('#fixtures'))
 
   // because we're stubbing so late we must call disableFields() again
-  const lockSelectValueHandlerStub = this.stub(view, 'lockSelectValueHandler')
+  const lockSelectValueHandlerStub = sandbox.stub(view, 'lockSelectValueHandler')
   view.disableFields()
   equal(lockSelectValueHandlerStub.calledOnce, true)
 })
@@ -480,6 +510,123 @@ test('rounds points_possible', function() {
   equal(data.points_possible, 1.23)
 })
 
+test('sets seconds of due_at to 59 if the new minute value is 59', function() {
+  const view = this.editView({
+    due_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:58:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.due_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  strictEqual(view.getFormData().due_at, '2000-08-28T11:59:59.000Z')
+})
+
+test('sets seconds of due_at to 00 if the new minute value is not 59', function() {
+  const view = this.editView({
+    due_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.due_at = $.unfudgeDateForProfileTimezone(new Date('2000-09-28T11:58:23'))
+  strictEqual(view.getFormData().due_at, '2000-09-28T11:58:00.000Z')
+})
+
+// The UI doesn't allow editing the seconds value and always returns 00. If
+// the seconds value was set to something different prior to the update, keep
+// that value.
+test('keeps original due_at seconds if only the seconds value has changed', function() {
+  const view = this.editView({
+    due_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-29T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.due_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-29T11:59:59'))
+  strictEqual(view.getFormData().due_at, '2000-08-29T11:59:23.000Z')
+})
+
+test('keeps original due_at seconds if the date has not changed', function() {
+  const view = this.editView({
+    due_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.due_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  strictEqual(view.getFormData().due_at, '2000-08-28T11:59:23.000Z')
+})
+
+test('sets seconds of unlock_at to 59 if the new minute value is 59', function() {
+  const view = this.editView({
+    unlock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:58:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.unlock_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  strictEqual(view.getFormData().unlock_at, '2000-08-28T11:59:59.000Z')
+})
+
+test('sets seconds of unlock_at to 00 if the new minute value is not 59', function() {
+  const view = this.editView({
+    unlock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.unlock_at = $.unfudgeDateForProfileTimezone(new Date('2000-09-28T11:58:23'))
+  strictEqual(view.getFormData().unlock_at, '2000-09-28T11:58:00.000Z')
+})
+
+// The UI doesn't allow editing the seconds value and always returns 00. If
+// the seconds value was set to something different prior to the update, keep
+// that value.
+test('keeps original unlock_at seconds if only the seconds value has changed', function() {
+  const view = this.editView({
+    unlock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-29T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.unlock_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-29T11:59:59'))
+  strictEqual(view.getFormData().unlock_at, '2000-08-29T11:59:23.000Z')
+})
+
+test('keeps original unlock_at seconds if the date has not changed', function() {
+  const view = this.editView({
+    unlock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.unlock_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  strictEqual(view.getFormData().unlock_at, '2000-08-28T11:59:23.000Z')
+})
+
+test('sets seconds of lock_at to 59 if the new minute value is 59', function() {
+  const view = this.editView({
+    lock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:58:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.lock_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  strictEqual(view.getFormData().lock_at, '2000-08-28T11:59:59.000Z')
+})
+
+test('sets seconds of lock_at to 00 if the new minute value is not 59', function() {
+  const view = this.editView({
+    lock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.lock_at = $.unfudgeDateForProfileTimezone(new Date('2000-09-28T11:58:23'))
+  strictEqual(view.getFormData().lock_at, '2000-09-28T11:58:00.000Z')
+})
+
+// The UI doesn't allow editing the seconds value and always returns 00. If
+// the seconds value was set to something different prior to the update, keep
+// that value.
+test('keeps original lock_at seconds if only the seconds value has changed', function() {
+  const view = this.editView({
+    lock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-29T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.lock_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-29T11:59:59'))
+  strictEqual(view.getFormData().lock_at, '2000-08-29T11:59:23.000Z')
+})
+
+test('keeps original lock_at seconds if the date has not changed', function() {
+  const view = this.editView({
+    lock_at: $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  })
+  const override = view.assignment.attributes.assignment_overrides.models[0]
+  override.attributes.lock_at = $.unfudgeDateForProfileTimezone(new Date('2000-08-28T11:59:23'))
+  strictEqual(view.getFormData().lock_at, '2000-08-28T11:59:23.000Z')
+})
+
 QUnit.module('EditView: handleGroupCategoryChange', {
   setup() {
     fixtures.innerHTML = `
@@ -499,6 +646,7 @@ QUnit.module('EditView: handleGroupCategoryChange', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
   teardown() {
     this.server.restore()
@@ -543,7 +691,7 @@ test('calls togglePeerReviewsAndGroupCategoryEnabled', function() {
   view.togglePeerReviewsAndGroupCategoryEnabled.restore()
 })
 
-QUnit.module('#handleAnonymousGradingChange', (hooks) => {
+QUnit.module('#handleAnonymousGradingChange', hooks => {
   let server
   let view
 
@@ -565,6 +713,7 @@ QUnit.module('#handleAnonymousGradingChange', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -610,9 +759,17 @@ QUnit.module('#handleAnonymousGradingChange', (hooks) => {
     const groupCategoryCheckbox = document.getElementById('has_group_category')
     strictEqual(groupCategoryCheckbox.disabled, true)
   })
+
+  test('leaves the group category box disabled if the assignment has submissions', () => {
+    disableCheckbox('has_group_category')
+    view.model.set('has_submitted_submissions', true)
+    view.handleAnonymousGradingChange()
+    const groupCategoryCheckbox = document.getElementById('has_group_category')
+    strictEqual(groupCategoryCheckbox.disabled, true)
+  })
 })
 
-QUnit.module('#togglePeerReviewsAndGroupCategoryEnabled', (hooks) => {
+QUnit.module('#togglePeerReviewsAndGroupCategoryEnabled', hooks => {
   let server
   let view
 
@@ -634,6 +791,7 @@ QUnit.module('#togglePeerReviewsAndGroupCategoryEnabled', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -693,6 +851,7 @@ QUnit.module('EditView: group category inClosedGradingPeriod', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
   teardown() {
     this.server.restore()
@@ -732,6 +891,7 @@ QUnit.module('EditView: enableCheckbox', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
 
   teardown() {
@@ -747,9 +907,9 @@ QUnit.module('EditView: enableCheckbox', {
 
 test('enables checkbox', function() {
   const view = this.editView()
-  this.stub(view.$('#assignment_peer_reviews'), 'parent').returns(
-    view.$('#assignment_peer_reviews')
-  )
+  sandbox
+    .stub(view.$('#assignment_peer_reviews'), 'parent')
+    .returns(view.$('#assignment_peer_reviews'))
 
   view.$('#assignment_peer_reviews').prop('disabled', true)
   view.enableCheckbox(view.$('#assignment_peer_reviews'))
@@ -758,7 +918,7 @@ test('enables checkbox', function() {
 
 test('does nothing if assignment is in closed grading period', function() {
   const view = this.editView()
-  this.stub(view.assignment, 'inClosedGradingPeriod').returns(true)
+  sandbox.stub(view.assignment, 'inClosedGradingPeriod').returns(true)
 
   view.$('#assignment_peer_reviews').prop('disabled', true)
   view.enableCheckbox(view.$('#assignment_peer_reviews'))
@@ -779,6 +939,7 @@ QUnit.module('EditView: setDefaultsIfNew', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
   teardown() {
     this.server.restore()
@@ -791,21 +952,21 @@ QUnit.module('EditView: setDefaultsIfNew', {
 })
 
 test('returns values from localstorage', function() {
-  this.stub(userSettings, 'contextGet').returns({submission_types: ['foo']})
+  sandbox.stub(userSettings, 'contextGet').returns({submission_types: ['foo']})
   const view = this.editView()
   view.setDefaultsIfNew()
   deepEqual(view.assignment.get('submission_types'), ['foo'])
 })
 
 test('returns string booleans as integers', function() {
-  this.stub(userSettings, 'contextGet').returns({peer_reviews: '1'})
+  sandbox.stub(userSettings, 'contextGet').returns({peer_reviews: '1'})
   const view = this.editView()
   view.setDefaultsIfNew()
   equal(view.assignment.get('peer_reviews'), 1)
 })
 
 test('doesnt overwrite existing assignment settings', function() {
-  this.stub(userSettings, 'contextGet').returns({assignment_group_id: 99})
+  sandbox.stub(userSettings, 'contextGet').returns({assignment_group_id: 99})
   const view = this.editView()
   view.assignment.set('assignment_group_id', 22)
   view.setDefaultsIfNew()
@@ -826,7 +987,7 @@ test('doesnt overwrite assignment submission type', function() {
 })
 
 test('will overwrite empty arrays', function() {
-  this.stub(userSettings, 'contextGet').returns({submission_types: ['foo']})
+  sandbox.stub(userSettings, 'contextGet').returns({submission_types: ['foo']})
   const view = this.editView()
   view.assignment.set('submission_types', [])
   view.setDefaultsIfNew()
@@ -846,8 +1007,9 @@ QUnit.module('EditView: setDefaultsIfNew: no localStorage', {
       VALID_DATE_RANGE: {},
       COURSE_ID: 1
     })
-    this.stub(userSettings, 'contextGet').returns(null)
+    sandbox.stub(userSettings, 'contextGet').returns(null)
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
   teardown() {
     this.server.restore()
@@ -879,6 +1041,7 @@ QUnit.module('EditView: cacheAssignmentSettings', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
   teardown() {
     this.server.restore()
@@ -892,7 +1055,7 @@ QUnit.module('EditView: cacheAssignmentSettings', {
 
 test('saves valid attributes to localstorage', function() {
   const view = this.editView()
-  this.stub(view, 'getFormData').returns({points_possible: 34})
+  sandbox.stub(view, 'getFormData').returns({points_possible: 34})
   userSettings.contextSet('new_assignment_settings', {})
   view.cacheAssignmentSettings()
   equal(34, userSettings.contextGet('new_assignment_settings').points_possible)
@@ -900,7 +1063,7 @@ test('saves valid attributes to localstorage', function() {
 
 test('rejects invalid attributes when caching', function() {
   const view = this.editView()
-  this.stub(view, 'getFormData').returns({invalid_attribute_example: 30})
+  sandbox.stub(view, 'getFormData').returns({invalid_attribute_example: 30})
   userSettings.contextSet('new_assignment_settings', {})
   view.cacheAssignmentSettings()
   equal(null, userSettings.contextGet('new_assignment_settings').invalid_attribute_example)
@@ -912,7 +1075,7 @@ QUnit.module('EditView: Conditional Release', {
     fakeENV.setup({
       AVAILABLE_MODERATORS: [],
       current_user_roles: ['teacher'],
-      CONDITIONAL_RELEASE_ENV: {assignment: {id: 1}, jwt: 'foo'},
+      CONDITIONAL_RELEASE_ENV: {assignment: {id: 1}},
       CONDITIONAL_RELEASE_SERVICE_ENABLED: true,
       HAS_GRADED_SUBMISSIONS: false,
       LOCALE: 'en',
@@ -923,6 +1086,7 @@ QUnit.module('EditView: Conditional Release', {
     })
     $(document).on('submit', () => false)
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
 
   teardown() {
@@ -944,14 +1108,14 @@ test('attaches conditional release editor', function() {
 
 test('calls update on first switch', function() {
   const view = this.editView()
-  const stub = this.stub(view.conditionalReleaseEditor, 'updateAssignment')
+  const stub = sandbox.stub(view.conditionalReleaseEditor, 'updateAssignment')
   view.updateConditionalRelease()
   ok(stub.calledOnce)
 })
 
 test('calls update when modified once', function() {
   const view = this.editView()
-  const stub = this.stub(view.conditionalReleaseEditor, 'updateAssignment')
+  const stub = sandbox.stub(view.conditionalReleaseEditor, 'updateAssignment')
   view.onChange()
   view.updateConditionalRelease()
   ok(stub.calledOnce)
@@ -959,7 +1123,7 @@ test('calls update when modified once', function() {
 
 test('does not call update when not modified', function() {
   const view = this.editView()
-  const stub = this.stub(view.conditionalReleaseEditor, 'updateAssignment')
+  const stub = sandbox.stub(view.conditionalReleaseEditor, 'updateAssignment')
   view.updateConditionalRelease()
   stub.reset()
   view.updateConditionalRelease()
@@ -969,7 +1133,7 @@ test('does not call update when not modified', function() {
 test('validates conditional release', function() {
   const view = this.editView()
   ENV.ASSIGNMENT = view.assignment
-  const stub = this.stub(view.conditionalReleaseEditor, 'validateBeforeSave').returns('foo')
+  const stub = sandbox.stub(view.conditionalReleaseEditor, 'validateBeforeSave').returns('foo')
   const errors = view.validateBeforeSave(view.getFormData(), {})
   ok(errors.conditional_release === 'foo')
 })
@@ -985,7 +1149,7 @@ test('calls save in conditional release', function(assert) {
     .promise()
   const mockSuper = sinon.mock(EditView.__super__)
   mockSuper.expects('saveFormData').returns(superPromise)
-  const stub = this.stub(view.conditionalReleaseEditor, 'save').returns(crPromise)
+  const stub = sandbox.stub(view.conditionalReleaseEditor, 'save').returns(crPromise)
   const finalPromise = view.saveFormData()
   return finalPromise.then(() => {
     mockSuper.verify()
@@ -996,7 +1160,7 @@ test('calls save in conditional release', function(assert) {
 
 test('focuses in conditional release editor if conditional save validation fails', function() {
   const view = this.editView()
-  const focusOnError = this.stub(view.conditionalReleaseEditor, 'focusOnError')
+  const focusOnError = sandbox.stub(view.conditionalReleaseEditor, 'focusOnError')
   view.showErrors({conditional_release: {type: 'foo'}})
   ok(focusOnError.called)
 })
@@ -1015,6 +1179,7 @@ QUnit.module('Editview: Intra-Group Peer Review toggle', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
   teardown() {
     this.server.restore()
@@ -1027,7 +1192,7 @@ QUnit.module('Editview: Intra-Group Peer Review toggle', {
 })
 
 test('only appears for group assignments', function() {
-  this.stub(userSettings, 'contextGet').returns({
+  sandbox.stub(userSettings, 'contextGet').returns({
     peer_reviews: '1',
     group_category_id: 1,
     automatic_peer_reviews: '1'
@@ -1038,7 +1203,7 @@ test('only appears for group assignments', function() {
 })
 
 test('does not appear when reviews are being assigned manually', function() {
-  this.stub(userSettings, 'contextGet').returns({
+  sandbox.stub(userSettings, 'contextGet').returns({
     peer_reviews: '1',
     group_category_id: 1
   })
@@ -1048,7 +1213,7 @@ test('does not appear when reviews are being assigned manually', function() {
 })
 
 test('toggle does not appear when there is no group', function() {
-  this.stub(userSettings, 'contextGet').returns({peer_reviews: '1'})
+  sandbox.stub(userSettings, 'contextGet').returns({peer_reviews: '1'})
   const view = this.editView()
   view.$el.appendTo($('#fixtures'))
   notOk(view.$('#intra_group_peer_reviews').is(':visible'))
@@ -1069,6 +1234,7 @@ QUnit.module('EditView: Assignment Configuration Tools', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   },
 
   teardown() {
@@ -1131,6 +1297,30 @@ test('it is hidden if the plagiarism_detection_platform flag is disabled', funct
   equal(view.$('#similarity_detection_tools').css('display'), 'none')
 })
 
+QUnit.module('EditView: Assignment External Tools', {
+  setup() {
+    fakeENV.setup({
+      COURSE_ID: 1
+    })
+    this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
+  },
+
+  teardown() {
+    this.server.restore()
+    fakeENV.teardown()
+  },
+
+  editView() {
+    return editView.apply(this, arguments)
+  }
+})
+
+test('it attaches assignment external tools component', function() {
+  const view = this.editView()
+  equal(view.$assignmentExternalTools.children().size(), 1)
+})
+
 QUnit.module('EditView: Quizzes 2', {
   setup() {
     fakeENV.setup({
@@ -1144,6 +1334,7 @@ QUnit.module('EditView: Quizzes 2', {
       COURSE_ID: 1
     })
     this.server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     this.view = editView({
       submission_types: ['external_tool'],
       is_quiz_lti_assignment: true
@@ -1160,7 +1351,7 @@ test('does not show the description textarea', function() {
   equal(this.view.$description.length, 0)
 })
 
-test('does not show the moderated grading checkbox', function() {
+test('does not show the moderated grading checkbox', () => {
   equal(document.getElementById('assignment_moderated_grading'), null)
 })
 
@@ -1168,8 +1359,8 @@ test('does not show the load in new tab checkbox', function() {
   equal(this.view.$externalToolsNewTab.length, 0)
 })
 
-QUnit.module('EditView: anonymous grading', (hooks) => {
-  let server;
+QUnit.module('EditView: anonymous grading', hooks => {
+  let server
   hooks.beforeEach(() => {
     fixtures.innerHTML = '<span data-component="ModeratedGradingFormFieldGroup"></span>'
     fakeENV.setup({
@@ -1183,13 +1374,14 @@ QUnit.module('EditView: anonymous grading', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
-  });
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
+  })
 
   hooks.afterEach(() => {
     server.restore()
     fakeENV.teardown()
     fixtures.innerHTML = ''
-  });
+  })
 
   test('does not show the checkbox when environment is not set', () => {
     const view = editView()
@@ -1213,9 +1405,7 @@ QUnit.module('EditView: anonymous grading', (hooks) => {
 
   test('is disabled when group assignment is enabled', () => {
     ENV.ANONYMOUS_GRADING_ENABLED = true
-    ENV.GROUP_CATEGORIES = [
-      {id: '1', name: 'Group Category #1'}
-    ]
+    ENV.GROUP_CATEGORIES = [{id: '1', name: 'Group Category #1'}]
     const view = editView({group_category_id: '1'})
     view.$el.appendTo($('#fixtures'))
     view.afterRender() // call this because it's called before everything is rendered in the specs
@@ -1225,11 +1415,10 @@ QUnit.module('EditView: anonymous grading', (hooks) => {
   })
 })
 
-QUnit.module('EditView: Anonymous Instructor Annotations', (hooks) => {
+QUnit.module('EditView: Anonymous Instructor Annotations', hooks => {
   let server
 
-  hooks.beforeEach(() => {
-    fixtures.innerHTML = '<span data-component="ModeratedGradingFormFieldGroup"></span>'
+  function setupFakeEnv(envOptions = {}) {
     fakeENV.setup({
       AVAILABLE_MODERATORS: [],
       current_user_roles: ['teacher'],
@@ -1238,9 +1427,15 @@ QUnit.module('EditView: Anonymous Instructor Annotations', (hooks) => {
       MODERATED_GRADING_ENABLED: true,
       MODERATED_GRADING_MAX_GRADER_COUNT: 2,
       VALID_DATE_RANGE: {},
-      COURSE_ID: 1
+      COURSE_ID: 1,
+      ...envOptions
     })
+  }
+
+  hooks.beforeEach(() => {
+    fixtures.innerHTML = '<span data-component="ModeratedGradingFormFieldGroup"></span>'
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   })
 
   hooks.afterEach(() => {
@@ -1249,13 +1444,23 @@ QUnit.module('EditView: Anonymous Instructor Annotations', (hooks) => {
     fixtures.innerHTML = ''
   })
 
-  test('shows a checkbox', () => {
-    const view = editView()
-    strictEqual(view.$el.find('input#assignment_anonymous_instructor_annotations').length, 1)
+  test('when environment is not set, does not enable editing the property', () => {
+    setupFakeEnv()
+    strictEqual(editView().$el.find('input#assignment_anonymous_instructor_annotations').length, 0)
+  })
+
+  test('when environment is set to false, does not enable editing the property', () => {
+    setupFakeEnv({ANONYMOUS_INSTRUCTOR_ANNOTATIONS_ENABLED: false})
+    strictEqual(editView().$el.find('input#assignment_anonymous_instructor_annotations').length, 0)
+  })
+
+  test('when environment is set to true, enables editing the property', () => {
+    setupFakeEnv({ANONYMOUS_INSTRUCTOR_ANNOTATIONS_ENABLED: true})
+    strictEqual(editView().$el.find('input#assignment_anonymous_instructor_annotations').length, 1)
   })
 })
 
-QUnit.module('EditView: Anonymous Moderated Marking', (hooks) => {
+QUnit.module('EditView: Anonymous Moderated Marking', hooks => {
   let server
 
   hooks.beforeEach(() => {
@@ -1274,6 +1479,7 @@ QUnit.module('EditView: Anonymous Moderated Marking', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
   })
 
   hooks.afterEach(() => {
@@ -1289,7 +1495,7 @@ QUnit.module('EditView: Anonymous Moderated Marking', (hooks) => {
   })
 })
 
-QUnit.module('EditView#validateFinalGrader', (hooks) => {
+QUnit.module('EditView#validateFinalGrader', hooks => {
   let server
   let view
 
@@ -1309,6 +1515,7 @@ QUnit.module('EditView#validateFinalGrader', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -1319,22 +1526,22 @@ QUnit.module('EditView#validateFinalGrader', (hooks) => {
   })
 
   test('returns no errors if moderated grading is turned off', () => {
-    const errors = view.validateFinalGrader({ moderated_grading: 'off' })
+    const errors = view.validateFinalGrader({moderated_grading: 'off'})
     strictEqual(Object.keys(errors).length, 0)
   })
 
   test('returns no errors if moderated grading is turned on and there is a final grader', () => {
-    const errors = view.validateFinalGrader({ moderated_grading: 'on', final_grader_id: '89' })
+    const errors = view.validateFinalGrader({moderated_grading: 'on', final_grader_id: '89'})
     strictEqual(Object.keys(errors).length, 0)
   })
 
   test('returns an error if moderated grading is turned on and there is no final grader', () => {
-    const errors = view.validateFinalGrader({ moderated_grading: 'on', final_grader_id: '' })
+    const errors = view.validateFinalGrader({moderated_grading: 'on', final_grader_id: ''})
     deepEqual(Object.keys(errors), ['final_grader_id'])
   })
 })
 
-QUnit.module('EditView#validateGraderCount', (hooks) => {
+QUnit.module('EditView#validateGraderCount', hooks => {
   let server
   let view
 
@@ -1354,6 +1561,7 @@ QUnit.module('EditView#validateGraderCount', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -1364,35 +1572,38 @@ QUnit.module('EditView#validateGraderCount', (hooks) => {
   })
 
   test('returns no errors if moderated grading is turned off', () => {
-    const errors = view.validateGraderCount({ moderated_grading: 'off' })
+    const errors = view.validateGraderCount({moderated_grading: 'off'})
     strictEqual(Object.keys(errors).length, 0)
   })
 
   test('returns no errors if moderated grading is turned on and grader count is in an acceptable range', () => {
-    const errors = view.validateGraderCount({ moderated_grading: 'on', grader_count: '6' })
+    const errors = view.validateGraderCount({moderated_grading: 'on', grader_count: '6'})
     strictEqual(Object.keys(errors).length, 0)
   })
 
-  test('returns no errors if moderated grading is turned on and grader count is greater than max grader count', () => {
-    const errors = view.validateGraderCount({ moderated_grading: 'on', grader_count: '8' })
+  test('returns no errors if moderated grading is turned on and grader count is greater than available grader count', () => {
+    const errors = view.validateGraderCount({moderated_grading: 'on', grader_count: '8'})
     strictEqual(Object.keys(errors).length, 0)
   })
 
   test('returns an error if moderated grading is turned on and grader count is empty', () => {
-    const errors = view.validateGraderCount({ moderated_grading: 'on', grader_count: '' })
+    const errors = view.validateGraderCount({moderated_grading: 'on', grader_count: ''})
     deepEqual(Object.keys(errors), ['grader_count'])
   })
 
   test('returns an error if moderated grading is turned on and grader count is 0', () => {
-    const errors = view.validateGraderCount({ moderated_grading: 'on', grader_count: '0' })
+    const errors = view.validateGraderCount({moderated_grading: 'on', grader_count: '0'})
     deepEqual(Object.keys(errors), ['grader_count'])
   })
 })
 
-QUnit.module('EditView#renderModeratedGradingFormFieldGroup', (suiteHooks) => {
+QUnit.module('EditView#renderModeratedGradingFormFieldGroup', suiteHooks => {
   let view
   let server
-  const availableModerators = [{ name: 'John Doe', id: '21' }, { name: 'Jane Doe', id: '89' }]
+  const availableModerators = [
+    {name: 'John Doe', id: '21'},
+    {name: 'Jane Doe', id: '89'}
+  ]
 
   suiteHooks.beforeEach(() => {
     fixtures.innerHTML = `
@@ -1412,6 +1623,7 @@ QUnit.module('EditView#renderModeratedGradingFormFieldGroup', (suiteHooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -1432,7 +1644,7 @@ QUnit.module('EditView#renderModeratedGradingFormFieldGroup', (suiteHooks) => {
     strictEqual(document.getElementsByClassName('ModeratedGrading__Container').length, 0)
   })
 
-  QUnit.module('props passed to the component', (hooks) => {
+  QUnit.module('props passed to the component', hooks => {
     hooks.beforeEach(() => {
       ENV.MODERATED_GRADING_ENABLED = true
       sinon.spy(React, 'createElement')
@@ -1464,9 +1676,9 @@ QUnit.module('EditView#renderModeratedGradingFormFieldGroup', (suiteHooks) => {
       strictEqual(props().availableModerators, availableModerators)
     })
 
-    test('passes max grader count in the ENV as a prop to the component', () => {
+    test('passes available graders count in the ENV as a prop to the component', () => {
       view.renderModeratedGradingFormFieldGroup()
-      strictEqual(props().maxGraderCount, ENV.MODERATED_GRADING_MAX_GRADER_COUNT)
+      strictEqual(props().availableGradersCount, ENV.MODERATED_GRADING_MAX_GRADER_COUNT)
     })
 
     test('passes locale in the ENV as a prop to the component', () => {
@@ -1511,7 +1723,10 @@ QUnit.module('EditView#renderModeratedGradingFormFieldGroup', (suiteHooks) => {
 
     test('passes handleGraderCommentsVisibleToGradersChanged as a prop to the component', () => {
       view.renderModeratedGradingFormFieldGroup()
-      strictEqual(props().onGraderCommentsVisibleToGradersChange, view.handleGraderCommentsVisibleToGradersChanged)
+      strictEqual(
+        props().onGraderCommentsVisibleToGradersChange,
+        view.handleGraderCommentsVisibleToGradersChanged
+      )
     })
 
     test('passes handleModeratedGradingChanged as a prop to the component', () => {
@@ -1521,7 +1736,7 @@ QUnit.module('EditView#renderModeratedGradingFormFieldGroup', (suiteHooks) => {
   })
 })
 
-QUnit.module('EditView#handleModeratedGradingChanged', (hooks) => {
+QUnit.module('EditView#handleModeratedGradingChanged', hooks => {
   let server
   let view
 
@@ -1544,6 +1759,7 @@ QUnit.module('EditView#handleModeratedGradingChanged', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -1565,22 +1781,28 @@ QUnit.module('EditView#handleModeratedGradingChanged', (hooks) => {
     view.togglePeerReviewsAndGroupCategoryEnabled.restore()
   })
 
-  test('reveals the "Graders Anonymous to Graders" option when passed true and ' +
-  'grader comments are visible to graders', () => {
-    view.assignment.graderCommentsVisibleToGraders(true)
-    view.handleModeratedGradingChanged(true)
-    const label = document.querySelector('label[for="assignment_graders_anonymous_to_graders"]')
-    const isHidden = getComputedStyle(label).getPropertyValue('display') === 'none'
-    strictEqual(isHidden, false)
-  })
+  test(
+    'reveals the "Graders Anonymous to Graders" option when passed true and ' +
+      'grader comments are visible to graders',
+    () => {
+      view.assignment.graderCommentsVisibleToGraders(true)
+      view.handleModeratedGradingChanged(true)
+      const label = document.querySelector('label[for="assignment_graders_anonymous_to_graders"]')
+      const isHidden = getComputedStyle(label).getPropertyValue('display') === 'none'
+      strictEqual(isHidden, false)
+    }
+  )
 
-  test('does not reveal the "Graders Anonymous to Graders" option when passed true and ' +
-  'grader comments are not visible to graders', () => {
-    view.handleModeratedGradingChanged(true)
-    const label = document.querySelector('label[for="assignment_graders_anonymous_to_graders"]')
-    const isHidden = getComputedStyle(label).getPropertyValue('display') === 'none'
-    strictEqual(isHidden, true)
-  })
+  test(
+    'does not reveal the "Graders Anonymous to Graders" option when passed true and ' +
+      'grader comments are not visible to graders',
+    () => {
+      view.handleModeratedGradingChanged(true)
+      const label = document.querySelector('label[for="assignment_graders_anonymous_to_graders"]')
+      const isHidden = getComputedStyle(label).getPropertyValue('display') === 'none'
+      strictEqual(isHidden, true)
+    }
+  )
 
   test('calls uncheckAndHideGraderAnonymousToGraders when passed false', () => {
     sinon.stub(view, 'uncheckAndHideGraderAnonymousToGraders')
@@ -1590,7 +1812,7 @@ QUnit.module('EditView#handleModeratedGradingChanged', (hooks) => {
   })
 })
 
-QUnit.module('EditView#handleGraderCommentsVisibleToGradersChanged', (hooks) => {
+QUnit.module('EditView#handleGraderCommentsVisibleToGradersChanged', hooks => {
   let server
   let view
 
@@ -1613,6 +1835,7 @@ QUnit.module('EditView#handleGraderCommentsVisibleToGradersChanged', (hooks) => 
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 
@@ -1642,7 +1865,7 @@ QUnit.module('EditView#handleGraderCommentsVisibleToGradersChanged', (hooks) => 
   })
 })
 
-QUnit.module('EditView#uncheckAndHideGraderAnonymousToGraders', (hooks) => {
+QUnit.module('EditView#uncheckAndHideGraderAnonymousToGraders', hooks => {
   let server
   let view
 
@@ -1665,6 +1888,7 @@ QUnit.module('EditView#uncheckAndHideGraderAnonymousToGraders', (hooks) => {
       COURSE_ID: 1
     })
     server = sinon.fakeServer.create()
+    sandbox.fetch.mock('path:/api/v1/courses/1/lti_apps/launch_definitions', 200)
     view = editView()
   })
 

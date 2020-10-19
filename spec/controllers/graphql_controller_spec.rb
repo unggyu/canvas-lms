@@ -27,14 +27,14 @@ describe GraphQLController do
   context "graphiql" do
     it "requires a user" do
       get :graphiql
-      expect(response.location).to match /\/login$/
+      expect(response.location).to match(/\/login$/)
     end
 
-    it "doesn't work in production for normal users" do
+    it "works in production for normal users" do
       allow(Rails.env).to receive(:production?).and_return(true)
       user_session(@student)
       get :graphiql
-      expect(response.status).to eq 401
+      expect(response.status).to eq 200
     end
 
     it "works in production for site admins" do
@@ -50,10 +50,18 @@ describe GraphQLController do
       get :graphiql
       expect(response.status).to eq 200
     end
+  end
 
+  context "graphql, without a session" do
+    it "requires a user" do
+      post :execute, params: {query: "{}"}
+      expect(response.location).to match(/\/login$/)
+    end
   end
 
   context "graphql" do
+    before { user_session(@student) }
+
     it "works" do
       post :execute, params: {query: "{}"}
       expect(JSON.parse(response.body)["errors"]).not_to be_blank
@@ -61,14 +69,22 @@ describe GraphQLController do
 
     context "data dog metrics" do
       it "reports data dog metrics if requested" do
-        expect_any_instance_of(Tracers::DatadogTracer).to receive :trace
+        expect(InstStatsd::Statsd).to receive(:increment).with("graphql.ASDF.count", tags: anything)
         request.headers["GraphQL-Metrics"] = "true"
-        post :execute, params: {query: '{legacyNode(User, 1) { id }'}
+        post :execute, params: {query: 'query ASDF { course(id: "1") { id } }'}
       end
+    end
+  end
 
-      it "doesn't report normally" do
-        expect_any_instance_of(Tracers::DatadogTracer).not_to receive :trace
-        post :execute, params: {query: '{legacyNode(User, 1) { id }'}
+  context "with release flag require_execute_auth disabled" do
+
+    context "graphql, without a session" do
+      it "works" do
+        expect(Account.site_admin).to(
+          receive(:feature_enabled?).with(:disable_graphql_authentication).and_return(true)
+        )
+        post :execute, params: {query: "{}"}
+        expect(JSON.parse(response.body)["errors"]).not_to be_blank
       end
     end
   end
@@ -79,13 +95,13 @@ describe GraphQLController do
     # this is the dumbest place to put this test except every where else i
     # could think of
     it "records datadog metrics if requested" do
-      expect_any_instance_of(Datadog::Statsd).to receive :increment
+      expect(InstStatsd::Statsd).to receive(:increment)
       get :graphiql, params: {datadog_metric: "this_is_a_test"}
     end
 
     it "doesn't normally datadog" do
       get :graphiql
-      expect_any_instance_of(Datadog::Statsd).not_to receive :increment
+      expect(InstStatsd::Statsd).not_to receive :increment
     end
   end
 end

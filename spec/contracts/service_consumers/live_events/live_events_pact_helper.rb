@@ -26,6 +26,14 @@ module LiveEvents
   module PactHelper
     include PactConfig
 
+    def self.message_contract_for(consumer, event)
+      Pact::Messages.get_message_contract(
+        PactConfig::Providers::CANVAS_LMS_LIVE_EVENTS,
+        consumer,
+        event
+      )
+    end
+
     class Event
       attr_reader :event_message, :event_name, :event_settings, :event_subscriber, :stream_client
 
@@ -33,7 +41,7 @@ module LiveEvents
         @event_name = event_name
         @event_settings = event_settings || LiveEvents::PactHelper::FakeSettings.new
         @event_subscriber = event_subscriber
-        @stream_client = stream_client || LiveEvents::PactHelper::FakeStreamClient.new
+        @stream_client = stream_client || LiveEvents::PactHelper::FakeStreamClient.new(@event_settings.kinesis_stream_name)
         initialize_live_events_settings
       end
 
@@ -41,7 +49,13 @@ module LiveEvents
         LiveEvents.clear_context!
         yield block
         run_jobs
-        @event_message = stream_client.data
+
+        # Find the last message with a matching event_name
+        @event_message = stream_client.data.map do |event|
+          JSON.parse(event[:data])
+        end.reverse.find do |msg|
+          msg.dig('attributes', 'event_name') == @event_name
+        end
       end
 
       def has_kept_the_contract?
@@ -64,9 +78,18 @@ module LiveEvents
       end
 
       def contract_message
+        # Canvas Live Event Subscribers
+        catalog  = PactConfig::LiveEventConsumers::CATALOG
+        outcomes = PactConfig::LiveEventConsumers::OUTCOMES
+        quiz_lti = PactConfig::LiveEventConsumers::QUIZ_LTI
+
         case event_subscriber
-        when PactConfig::Consumers::QUIZ_LTI
-          LiveEvents::PactHelper.quiz_lti_contract_for(event_name)
+        when catalog
+          LiveEvents::PactHelper.message_contract_for(catalog, event_name)
+        when outcomes
+          LiveEvents::PactHelper.message_contract_for(outcomes, event_name)
+        when quiz_lti
+          LiveEvents::PactHelper.message_contract_for(quiz_lti, event_name)
         else
           raise ArgumentError, "Invalid event_subscriber: #{event_subscriber}"
         end
@@ -78,10 +101,15 @@ module LiveEvents
     end
 
     class FakeStreamClient
-      attr_accessor :data
+      attr_accessor :data, :stream_name
 
-      def put_record(stream_name:, data:, partition_key:) # rubocop:disable Lint/UnusedMethodArgument
-        @data = JSON.parse(data)
+      def initialize(stream_name)
+        @stream_name = stream_name
+        @data = []
+      end
+
+      def put_records(records:, stream_name:) # rubocop:disable Lint/UnusedMethodArgument
+        @data += records
       end
     end
 
@@ -98,22 +126,6 @@ module LiveEvents
           'kinesis_stream_name' => kinesis_stream_name,
           'aws_region' => aws_region
         }
-      end
-    end
-
-    class << self
-      def quiz_lti_contract_for(event)
-        message_contract_for(PactConfig::Consumers::QUIZ_LTI, event)
-      end
-
-      private
-
-      def message_contract_for(consumer, event)
-        Pact::Messages.get_message_contract(
-          PactConfig::Providers::CANVAS_LMS_LIVE_EVENTS,
-          consumer,
-          event
-        )
       end
     end
   end

@@ -67,17 +67,18 @@ test('should display a view more link if next page is available', function() {
     this.response[0],
     {
       'Content-Type': 'application/json',
-      Link: 'rel="next"'
+      Link: '<http://api?page=bookmarkstuff>; rel="next"'
     },
     this.response[2]
   ])
-  new PaginatedList(this.el.wrapper, {
+  const list = new PaginatedList(this.el.wrapper, {
     template: this.template,
     url: '/api/v1/test.json'
   })
   this.server.respond()
   this.clock.tick(500)
   ok(this.el.wrapper.find('.view-more-link').length > 0)
+  equal(list.options.requestParams.page, 'bookmarkstuff')
 })
 
 test('should not display a view more link if there is no next page', function() {
@@ -116,7 +117,7 @@ test('should accept a presenter function', function() {
 })
 
 test('should allow user to defer getJSON', function() {
-  this.spy($, 'getJSON')
+  sandbox.spy($, 'getJSON')
   new PaginatedList(this.el.wrapper, {
     start: false,
     template: this.template,

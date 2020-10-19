@@ -58,7 +58,7 @@ namespace :canvas do
       # build dev bundles even in prod mode so you can debug with ?optimized_js=0 query string
       # (except for on jenkins where we set JS_BUILD_NO_UGLIFY anyway so there's no need for an unminified fallback)
       build_prod = ENV['RAILS_ENV'] == 'production' || ENV['USE_OPTIMIZED_JS'] == 'true' || ENV['USE_OPTIMIZED_JS'] == 'True'
-      dont_need_dev_fallback = build_prod && ENV['JS_BUILD_NO_UGLIFY']
+      dont_need_dev_fallback = build_prod && ENV['JS_BUILD_NO_UGLIFY'] == "1"
       build_tasks << 'js:webpack_development' unless dont_need_dev_fallback
       build_tasks << 'js:webpack_production' if build_prod
     end
@@ -117,6 +117,17 @@ namespace :canvas do
 
     load_tree(nil, ConfigFile.load('dynamic_settings'))
   end
+
+  desc "Initialize vault"
+  task :seed_vault => [:environment] do
+    Canvas::Vault.api_client.sys.mount(Canvas::Vault.kv_mount, 'kv', 'Application secrets for canvas', {
+      options: { version: 1 },
+      config: {
+        # In prod this is higher, but for dev, a low ttl is more useful
+        default_lease_ttl: '10s'
+      }
+    })
+  end
 end
 
 namespace :lint do
@@ -136,10 +147,12 @@ end
 namespace :db do
   desc "Shows pending db migrations."
   task :pending_migrations => :environment do
-    migrations = CANVAS_RAILS5_1 ?
-      ActiveRecord::Migrator.migrations(ActiveRecord::Migrator.migrations_paths) :
-      ActiveRecord::Base.connection.migration_context.migrations
-    pending_migrations = ActiveRecord::Migrator.new(:up, migrations).pending_migrations
+    migrations = ActiveRecord::Base.connection.migration_context.migrations
+    if CANVAS_RAILS5_2
+      pending_migrations = ActiveRecord::Migrator.new(:up, migrations).pending_migrations
+    else
+      pending_migrations = ActiveRecord::Migrator.new(:up, migrations, ActiveRecord::Base.connection.schema_migration).pending_migrations
+    end
     pending_migrations.each do |pending_migration|
       tags = pending_migration.tags
       tags = " (#{tags.join(', ')})" unless tags.empty?
@@ -149,10 +162,12 @@ namespace :db do
 
   desc "Shows skipped db migrations."
   task :skipped_migrations => :environment do
-    migrations = CANVAS_RAILS5_1 ?
-      ActiveRecord::Migrator.migrations(ActiveRecord::Migrator.migrations_paths) :
-      ActiveRecord::Base.connection.migration_context.migrations
-    skipped_migrations = ActiveRecord::Migrator.new(:up, migrations).skipped_migrations
+    migrations = ActiveRecord::Base.connection.migration_context.migrations
+    if CANVAS_RAILS5_2
+      skipped_migrations = ActiveRecord::Migrator.new(:up, migrations).skipped_migrations
+    else
+      skipped_migrations = ActiveRecord::Migrator.new(:up, migrations, ActiveRecord::Base.connection.schema_migration).skipped_migrations
+    end
     skipped_migrations.each do |skipped_migration|
       tags = skipped_migration.tags
       tags = " (#{tags.join(', ')})" unless tags.empty?
@@ -163,11 +178,13 @@ namespace :db do
   namespace :migrate do
     desc "Run all pending predeploy migrations"
     task :predeploy => [:environment, :load_config] do
-      migrations = CANVAS_RAILS5_1 ?
-        ActiveRecord::Migrator.migrations(ActiveRecord::Migrator.migrations_paths) :
-        ActiveRecord::Base.connection.migration_context.migrations
+      migrations = ActiveRecord::Base.connection.migration_context.migrations
       migrations = migrations.select { |m| m.tags.include?(:predeploy) }
-      ActiveRecord::Migrator.new(:up, migrations).migrate
+      if CANVAS_RAILS5_2
+        ActiveRecord::Migrator.new(:up, migrations).migrate
+      else
+        ActiveRecord::Migrator.new(:up, migrations, ActiveRecord::Base.connection.schema_migration).migrate
+      end
     end
   end
 
@@ -195,11 +212,16 @@ namespace :db do
 end
 
 Switchman::Rake.filter_database_servers do |servers, block|
-  if ENV['REGION']
-    if ENV['REGION'] == 'self'
-      servers.select!(&:in_current_region?)
+  ENV['REGION']&.split(',')&.each do |region|
+    method = :"select!"
+    if region[0] == '-'
+      method = :"reject!"
+      region = region[1..-1]
+    end
+    if region == 'self'
+      servers.send(method, &:in_current_region?)
     else
-      servers.select! { |server| server.in_region?(ENV['REGION']) }
+      servers.send(method) { |server| server.in_region?(region) }
     end
   end
   block.call(servers)

@@ -21,7 +21,6 @@ class InfoController < ApplicationController
   skip_before_action :load_user, :only => [:health_check, :browserconfig]
 
   def styleguide
-    js_bundle :styleguide
     render :layout => "layouts/styleguide"
   end
 
@@ -74,6 +73,21 @@ class InfoController < ApplicationController
     end
   end
 
+  def health_prognosis
+    # do some checks on things that aren't a problem yet, but will be if nothing is done to fix them
+    checks = {
+      'messages_partition' => Messages::Partitioner.processed?,
+      'quizzes_submission_events_partition' => Quizzes::QuizSubmissionEventPartitioner.processed?,
+      'versions_partition' => Version::Partitioner.processed?,
+    }
+    failed = checks.reject{|_k, v| v}.map(&:first)
+    if failed.any?
+      render :json => {:status => "failed upcoming health checks - #{failed.join(", ")}"}, :status => :internal_server_error
+    else
+      render :json => {:status => "canvas will be ok, probably"}
+    end
+  end
+
   # for windows live tiles
   def browserconfig
     cancel_cache_buster
@@ -81,6 +95,58 @@ class InfoController < ApplicationController
   end
 
   def test_error
+    @context = Course.find(params[:course_id]) if params[:course_id].present?
+
+    if params[:status].present?
+      case params[:status].to_i
+      when 401
+        @unauthorized_reason = :unpublished if params[:reason] == 'unpublished'
+        @needs_cookies = true if params[:reason] == 'needs_cookies'
+        return render_unauthorized_action
+      when 422
+        raise ActionController::InvalidAuthenticityToken.new('test_error')
+      else
+        @not_found_message = '(test_error message details)' if params[:message].present?
+        raise RequestError.new('test_error', params[:status].to_i)
+      end
+    end
+
     render status: 404, template: "shared/errors/404_message"
+  end
+
+  def web_app_manifest
+    # brand_variable returns a value that we expect to go through a rails
+    # asset helper, so we need to do that manually here
+    icon = helpers.image_path(brand_variable('ic-brand-apple-touch-icon'))
+    render json: {
+      name: "Canvas",
+      short_name: "Canvas",
+      icons: [
+        {
+          src: icon,
+          sizes: "144x144",
+          type: "image/png"
+        },
+        {
+          src: icon,
+          sizes: "192x192",
+          type: "image/png"
+        }
+      ],
+      prefer_related_applications: true,
+      related_applications: [
+        {
+          platform: "play",
+          url: "https://play.google.com/store/apps/details?id=com.instructure.candroid",
+          id: "com.instructure.candroid"
+        },
+        {
+          platform: "itunes",
+          url: "https://itunes.apple.com/app/canvas-by-instructure/id480883488"
+        }
+      ],
+      start_url: "/",
+      display: "minimal-ui"
+    }
   end
 end

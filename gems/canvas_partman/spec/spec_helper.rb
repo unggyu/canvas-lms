@@ -14,6 +14,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+begin
+  require 'byebug'
+rescue LoadError
+  # do nothing if its not available
+end
 
 begin
   require '../../spec/coverage_tool.rb'
@@ -27,23 +34,23 @@ end
 
 require 'active_record'
 require 'canvas_partman'
-require 'support/active_record'
+
+ActiveRecord::Base.establish_connection(ENV.fetch('DATABASE_URL', nil))
 require 'support/schema_helper'
 require 'fixtures/zoo'
 require 'fixtures/animal'
 require 'fixtures/trail'
+require 'fixtures/week_event'
 
-require 'byebug'
 
 RSpec.configure do |config|
   Zoo = CanvasPartmanTest::Zoo
   Animal = CanvasPartmanTest::Animal
   Trail = CanvasPartmanTest::Trail
+  WeekEvent = CanvasPartmanTest::WeekEvent
 
-  config.run_all_when_everything_filtered = true
-  config.filter_run :focus
   config.color = true
-  config.order = 'random'
+  config.order = :random
 
   def connection
     ActiveRecord::Base.connection
@@ -59,11 +66,11 @@ RSpec.configure do |config|
   end
 
   config.before :all do
-    [ Zoo, Animal, Trail ].each(&:create_schema)
+    [ Zoo, Animal, Trail, WeekEvent ].each(&:create_schema)
   end
 
   config.after :all do
-    [ Animal, Trail, Zoo ].each(&:drop_schema)
+    [ Animal, Trail, Zoo, WeekEvent ].each(&:drop_schema)
   end
 
   config.after :each do

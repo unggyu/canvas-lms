@@ -29,7 +29,7 @@ describe MissingPolicyApplicator do
   end
 
   describe '#apply_missing_deductions' do
-    let(:now) { Time.zone.now }
+    let(:now) { Time.zone.now.change(usec: 0) }
     let :late_policy_missing_enabled do
       LatePolicy.create!(
         course_id: @course.id,
@@ -92,10 +92,10 @@ describe MissingPolicyApplicator do
     end
 
     let(:applicator) { described_class.new }
-    let!(:student) { student_in_course(active_all: true, user_name: 'a student').user }
 
     before(:once) do
       course_with_teacher(active_all: true)
+      @student = @course.enroll_user(User.create!, "StudentEnrollment", enrollment_state: "active").user
     end
 
     it 'applies deductions to assignments in a course with a LatePolicy with missing submission deductions enabled' do
@@ -119,6 +119,49 @@ describe MissingPolicyApplicator do
       submission.reload
 
       expect(submission.workflow_state).to eql 'graded'
+    end
+
+    it 'ignores submissions for unpublished assignments' do
+      assignment = create_recent_assignment
+      assignment.unpublish
+      late_policy_missing_enabled
+      applicator.apply_missing_deductions
+
+      submission = @course.submissions.first
+
+      expect(submission.score).to be_nil
+      expect(submission.grade).to be_nil
+    end
+
+    context "updated timestamps" do
+      before(:once) do
+        @frozen_now = now
+        late_policy_missing_enabled
+
+        Timecop.freeze(@frozen_now) do
+          assignment = create_recent_assignment
+          @submission = assignment.submissions.first
+          # Use update_columns to skip callbacks, otherwise apply_late_policy
+          # would apply the policy and cause apply_missing_deductions to have
+          # no effect.
+          @submission.update_columns(
+            grade: nil,
+            graded_at: nil,
+            score: nil,
+            updated_at: nil,
+            workflow_state: "unsubmitted"
+          )
+          applicator.apply_missing_deductions
+        end
+      end
+
+      it "updates the submission graded_at" do
+        expect(@submission.reload.graded_at).to eql @frozen_now
+      end
+
+      it "updates the submission updated_at" do
+        expect(@submission.reload.updated_at).to eql @frozen_now
+      end
     end
 
     it 'does not apply deductions to assignments in a course with missing submission deductions disabled' do
@@ -236,7 +279,7 @@ describe MissingPolicyApplicator do
       create_recent_assignment
       late_policy_missing_enabled
 
-      enrollment = student.enrollments.find_by(course_id: @course.id)
+      enrollment = @student.enrollments.find_by(course_id: @course.id)
       enrollment.scores.first_or_create.update_columns(grading_period_id: nil, final_score: 100, current_score: 100)
       @course.submissions.first.update_columns(score: nil, grade: nil)
 
@@ -252,6 +295,67 @@ describe MissingPolicyApplicator do
       applicator.apply_missing_deductions
 
       expect(submission.reload.grade_matches_current_submission).to be true
+    end
+
+    describe "posting submissions" do
+      let(:assignment) { @course.assignments.first }
+      let(:submission) { assignment.submissions.first }
+
+      before(:each) do
+        late_policy_missing_enabled
+        create_recent_assignment
+        submission.update_columns(score: nil, grade: nil)
+      end
+
+      it "posts affected submissions if the assignment is automatically posted" do
+        applicator.apply_missing_deductions
+        expect(submission.reload).to be_posted
+      end
+
+      it "sets posted_at to nil for submissions if the assignment is manually posted" do
+        submission.update!(posted_at: Time.zone.now)
+        assignment.post_policy.update!(post_manually: true)
+        applicator.apply_missing_deductions
+        expect(submission.reload).not_to be_posted
+      end
+    end
+
+    describe "sending live events" do
+      let_once(:assignment) { create_recent_assignment }
+      before(:once) do
+        late_policy_missing_enabled
+      end
+
+      context "when the missing_policy_applicator_emits_live_events flag is enabled" do
+        before(:each) do
+          @course.root_account.enable_feature!(:missing_policy_applicator_emits_live_events)
+        end
+
+        it "queues a delayed job if the applicator marks any submissions as missing" do
+          assignment.submissions.update_all(score: nil, grade: nil)
+          expect(Canvas::LiveEvents).to receive(:send_later_if_production).
+            with(:submissions_bulk_updated, assignment.submissions.to_a)
+
+          applicator.apply_missing_deductions
+        end
+
+        it "does not queue a delayed job if the applicator marks no submissions as missing" do
+          expect(Canvas::LiveEvents).not_to receive(:send_later_if_production).
+            with(:submissions_bulk_updated, any_args)
+
+          applicator.apply_missing_deductions
+        end
+      end
+
+      context "when the missing_policy_applicator_emits_live_events flag is not enabled" do
+        it "does not queue a delayed job when the applicator marks submissions as missing" do
+          assignment.submissions.update_all(score: nil, grade: nil)
+          expect(Canvas::LiveEvents).not_to receive(:send_later_if_production).
+            with(:submissions_bulk_updated, any_args)
+
+          applicator.apply_missing_deductions
+        end
+      end
     end
   end
 end

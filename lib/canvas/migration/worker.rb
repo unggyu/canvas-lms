@@ -16,8 +16,6 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'action_controller_test_process'
-
 module Canvas::Migration::Worker
 
   class Base < Struct.new(:migration_id)
@@ -79,7 +77,7 @@ module Canvas::Migration::Worker
 
     att
   end
-  
+
   def self.clear_exported_data(folder)
     begin
       config = ConfigFile.load('external_migration')

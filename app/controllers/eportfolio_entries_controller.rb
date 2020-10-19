@@ -20,7 +20,7 @@ require 'securerandom'
 
 class EportfolioEntriesController < ApplicationController
   include EportfolioPage
-  before_action :rich_content_service_config
+  before_action :rce_js_env
   before_action :get_eportfolio
 
   def create
@@ -64,7 +64,7 @@ class EportfolioEntriesController < ApplicationController
       end
       @category = @page.eportfolio_category
       eportfolio_page_attributes
-      render "eportfolios/show"
+      render "eportfolios/show", stream: can_stream_template?
     end
   end
 
@@ -79,7 +79,7 @@ class EportfolioEntriesController < ApplicationController
         entry_params[:eportfolio_category] = category
       end
       respond_to do |format|
-        if @entry.update_attributes!(entry_params)
+        if @entry.update!(entry_params)
           format.html { redirect_to eportfolio_entry_url(@portfolio, @entry) }
           format.json { render :json => @entry }
         else
@@ -130,16 +130,12 @@ class EportfolioEntriesController < ApplicationController
       # @entry.check_for_matching_attachment_id
       @headers = false
       render template: 'submissions/show_preview', locals: {
-        anonymous_now: @assignment.anonymous_grading? && @assignment.muted?
+        anonymize_students: @assignment.anonymize_students?
       }
     end
   end
 
   protected
-  def rich_content_service_config
-    rce_js_env(:basic)
-  end
-
   def eportfolio_entry_params
     params.require(:eportfolio_entry).permit(:name, :allow_comments, :show_comments)
   end

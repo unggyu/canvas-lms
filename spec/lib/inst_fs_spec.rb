@@ -20,21 +20,43 @@ require 'spec_helper'
 
 describe InstFS do
   context "settings are set" do
+    let(:app_host){ 'http://test.host' }
+    let(:secret){ "supersecretyup" }
+    let(:rotating_secret){ "anothersecret" }
+    let(:secrets){ [secret, rotating_secret] }
+    let(:encoded_secrets){ secrets.map{ |sec| Base64.encode64(sec) }.join(" ") }
+    let(:settings_hash){ { 'app-host' => app_host, 'secret' => encoded_secrets } }
     before do
-      @app_host = 'http://test.host'
-      @secret = "supersecretyup"
       allow(InstFS).to receive(:enabled?).and_return(true)
       allow(Canvas::DynamicSettings).to receive(:find).with(any_args).and_call_original
       allow(Canvas::DynamicSettings).to receive(:find).
         with(service: "inst-fs", default_ttl: 5.minutes).
-        and_return({
-          'app-host' => @app_host,
-          'secret' => Base64.encode64(@secret)
-        })
+        and_return(settings_hash)
     end
 
-    it "returns decoded base 64 secret" do
-      expect(InstFS.jwt_secret).to eq(@secret)
+    it "returns primary decoded base 64 secret" do
+      expect(InstFS.jwt_secret).to eq(secret)
+    end
+
+    it "returns all decoded base 64 secrets" do
+      expect(InstFS.jwt_secrets).to eq(secrets)
+    end
+
+    context "validate_capture_jwt" do
+      it "returns true for jwt signed with primary key" do
+        token = Canvas::Security.create_jwt({}, nil, secret, :HS512)
+        expect(InstFS.validate_capture_jwt(token)).to eq(true)
+      end
+
+      it "returns true for jwt signed with rotating key" do
+        token = Canvas::Security.create_jwt({}, nil, rotating_secret, :HS512)
+        expect(InstFS.validate_capture_jwt(token)).to eq(true)
+      end
+
+      it "returns false for jwt signed with bogus key" do
+        token = Canvas::Security.create_jwt({}, nil, "boguskey", :HS512)
+        expect(InstFS.validate_capture_jwt(token)).to eq(false)
+      end
     end
 
     context "authenticated_url" do
@@ -42,11 +64,51 @@ describe InstFS do
         @attachment = attachment_with_context(user_model)
         @attachment.instfs_uuid = 1
         @attachment.filename = "test.txt"
+        @attachment.display_name = nil
       end
 
       it "constructs url properly" do
         expect(InstFS.authenticated_url(@attachment, {}))
-          .to match("#{@app_host}/files/#{@attachment.instfs_uuid}")
+          .to match("#{app_host}/files/#{@attachment.instfs_uuid}/#{@attachment.filename}")
+      end
+
+      it "constructs metadata url properly" do
+        expect(InstFS.authenticated_metadata_url(@attachment, {}))
+          .to match("#{app_host}/files/#{@attachment.instfs_uuid}/meta")
+      end
+
+      it "prefers the display_name over filename if different" do
+        @attachment.display_name = "renamed.txt"
+        expect(InstFS.authenticated_url(@attachment, {}))
+          .to match("#{app_host}/files/#{@attachment.instfs_uuid}/#{@attachment.display_name}")
+      end
+
+      it "URI encodes the embedded file name" do
+        @attachment.display_name = "안녕 세상"
+        url = InstFS.authenticated_url(@attachment, {})
+        filename_segment = URI.parse(url).path.split('/').last
+        expect(CGI.unescape(filename_segment)).to eq(@attachment.display_name)
+      end
+
+      it "doesn't use `+` for spaces in encoded file name" do
+        @attachment.display_name = "foo bar.txt"
+        url = InstFS.authenticated_url(@attachment, {})
+        filename_segment = URI.parse(url).path.split('/').last
+        expect(filename_segment).to eq("foo%20bar.txt")
+      end
+
+      it "doesn't leave `+` unencoded in encoded file name" do
+        @attachment.display_name = "foo+bar.txt"
+        url = InstFS.authenticated_url(@attachment, {})
+        filename_segment = URI.parse(url).path.split('/').last
+        expect(filename_segment).to eq("foo%2Bbar.txt")
+      end
+
+      it "doesn't leave `?` unencoded in encoded file name" do
+        @attachment.display_name = "foo?bar.txt"
+        url = InstFS.authenticated_url(@attachment, {})
+        filename_segment = URI.parse(url).path.split('/').last
+        expect(filename_segment).to eq("foo%3Fbar.txt")
       end
 
       it "passes download param" do
@@ -58,7 +120,7 @@ describe InstFS do
         expect(url).to match(/token=/)
         token = url.split(/token=/).last
         expect(->{
-          Canvas::Security.decode_jwt(token, [ @secret ])
+          Canvas::Security.decode_jwt(token, [ secret ])
         }).not_to raise_error
       end
 
@@ -67,16 +129,66 @@ describe InstFS do
         token = url.split(/token=/).last
         Timecop.freeze(2.hours.from_now) do
           expect(->{
-            Canvas::Security.decode_jwt(token, [ @secret ])
+            Canvas::Security.decode_jwt(token, [ secret ])
           }).to raise_error(Canvas::Security::TokenExpired)
         end
+      end
+
+      it "generates the same url within a cache window of time so it's not unique every time" do
+        url1 = InstFS.authenticated_url(@attachment)
+        url2 = InstFS.authenticated_url(@attachment)
+        expect(url1).to eq(url2)
+
+        Timecop.freeze(1.day.from_now) do
+          url3 = InstFS.authenticated_url(@attachment)
+          expect(url1).to_not eq(url3)
+
+          first_token = url1.split(/token=/).last
+          expect(->{
+            Canvas::Security.decode_jwt(first_token, [ secret ])
+          }).to raise_error(Canvas::Security::TokenExpired)
+        end
+      end
+
+      it "retries if imperium is timing out" do
+        times_called = 0
+        allow(Canvas::DynamicSettings).to receive(:find).with(service: "inst-fs", default_ttl: 5.minutes) do
+          times_called += 1
+          raise Imperium::SendTimeout if times_called < 2
+          settings_hash
+        end
+        expect(InstFS.authenticated_url(@attachment, {}))
+          .to match("#{app_host}/files/#{@attachment.instfs_uuid}/#{@attachment.filename}")
+      end
+
+      it "actually fails with a config error if can't find config" do
+        allow(Canvas::DynamicSettings).to receive(:find).with(service: "inst-fs", default_ttl: 5.minutes) do
+          raise Imperium::SendTimeout
+        end
+        expect{ InstFS.authenticated_url(@attachment, {}) }.to raise_error(Imperium::TimeoutError)
       end
 
       describe "jwt claims" do
         def claims_for(options={})
           url = InstFS.authenticated_url(@attachment, options)
           token = url.split(/token=/).last
-          Canvas::Security.decode_jwt(token, [ @secret ])
+          Canvas::Security.decode_jwt(token, [ secret ])
+        end
+
+        it "no matter what time it is, the token has no less than 12 hours of validity left and never more than 24" do
+          24.times do |i|
+            Timecop.freeze(i.hours.from_now) do
+              claims = claims_for()
+              now = Time.zone.now
+              exp = Time.zone.at(claims['exp'])
+              expect(exp).to be > now + 12.hours
+              expect(exp).to be < now + 24.hours
+
+              iat = Time.zone.at(claims['iat'])
+              expect(iat).to be <= now
+              expect(iat).to be > now - 12.hours
+            end
+          end
         end
 
         it "includes global user_id claim in the token if user provided" do
@@ -143,7 +255,7 @@ describe InstFS do
 
       it "constructs url properly" do
         expect(InstFS.authenticated_thumbnail_url(@attachment))
-          .to match("#{@app_host}/thumbnails/#{@attachment.instfs_uuid}")
+          .to match("#{app_host}/thumbnails/#{@attachment.instfs_uuid}")
       end
 
       it "passes geometry param" do
@@ -156,7 +268,7 @@ describe InstFS do
         expect(url).to match(/token=/)
         token = url.split(/token=/).last
         expect(->{
-          Canvas::Security.decode_jwt(token, [ @secret ])
+          Canvas::Security.decode_jwt(token, [ secret ])
         }).not_to raise_error
       end
 
@@ -165,7 +277,7 @@ describe InstFS do
         token = url.split(/token=/).last
         Timecop.freeze(2.hours.from_now) do
           expect(->{
-            Canvas::Security.decode_jwt(token, [ @secret ])
+            Canvas::Security.decode_jwt(token, [ secret ])
           }).to raise_error(Canvas::Security::TokenExpired)
         end
       end
@@ -183,6 +295,9 @@ describe InstFS do
       let(:on_duplicate) { 'rename' }
       let(:include_param) { ['avatar'] }
       let(:capture_url) { 'http://canvas.host/api/v1/files/capture' }
+      let(:additional_capture_params) do
+        { additional_note: 'notefull' }
+      end
 
       let(:default_args) do
         {
@@ -197,7 +312,8 @@ describe InstFS do
           quota_exempt: quota_exempt,
           on_duplicate: on_duplicate,
           capture_url: capture_url,
-          include_param: include_param
+          include_param: include_param,
+          additional_capture_params: additional_capture_params,
         }
       end
 
@@ -210,7 +326,7 @@ describe InstFS do
       end
 
       it "includes an upload_url pointing at the service" do
-        expect(preflight_json[:upload_url]).to match @app_host
+        expect(preflight_json[:upload_url]).to match app_host
         upload_url = URI.parse(preflight_json[:upload_url])
         expect(upload_url.path).to eq '/files'
       end
@@ -220,14 +336,14 @@ describe InstFS do
         expect(upload_url.query).to match %r{token=[^&]+}
         token = upload_url.query.split('=').last
         expect(->{
-          Canvas::Security.decode_jwt(token, [ @secret ])
+          Canvas::Security.decode_jwt(token, [ secret ])
         }).not_to raise_error
       end
 
       describe "the upload JWT" do
         let(:jwt) do
           token = preflight_json[:upload_url].split('token=').last
-          Canvas::Security.decode_jwt(token, [ @secret ])
+          Canvas::Security.decode_jwt(token, [ secret ])
         end
 
         it "embeds the user_id and acting_as_user_id in the token" do
@@ -271,8 +387,12 @@ describe InstFS do
             expect(capture_params['on_duplicate']).to eq on_duplicate
           end
 
-          it "include the inlcude options" do
+          it "include the include options" do
             expect(capture_params['include']).to eq include_param
+          end
+
+          it "include additional_capture_params" do
+            expect(capture_params).to include additional_capture_params
           end
         end
       end
@@ -299,7 +419,7 @@ describe InstFS do
         def claims_for(options)
           json = InstFS.upload_preflight_json(default_args.merge(options))
           token = json[:upload_url].split('token=').last
-          Canvas::Security.decode_jwt(token, [ @secret ])
+          Canvas::Security.decode_jwt(token, [ secret ])
         end
 
         it "are not added without an access token" do
@@ -344,7 +464,7 @@ describe InstFS do
           preflight_json = InstFS.upload_preflight_json(default_args.merge({target_url: target_url, progress_json: progress_json}))
 
           token = preflight_json[:upload_url].split('token=').last
-          jwt = Canvas::Security.decode_jwt(token, [ @secret ])
+          jwt = Canvas::Security.decode_jwt(token, [ secret ])
 
           expect(jwt[:capture_params][:progress_id]).to eq(progress_json[:id])
           expect(preflight_json[:file_paran]).to be_nil
@@ -385,26 +505,62 @@ describe InstFS do
 
     context "direct upload" do
       it "makes a network request to the inst-fs endpoint" do
-        uuid = "1234-abcd"
+        instfs_uuid = "1234-abcd"
         allow(CanvasHttp).to receive(:post).and_return(double(
           class: Net::HTTPCreated,
           code: 200,
-          body: {uuid: uuid}.to_json
+          body: {instfs_uuid: instfs_uuid}.to_json
         ))
 
         res = InstFS.direct_upload(
           file_name: "a.png",
           file_object: File.open("public/images/a.png")
         )
-        expect(res).to eq(uuid)
+        expect(res).to eq(instfs_uuid)
+      end
+
+      it "requests a streaming upload to allow large files" do
+        instfs_uuid = "1234-abcd"
+        expect(CanvasHttp).to receive(:post).with(anything, hash_including(streaming: true)).and_return(double(
+          class: Net::HTTPCreated,
+          code: 200,
+          body: {instfs_uuid: instfs_uuid}.to_json
+        ))
+
+        InstFS.direct_upload(
+          file_name: "a.png",
+          file_object: File.open("public/images/a.png")
+        )
+      end
+    end
+
+    context "duplicate" do
+      it "makes a network request to the inst-fs endpoint" do
+        instfs_uuid = "1234-abcd"
+        new_instfs_uuid = "5678-efgh"
+        allow(CanvasHttp).to receive(:post).with(/\/files\/#{instfs_uuid}\/duplicate/).and_return(double(
+          class: Net::HTTPCreated,
+          code: 200,
+          body: {id: new_instfs_uuid}.to_json
+        ))
+        expect(InstFS.duplicate_file(instfs_uuid)).to eq new_instfs_uuid
+      end
+    end
+
+    context "deletion" do
+      it "makes a network request to the inst-fs endpoint" do
+        instfs_uuid = "1234-abcd"
+        allow(CanvasHttp).to receive(:delete).with(/\/files\/#{instfs_uuid}/).and_return(double(
+          class: Net::HTTPOK,
+          code: 200,
+        ))
+        expect(InstFS.delete_file(instfs_uuid)).to eq true
       end
     end
   end
 
   context "settings not set" do
     before do
-      @app_host = 'http://test.host'
-      @secret = "supersecretyup"
       allow(Canvas::DynamicSettings).to receive(:find).with(any_args).and_call_original
       allow(Canvas::DynamicSettings).to receive(:find).with(service: "inst-fs").
         and_return({
@@ -416,8 +572,13 @@ describe InstFS do
     it "instfs is not enabled" do
       expect(InstFS.enabled?).to be false
     end
+
     it "doesn't error on jwt_secret" do
       expect(InstFS.jwt_secret).to be_nil
+    end
+
+    it "returns empty list of secrets" do
+      expect(InstFS.jwt_secrets).to eq([])
     end
   end
 end

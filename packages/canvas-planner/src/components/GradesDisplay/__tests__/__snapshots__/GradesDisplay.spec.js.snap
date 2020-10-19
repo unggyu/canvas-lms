@@ -2,10 +2,28 @@
 
 exports[`does not render caveat if no courses have grading periods 1`] = `
 <View
+  borderColor="default"
+  debug={false}
   display="auto"
+  focusColor="info"
+  focusPosition="offset"
+  focused={false}
+  overflowX="visible"
+  overflowY="visible"
+  position="static"
+  shouldAnimateFocus={true}
 >
   <View
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
     textAlign="center"
   >
     <Heading
@@ -20,6 +38,7 @@ exports[`does not render caveat if no courses have grading periods 1`] = `
         letterSpacing="normal"
         size="medium"
         weight="bold"
+        wrap="normal"
       >
         My Grades
       </Text>
@@ -27,10 +46,21 @@ exports[`does not render caveat if no courses have grading periods 1`] = `
   </View>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    key="1"
     margin="0 0 large 0"
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <div
+      className="GradesDisplay-styles__course"
       style={
         Object {
           "borderBottom": "solid thin",
@@ -38,30 +68,42 @@ exports[`does not render caveat if no courses have grading periods 1`] = `
         }
       }
     >
-      <Link
+      <Button
         as="button"
-        ellipsis={false}
-        href="/courses/1"
-        iconPlacement="start"
-        linkRef={[Function]}
-        variant="default"
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
+        href="/courses/1/grades"
+        margin="0"
+        size="small"
+        textAlign="center"
+        theme={
+          Object {
+            "smallHeight": "normal",
+            "smallPadding": "0",
+          }
+        }
+        type="button"
+        variant="link"
+        withBackground={true}
       >
         <Text
           as="span"
-          color="primary"
           letterSpacing="normal"
-          size="small"
+          size="medium"
           transform="uppercase"
+          wrap="normal"
         >
           Ticket to Ride 101
         </Text>
-      </Link>
+      </Button>
     </div>
     <Text
       as="div"
       letterSpacing="normal"
       size="large"
       weight="light"
+      wrap="normal"
     >
       No Grade
     </Text>
@@ -71,10 +113,28 @@ exports[`does not render caveat if no courses have grading periods 1`] = `
 
 exports[`renders a loading spinner when loading 1`] = `
 <View
+  borderColor="default"
+  debug={false}
   display="auto"
+  focusColor="info"
+  focusPosition="offset"
+  focused={false}
+  overflowX="visible"
+  overflowY="visible"
+  position="static"
+  shouldAnimateFocus={true}
 >
   <View
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
     textAlign="center"
   >
     <Heading
@@ -89,6 +149,7 @@ exports[`renders a loading spinner when loading 1`] = `
         letterSpacing="normal"
         size="medium"
         weight="bold"
+        wrap="normal"
       >
         My Grades
       </Text>
@@ -96,14 +157,23 @@ exports[`renders a loading spinner when loading 1`] = `
   </View>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
     margin="0 0 large 0"
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
     textAlign="center"
   >
     <Spinner
       as="div"
+      renderTitle={[Function]}
       size="small"
-      title="Grades are loading"
       variant="default"
     />
   </View>
@@ -112,7 +182,16 @@ exports[`renders a loading spinner when loading 1`] = `
 
 exports[`renders an ErrorAlert if there is an error loading grades 1`] = `
 <View
+  borderColor="default"
+  debug={false}
   display="auto"
+  focusColor="info"
+  focusPosition="offset"
+  focused={false}
+  overflowX="visible"
+  overflowY="visible"
+  position="static"
+  shouldAnimateFocus={true}
 >
   <ErrorAlert
     error="There was an error"
@@ -120,7 +199,16 @@ exports[`renders an ErrorAlert if there is an error loading grades 1`] = `
     Error loading grades
   </ErrorAlert>
   <View
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
     textAlign="center"
   >
     <Heading
@@ -135,6 +223,7 @@ exports[`renders an ErrorAlert if there is an error loading grades 1`] = `
         letterSpacing="normal"
         size="medium"
         weight="bold"
+        wrap="normal"
       >
         My Grades
       </Text>
@@ -145,10 +234,28 @@ exports[`renders an ErrorAlert if there is an error loading grades 1`] = `
 
 exports[`renders some course grades 1`] = `
 <View
+  borderColor="default"
+  debug={false}
   display="auto"
+  focusColor="info"
+  focusPosition="offset"
+  focused={false}
+  overflowX="visible"
+  overflowY="visible"
+  position="static"
+  shouldAnimateFocus={true}
 >
   <View
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
     textAlign="center"
   >
     <Heading
@@ -163,6 +270,7 @@ exports[`renders some course grades 1`] = `
         letterSpacing="normal"
         size="medium"
         weight="bold"
+        wrap="normal"
       >
         My Grades
       </Text>
@@ -170,10 +278,21 @@ exports[`renders some course grades 1`] = `
   </View>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    key="1"
     margin="0 0 large 0"
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <div
+      className="GradesDisplay-styles__course"
       style={
         Object {
           "borderBottom": "solid thin",
@@ -181,40 +300,63 @@ exports[`renders some course grades 1`] = `
         }
       }
     >
-      <Link
+      <Button
         as="button"
-        ellipsis={false}
-        href="/courses/1"
-        iconPlacement="start"
-        linkRef={[Function]}
-        variant="default"
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
+        href="/courses/1/grades"
+        margin="0"
+        size="small"
+        textAlign="center"
+        theme={
+          Object {
+            "smallHeight": "normal",
+            "smallPadding": "0",
+          }
+        }
+        type="button"
+        variant="link"
+        withBackground={true}
       >
         <Text
           as="span"
-          color="primary"
           letterSpacing="normal"
-          size="small"
+          size="medium"
           transform="uppercase"
+          wrap="normal"
         >
           Ticket to Ride 101
         </Text>
-      </Link>
+      </Button>
     </div>
     <Text
       as="div"
       letterSpacing="normal"
       size="large"
       weight="light"
+      wrap="normal"
     >
       No Grade
     </Text>
   </View>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    key="2"
     margin="0 0 large 0"
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <div
+      className="GradesDisplay-styles__course"
       style={
         Object {
           "borderBottom": "solid thin",
@@ -222,40 +364,63 @@ exports[`renders some course grades 1`] = `
         }
       }
     >
-      <Link
+      <Button
         as="button"
-        ellipsis={false}
-        href="/courses/2"
-        iconPlacement="start"
-        linkRef={[Function]}
-        variant="default"
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
+        href="/courses/2/grades"
+        margin="0"
+        size="small"
+        textAlign="center"
+        theme={
+          Object {
+            "smallHeight": "normal",
+            "smallPadding": "0",
+          }
+        }
+        type="button"
+        variant="link"
+        withBackground={true}
       >
         <Text
           as="span"
-          color="primary"
           letterSpacing="normal"
-          size="small"
+          size="medium"
           transform="uppercase"
+          wrap="normal"
         >
           Ingenious 101
         </Text>
-      </Link>
+      </Button>
     </div>
     <Text
       as="div"
       letterSpacing="normal"
       size="large"
       weight="light"
+      wrap="normal"
     >
       42.34%
     </Text>
   </View>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    key="3"
     margin="0 0 large 0"
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
   >
     <div
+      className="GradesDisplay-styles__course"
       style={
         Object {
           "borderBottom": "solid thin",
@@ -263,37 +428,58 @@ exports[`renders some course grades 1`] = `
         }
       }
     >
-      <Link
+      <Button
         as="button"
-        ellipsis={false}
-        href="/courses/3"
-        iconPlacement="start"
-        linkRef={[Function]}
-        variant="default"
+        cursor="pointer"
+        display="inline-block"
+        elementRef={[Function]}
+        href="/courses/3/grades"
+        margin="0"
+        size="small"
+        textAlign="center"
+        theme={
+          Object {
+            "smallHeight": "normal",
+            "smallPadding": "0",
+          }
+        }
+        type="button"
+        variant="link"
+        withBackground={true}
       >
         <Text
           as="span"
-          color="primary"
           letterSpacing="normal"
-          size="small"
+          size="medium"
           transform="uppercase"
+          wrap="normal"
         >
           Settlers of Catan 201
         </Text>
-      </Link>
+      </Button>
     </div>
     <Text
       as="div"
       letterSpacing="normal"
       size="large"
       weight="light"
+      wrap="normal"
     >
       No Grade
     </Text>
   </View>
   <View
     as="div"
+    borderColor="default"
+    debug={false}
     display="auto"
+    focusColor="info"
+    focusPosition="offset"
+    focused={false}
+    overflowX="visible"
+    overflowY="visible"
+    position="static"
+    shouldAnimateFocus={true}
     textAlign="center"
   >
     <Text
@@ -301,6 +487,7 @@ exports[`renders some course grades 1`] = `
       fontStyle="italic"
       letterSpacing="normal"
       size="x-small"
+      wrap="normal"
     >
       *Only most recent grading period shown.
     </Text>

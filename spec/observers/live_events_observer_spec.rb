@@ -105,6 +105,26 @@ describe LiveEventsObserver do
     end
   end
 
+  describe "conversation" do
+    it "posts create events" do
+      expect(Canvas::LiveEvents).to receive(:conversation_created).once
+      sender = user_model
+      recipient = user_model
+      conversation(sender, recipient)
+    end
+  end
+
+
+  describe "conversation messsage" do
+    it "posts conversation message create events" do
+      expect(Canvas::LiveEvents).to receive(:conversation_message_created).once
+      user1 = user_model
+      user2 = user_model
+      convo = Conversation.initiate([user1, user2], false)
+      convo.add_message(user1, "create new conversation message")
+    end
+  end
+
   describe "course" do
     it "posts create events" do
       expect(Canvas::LiveEvents).to receive(:course_created).once
@@ -191,6 +211,20 @@ describe LiveEventsObserver do
       assignment_model(:title => "original")
       @assignment.title = "new title"
       @assignment.save
+    end
+  end
+
+  describe "assignment overrides" do
+    it "posts create events" do
+      expect(Canvas::LiveEvents).to receive(:assignment_override_created).once
+      assignment_override_model
+    end
+
+    it "posts update events" do
+      expect(Canvas::LiveEvents).to receive(:assignment_override_updated).once
+      assignment_override_model(:title => "original")
+      @override.title = "new title"
+      @override.save
     end
   end
 
@@ -363,7 +397,47 @@ describe LiveEventsObserver do
       end
     end
 
-    context "the tag_type is not context_module" do
+    context "the tag_type is context_module_progression" do
+      let(:context_module) { course.context_modules.create! }
+      let(:context_module_progression) { context_module.context_module_progressions.create!(user_id: user_model.id) }
+
+      it "posts update events if module and course are complete" do
+        expect(Canvas::LiveEvents).to receive(:course_completed).with(anything)
+        expect_any_instance_of(CourseProgress).to receive(:completed?).and_return(true)
+        context_module_progression.update_attribute(:workflow_state, 'completed')
+      end
+
+      it "does not post update events if module is not complete" do
+        expect(Canvas::LiveEvents).not_to receive(:course_completed).with(anything)
+        context_module_progression.update_attribute(:workflow_state, 'in_progress')
+      end
+
+      it "does not post update events if course is not complete" do
+        expect(Canvas::LiveEvents).not_to receive(:course_completed).with(anything)
+        expect_any_instance_of(CourseProgress).to receive(:completed?).and_return(false)
+        context_module_progression.update_attribute(:workflow_state, 'completed')
+      end
+
+      it "should still post even when weird requirements_met unsetting happens" do
+        page = course.wiki_pages.create!(:title => "page")
+        tag = context_module.add_item(:id => page.id, :type => 'wiki_page')
+        context_module.completion_requirements = {tag.id => {:type => 'must_view'}}
+        context_module.save!
+
+        expect(Canvas::LiveEvents).to receive(:course_completed).with(anything)
+        ContextModuleProgression.transaction(requires_new: true) do
+          # complete it
+          context_module_progression.update_attributes(:workflow_state => 'completed',
+            :requirements_met => [{:id => tag.id, :type => 'must_view'}])
+          # sneakily remove the requiremets met because terribleness
+          context_module_progression.update_attributes(:requirements_met => [])
+        end
+        # event fires off now but it should ignore the missing requirements_met in the db and
+        # use the ones that were present when the completion happened
+      end
+    end
+
+    context "the tag_type is not context_module or context_module_progression" do
       it "does nothing" do
         expect(Canvas::LiveEvents).not_to receive(:module_item_created)
         expect(Canvas::LiveEvents).not_to receive(:module_item_updated)
@@ -376,6 +450,83 @@ describe LiveEventsObserver do
         )
         content_tag.update_attribute(:position, 11)
       end
+    end
+  end
+
+  describe "learning_outcomes" do
+    before do
+      @context = course_model
+    end
+
+    it "posts create events" do
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_created).with(anything)
+      outcome_model
+    end
+
+    it "posts update events" do
+      outcome = outcome_model
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_updated).with(outcome)
+      outcome.update_attribute(:short_description, 'this is new')
+    end
+  end
+
+  describe "learning_outcome_groups" do
+    before do
+      @context = course_model
+      @context.root_outcome_group
+    end
+
+    it "posts create events" do
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_group_created).with(anything)
+      outcome_group_model
+    end
+
+    it "posts update events" do
+      group = outcome_group_model
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_group_updated).with(group)
+      group.update_attribute(:description, 'this is new')
+    end
+  end
+
+  describe "learning_outcome_links" do
+    before do
+      @context = course_model
+    end
+
+    it "posts create events" do
+      outcome = outcome_model
+      group = outcome_group_model
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_link_created).with(anything)
+      group.add_outcome(outcome)
+    end
+
+    it "posts updated events" do
+      outcome = outcome_model
+      group = outcome_group_model
+      link = group.add_outcome(outcome)
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_link_updated).with(link)
+      link.destroy!
+    end
+  end
+
+  describe "outcome_proficiency" do
+    it "posts create events" do
+      expect(Canvas::LiveEvents).to receive(:outcome_proficiency_created).once
+      outcome_proficiency_model(account_model)
+    end
+
+    it "posts updated events when ratings are changed" do
+      proficiency = outcome_proficiency_model(account_model)
+      expect(Canvas::LiveEvents).to receive(:outcome_proficiency_updated).once
+      rating = OutcomeProficiencyRating.new(description: 'new_rating', points: 5, mastery: true, color: 'ff0000')
+      proficiency.outcome_proficiency_ratings = [rating]
+      proficiency.save!
+    end
+
+    it "posts updated events when proficiencies are destroyed" do
+      proficiency = outcome_proficiency_model(account_model)
+      expect(Canvas::LiveEvents).to receive(:outcome_proficiency_updated).once
+      proficiency.destroy
     end
   end
 end

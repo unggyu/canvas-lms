@@ -34,7 +34,7 @@ module Factories
     }
   end
 
-  def quiz_with_submission(complete_quiz = true)
+  def quiz_with_submission(complete_quiz = true, skip_submission = false)
     @course ||= course_model(:reusable => true)
     @student ||= user_model
     @course.enroll_student(@student).accept
@@ -42,6 +42,7 @@ module Factories
     @quiz.workflow_state = "available"
     @quiz.quiz_questions.create!({ question_data: test_quiz_data.first })
     @quiz.save!
+    return if skip_submission
 
     @qsub = Quizzes::SubmissionManager.new(@quiz).find_or_create_submission(@student)
     @qsub.quiz_data = test_quiz_data
@@ -347,6 +348,30 @@ module Factories
     @quiz_submission = @quiz.generate_submission(@user)
     @quiz_submission.mark_completed
     @quiz_submission.submission_data = yield if block_given?
+  end
+
+  def practice_quiz_with_submission
+    @course ||= course_model(:reusable => true)
+    @student ||= user_model
+    @course.enroll_student(@student).accept
+
+    @quiz = @course.quizzes.create
+    @quiz.quiz_type = 'practice_quiz'
+    @quiz.workflow_state = "available"
+    @quiz.quiz_questions.create!({ question_data: test_quiz_data.first })
+    @quiz.save!
+
+    @qsub = Quizzes::SubmissionManager.new(@quiz).find_or_create_submission(@student)
+    @qsub.quiz_data = test_quiz_data
+    @qsub.started_at = 1.minute.ago
+    @qsub.attempt = 1
+    @qsub.submission_data = [{:points=>0, :text=>"7051", :question_id=>128, :correct=>false, :answer_id=>7051}]
+    @qsub.score = 0
+    @qsub.finished_at = Time.now.utc
+    @qsub.workflow_state = 'complete'
+    @qsub.with_versioning(true) do
+      @qsub.save!
+    end
   end
 
   def course_quiz(active=false)

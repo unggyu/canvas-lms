@@ -17,7 +17,6 @@
 #
 
 module AuthenticationMethods
-
   def load_pseudonym_from_policy
     if (policy_encoded = params['Policy']) &&
         (signature = params['Signature']) &&
@@ -85,19 +84,40 @@ module AuthenticationMethods
     end
   end
 
-  def validate_scopes
-    if @access_token && @domain_root_account.feature_enabled?(:developer_key_management_and_scoping)
-      developer_key = @access_token.developer_key
-      request_method = request.method.casecmp('HEAD') == 0 ? 'GET' : request.method.upcase
+  ALLOWED_SCOPE_INCLUDES = %w{uuid}
 
-      if developer_key.try(:require_scopes)
-        if @access_token.url_scopes_for_method(request_method).any? { |scope| scope =~ request.path }
-          params.delete :include
-          params.delete :includes
-        else
-          raise AccessTokenScopeError
+  def filter_includes(key)
+    # no funny business
+    params.delete(key) unless params[key].class == Array
+    return unless params.key?(key)
+    params[key] &= ALLOWED_SCOPE_INCLUDES
+  end
+
+  def validate_scopes
+    return unless @access_token
+
+    developer_key = @access_token.developer_key
+    request_method = request.method.casecmp('HEAD') == 0 ? 'GET' : request.method.upcase
+
+    if developer_key.try(:require_scopes)
+      scope_patterns = @access_token.url_scopes_for_method(request_method).concat(AccessToken.always_allowed_scopes)
+      if scope_patterns.any? { |scope| scope =~ request.path }
+        unless developer_key.try(:allow_includes)
+          filter_includes(:include)
+          filter_includes(:includes)
         end
+      else
+        raise AccessTokenScopeError
       end
+    end
+  end
+
+  def self.graphql_type_authorized?(access_token, type)
+    if access_token&.developer_key&.require_scopes
+      # allowing the root query type for now, but any other type is forbidden
+      type == "Query"
+    else
+      true
     end
   end
 
@@ -118,6 +138,8 @@ module AuthenticationMethods
       raise AccessTokenError unless @access_token.authorized_for_account?(account)
 
       @current_user = @access_token.user
+      @real_current_user = @access_token.real_user
+      @real_current_pseudonym = SisPseudonym.for(@real_current_user, @domain_root_account, type: :implicit, require_sis: false) if @real_current_user
       @current_pseudonym = SisPseudonym.for(@current_user, @domain_root_account, type: :implicit, require_sis: false)
 
       unless @current_user && @current_pseudonym
@@ -155,39 +177,43 @@ module AuthenticationMethods
     if !@current_pseudonym
       if @policy_pseudonym_id
         @current_pseudonym = Pseudonym.where(id: @policy_pseudonym_id).first
-      elsif @pseudonym_session = PseudonymSession.find
-        @current_pseudonym = @pseudonym_session.record
+      else
+        @pseudonym_session = PseudonymSession.find_with_validation
+        if @pseudonym_session
+          @current_pseudonym = @pseudonym_session.record
+          @current_pseudonym.user.reload if @current_pseudonym.shard != @current_pseudonym.user.shard
 
-        # if the session was created before the last time the user explicitly
-        # logged out (of any session for any of their pseudonyms), invalidate
-        # this session
-        invalid_before = @current_pseudonym.user.last_logged_out
-        # they logged out in the future?!? something's busted; just ignore it -
-        # either my clock is off or whoever set this value's clock is off
-        invalid_before = nil if invalid_before && invalid_before > Time.now.utc
-        if invalid_before &&
-          (session_refreshed_at = request.env['encrypted_cookie_store.session_refreshed_at']) &&
-          session_refreshed_at < invalid_before
+          # if the session was created before the last time the user explicitly
+          # logged out (of any session for any of their pseudonyms), invalidate
+          # this session
+          invalid_before = @current_pseudonym.user.last_logged_out
+          # they logged out in the future?!? something's busted; just ignore it -
+          # either my clock is off or whoever set this value's clock is off
+          invalid_before = nil if invalid_before && invalid_before > Time.now.utc
+          if invalid_before &&
+            (session_refreshed_at = request.env['encrypted_cookie_store.session_refreshed_at']) &&
+            session_refreshed_at < invalid_before
 
-          logger.info "Invalidating session: Session created before user logged out."
-          destroy_session
-          @current_pseudonym = nil
-          if api_request? || request.format.json?
-            raise LoggedOutError
+            logger.info "[AUTH] Invalidating session: Session created before user logged out."
+            destroy_session
+            @current_pseudonym = nil
+            if api_request? || request.format.json?
+              raise LoggedOutError
+            end
           end
-        end
 
-        if @current_pseudonym &&
-           session[:cas_session] &&
-           @current_pseudonym.cas_ticket_expired?(session[:cas_session])
+          if @current_pseudonym &&
+            session[:cas_session] &&
+            @current_pseudonym.cas_ticket_expired?(session[:cas_session])
 
-          logger.info "Invalidating session: CAS ticket expired - #{session[:cas_session]}."
-          destroy_session
-          @current_pseudonym = nil
+            logger.info "[AUTH] Invalidating session: CAS ticket expired - #{session[:cas_session]}."
+            destroy_session
+            @current_pseudonym = nil
 
-          raise LoggedOutError if api_request? || request.format.json?
+            raise LoggedOutError if api_request? || request.format.json?
 
-          redirect_to_login
+            redirect_to_login
+          end
         end
       end
 
@@ -199,7 +225,9 @@ module AuthenticationMethods
       @current_user = @current_pseudonym && @current_pseudonym.user
     end
 
+    logger.info "[AUTH] inital load: pseud -> #{@current_pseudonym&.id}, user -> #{@current_user&.id}"
     if @current_user && @current_user.unavailable?
+      logger.info "[AUTH] Invalid request: User is currently UNAVAILABLE"
       @current_pseudonym = nil
       @current_user = nil
     end
@@ -252,7 +280,7 @@ module AuthenticationMethods
         @current_user = user
         @real_current_pseudonym = @current_pseudonym
         @current_pseudonym = SisPseudonym.for(@current_user, @domain_root_account, type: :implicit, require_sis: false)
-        logger.warn "#{@real_current_user.name}(#{@real_current_user.id}) impersonating #{@current_user.name} on page #{request.url}"
+        logger.warn "[AUTH] #{@real_current_user.name}(#{@real_current_user.id}) impersonating #{@current_user.name} on page #{request.url}"
       elsif api_request?
         # fail silently for UI, but not for API
         render :json => {:errors => "Invalid as_user_id"}, :status => :unauthorized
@@ -260,6 +288,7 @@ module AuthenticationMethods
       end
     end
 
+    logger.info "[AUTH] final user: #{@current_user&.id}"
     @current_user
   end
   private :load_user
@@ -281,7 +310,8 @@ module AuthenticationMethods
     rescue URI::Error
       return nil
     end
-    return nil unless uri.path[0] == '/'
+    return nil unless uri.path && uri.path[0] == '/'
+    return "#{request.protocol}#{request.host_with_port}#{uri.path.sub(%r{/download$}, '')}" if uri.path =~ %r{/files/(\d+~)?\d+/download$}
     return "#{request.protocol}#{request.host_with_port}#{uri.path}#{uri.query && "?#{uri.query}"}#{uri.fragment && "##{uri.fragment}"}"
   end
 
@@ -299,43 +329,40 @@ module AuthenticationMethods
   protected :store_location
 
   def redirect_back_or_default(default)
-    redirect_to(session[:return_to] || default)
-    session.delete(:return_to)
+    session.delete(:return_to) || default
   end
   protected :redirect_back_or_default
 
   def redirect_to_referrer_or_default(default)
-    redirect_to(:back)
-  rescue ActionController::RedirectBackError
-    redirect_to(default)
+    redirect_back(fallback_location: default)
   end
 
   def redirect_to_login
     return unless fix_ms_office_redirects
     respond_to do |format|
-      format.html {
+      format.json { render_json_unauthorized }
+      format.all do
         store_location
         flash[:warning] = I18n.t('lib.auth.errors.not_authenticated', "You must be logged in to access this page") unless request.path == '/'
         redirect_to login_url(params.permit(:canvas_login, :authentication_provider))
-      }
-      format.json { render_json_unauthorized }
+      end
     end
   end
 
   def render_json_unauthorized
     add_www_authenticate_header if api_request? && !@current_user
     if @current_user
-      render :json => {
-               :status => I18n.t('lib.auth.status_unauthorized', 'unauthorized'),
-               :errors => [{ :message => I18n.t('lib.auth.not_authorized', "user not authorized to perform that action") }]
-             },
-             :status => :unauthorized
+      render json: {
+        status: I18n.t('lib.auth.status_unauthorized', 'unauthorized'),
+        errors: [{ message: I18n.t('lib.auth.not_authorized', "user not authorized to perform that action") }]
+      },
+      status: :unauthorized
     else
-      render :json => {
-               :status => I18n.t('lib.auth.status_unauthenticated', 'unauthenticated'),
-               :errors => [{ :message => I18n.t('lib.auth.authentication_required', "user authorization required") }]
-             },
-             :status => :unauthorized
+      render json: {
+        status: I18n.t('lib.auth.status_unauthenticated', 'unauthenticated'),
+        errors: [{ :message => I18n.t('lib.auth.authentication_required', "user authorization required") }]
+      },
+      status: :unauthorized
     end
   end
 

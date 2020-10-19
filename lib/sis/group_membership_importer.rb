@@ -20,11 +20,10 @@ module SIS
   class GroupMembershipImporter < BaseImporter
 
     def process
-      start = Time.zone.now
       importer = Work.new(@batch, @root_account, @logger)
       yield importer
-      SisBatchRollBackData.bulk_insert_roll_back_data(importer.roll_back_data) if @batch.using_parallel_importers?
-      @logger.debug("Group Users took #{Time.zone.now - start} seconds")
+      SisBatchRollBackData.bulk_insert_roll_back_data(importer.roll_back_data)
+
       importer.success_count
     end
 
@@ -44,14 +43,13 @@ module SIS
       def add_group_membership(user_id, group_id, status)
         user_id = user_id.to_s
         group_id = group_id.to_s
-        @logger.debug("Processing Group User #{[user_id, group_id, status].inspect}")
         raise ImportError, "No group_id given for a group user" if group_id.blank?
         raise ImportError, "No user_id given for a group user" if user_id.blank?
         raise ImportError, "Improper status \"#{status}\" for a group user" unless status =~ /\A(accepted|deleted)/i
         return if @batch.skip_deletes? && status =~ /deleted/i
 
         pseudo = @root_account.pseudonyms.where(sis_user_id: user_id).take
-        user = pseudo.try(:user)
+        user = pseudo&.user
 
         group = @groups_cache[group_id]
         group ||= @root_account.all_groups.where(sis_source_id: group_id).preload(:context).take
@@ -60,8 +58,13 @@ module SIS
         raise ImportError, "User #{user_id} didn't exist for group user" unless user
         raise ImportError, "Group #{group_id} didn't exist for group user" unless group
 
+        if group.context.is_a?(Course) && !group.context.all_real_users.where(id: user.id).exists?
+          raise ImportError, "User #{user_id} doesn't have an enrollment in the course of group #{group_id}."
+        end
+
         # can't query group.group_memberships, since that excludes deleted memberships
-        group_membership = GroupMembership.where(group_id: group, user_id: user).take
+        group_membership = GroupMembership.where(group_id: group, user_id: user).
+          order(Arel.sql("CASE WHEN workflow_state = 'accepted' THEN 0 ELSE 1 END")).take
         group_membership ||= group.group_memberships.build(:user => user)
 
         group_membership.sis_batch_id = @batch.id
@@ -71,10 +74,6 @@ module SIS
           group_membership.workflow_state = 'accepted'
         when /deleted/i
           group_membership.workflow_state = 'deleted'
-        end
-
-        if group.context.is_a?(Course) && !group.context.all_real_users.where(id: user.id).exists?
-          raise ImportError, "User #{user_id} doesn't have an enrollment in the course of group #{group_id}."
         end
 
         if group_membership.valid?

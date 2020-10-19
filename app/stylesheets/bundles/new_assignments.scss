@@ -28,10 +28,15 @@
   }
 }
 
+// this duplicates the styles that item-groups .ig-header ig-header-title would deliver
+.assignment_group .ig-header-title {
+  flex: 1 1 auto;
+}
+// this duplicates the styles that ig-header-admin should be applying
 .ag-header-controls {
-  position: absolute;
-  top: 0;
-  #{direction(right)}: 0;
+  flex: 0 0 auto;
+  display: flex;
+  align-self: center;
 }
 
 .loadingIndicator {
@@ -82,7 +87,7 @@
 
 .ag-weights-message {
   display: block;
-  margin: 20px 20px 0 20px;
+  margin: 20px 20px 0;
 }
 
 .ag-weights-content .checkbox {
@@ -103,12 +108,12 @@
 }
 
 .ag-settings-weights-message {
-  margin: 0 0 20px 0;
+  margin: 0 0 20px;
 }
 
 .disable-sync-to-sis-message {
   display: block;
-  margin: 20px 20px 0 20px;
+  margin: 20px 20px 0;
 }
 
 .sync-to-sis-message-content {
@@ -157,11 +162,13 @@
   }
 }
 
+// duplicates the content_next.scss styles for the sortable handle
 .sortable-handle {
-  margin: 0 0px 0 -30px;
-  padding: 0 0px 0 30px;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
   a {
-    padding: 20px 0px 10px 0px;
+    padding: 20px 0px 10px;
   }
 }
 
@@ -188,16 +195,12 @@
 .draggable-dropzone {
   height: 40px;
   background-color: lighten($ic-color-dark, 15%);
-  border-right: 1px dashed $ic-border-dark;
-  border-left: 1px dashed $ic-border-dark;
+  border-#{direction(right)}: 1px dashed $ic-border-dark;
+  border-#{direction(left)}: 1px dashed $ic-border-dark;
 }
 
 .ag-header-controls .tooltip_link {
   color: #3d454c;
-}
-
-#ag-list {
-  padding-bottom: 100px;
 }
 
 .row-fluid span.grade-display {
@@ -252,7 +255,7 @@ form[data-view='edit-assignment'] {
 }
 
 .duplicate-failed-actions {
-  margin: 0.5rem 0 0 0;
+  margin: 0.5rem 0 0;
 
   form {
     margin: 0;

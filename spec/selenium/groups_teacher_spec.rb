@@ -48,7 +48,7 @@ describe "new groups" do
       f('.btn.add-group').click
       wait_for_ajaximations
       f('#group_name').send_keys("Test Group")
-      f('#groupEditSaveButton').click
+      submit_form("span[aria-label='Add Group']")
       wait_for_ajaximations
       expect(fj('.collectionViewItems.unstyled.groups-list>li:last-child')).to include_text("Test Group")
     end
@@ -95,7 +95,8 @@ describe "new groups" do
       f('.edit-group-assignment').click
       wait_for_ajaximations
       click_option('.move-select .move-select__group select', "#{@testgroup[1].name}")
-      f('.move-select button[type="submit"]').click
+      button = f('.move-select button[type="submit"]')
+      keep_trying_until { button.click; true }
       wait_for_ajaximations
 
       # Verifies the student count updates
@@ -162,6 +163,7 @@ describe "new groups" do
       f(".message-all-unassigned").click
       replace_content(fj('textarea[name="body"]'), "blah blah blah students")
       fj(".btn-primary[data-text-when-loaded='Sent!']").click
+      wait_for_ajaximations
 
       expect(@course).to eq Conversation.last.context
     end
@@ -190,6 +192,12 @@ describe "new groups" do
 
       expect(f('.group-summary')).to include_text("0 / 3 students")
       f('.al-trigger.btn').click
+
+      # the randomly assign members option doesn't appear immediately and can result
+      # in selenium clicking the wrong link. wait for it to appear before clicking
+      # edit category to work around the issue
+      wait_for(method: nil, timeout: 2) { f('.randomly-assign-members').displayed? }
+
       f('.icon-edit.edit-category').click
 
       manually_set_groupset_limit("2")
@@ -223,8 +231,14 @@ describe "new groups" do
       wait_for_ajaximations
       f(".group-user-actions[data-user-id=\"user_#{@students[0].id}\"]").click
       wait_for_ajaximations
+
+      # the remove as leader option doesn't appear immediately and can result
+      # in selenium clicking the wrong link. wait for it to appear before clicking
+      # "Move To" to work around the issue
+      wait_for(method: nil, timeout: 2) { f('.ui-menu-item .remove-as-leader').displayed? }
+
       f(".ui-menu-item .edit-group-assignment").click
-      wait_for_ajaximations
+      wait_for(method: nil, timeout: 2) { fxpath("//*[@data-cid='Tray']//*[@role='dialog']").displayed? }
       ff(".move-select .move-select__group option").last.click
       f('.move-select button[type="submit"]').click
       wait_for_ajaximations
@@ -265,10 +279,12 @@ describe "new groups" do
       f('.ui-menu-item .edit-group-assignment').click
       wait_for_ajaximations
 
+      f('.move-select .move-select__group') # fixes flakiness since the ff below doesn't wait for the element to appear
       ff('.move-select .move-select__group option').last.click
       wait_for_ajaximations
 
-      f('.move-select button[type="submit"]').click
+      button = f('.move-select button[type="submit"]')
+      keep_trying_until { button.click; true } # have to wait for instUI animations
       wait_for_ajaximations
 
       expect(f(".group[data-id=\"#{@testgroup[0].id}\"] span.show-group-full")).not_to be_displayed
@@ -314,15 +330,12 @@ describe "new groups" do
       get "/courses/#{@course.id}/groups"
 
       f(".group[data-id=\"#{@testgroup[0].id}\"] .toggle-group").click
-
-      expect(f(".group-leader .icon-user")).to be_displayed
-
+      wait_for_ajaximations
       f(".group-user-actions[data-user-id=\"user_#{@students[0].id}\"]").click
-
+      wait_for(method: nil, timeout: 1) { f(".ui-menu-item .edit-group-assignment").displayed? }
       f(".ui-menu-item .edit-group-assignment").click
-
+      wait_for(method: nil, timeout: 2) { fxpath("//*[@data-cid='Tray']//*[@role='dialog']").displayed? }
       ff(".move-select .move-select__group option").last.click
-
       f('.move-select button[type="submit"]').click
       wait_for_ajaximations
 
@@ -608,6 +621,7 @@ describe "new groups" do
 
     context "using clone group set modal" do
       it "should clone a group set including its groups and memberships" do
+        skip('KNO-185')
         group_test_setup(2,1,2)
         add_user_to_group(@students.first,@testgroup[0],true)
 
@@ -646,6 +660,7 @@ describe "new groups" do
       end
 
       it "should alert group set name is required and is already in use" do
+        skip('KNO-186')
         group_test_setup
 
         get "/courses/#{@course.id}/groups"
@@ -691,7 +706,6 @@ describe "new groups" do
 
       context "choosing New Group Set option" do
         it "should clone group set when adding an unassigned student to a group with submission" do
-          skip("Flakey selenium spec. Jira: COMMS-1143")
           group_test_setup(2,1,1)
           add_user_to_group(@students.last,@testgroup.first)
           create_and_submit_assignment_from_group(@students.last)
@@ -707,7 +721,6 @@ describe "new groups" do
         end
 
         it "should clone group set when moving a student from a group to a group with submission" do
-          skip_if_chrome('fragile in chrome')
           group_test_setup(2,1,2)
           # add second student to second test group
           add_user_to_group(@students.last,@testgroup.last)
@@ -728,7 +741,6 @@ describe "new groups" do
         end
 
         it "should clone group set when moving a student from a group with submission to a group" do
-          skip_if_chrome('fragile in chrome')
           group_test_setup(2,1,2)
           add_user_to_group(@students.last,@testgroup.last)
           create_and_submit_assignment_from_group(@students.last)
@@ -747,22 +759,8 @@ describe "new groups" do
           expect(CourseGroups.groupset_tabs.count).to eq 2
         end
 
-        it "should clone group set when removing a student from a group with submission" do
-          group_test_setup
-          add_user_to_group(@students.first,@testgroup[0])
-          create_and_submit_assignment_from_group(@students.first)
-
-          CourseGroups.visit_course_groups(@course.id)
-          CourseGroups.remove_student_from_group(@students.first.id, @testgroup.first.name)
-          CourseGroups.clone_category_confirm
-          CourseGroups.toggle_group_detail_view(@testgroup.first.name)
-
-          # Verifies student has not changed groups and there is a new groupset tab
-          expect(CourseGroups.all_users_in_group.first.text).to eq @students.first.name
-          expect(CourseGroups.groupset_tabs.count).to eq 2
-        end
-
         it "should clone group set when deleting a group with submission" do
+          skip('KNO-187')
           group_test_setup
           add_user_to_group(@students.first,@testgroup.first)
           create_and_submit_assignment_from_group(@students.first)
@@ -910,7 +908,6 @@ describe "new groups" do
           create_and_submit_assignment_from_group(@students.last)
 
           get "/courses/#{@course.id}/groups"
-
           move_unassigned_student_to_group
 
           select_change_groups_option
@@ -943,11 +940,14 @@ describe "new groups" do
 
           # Moves Test User 2 to Test Group 1
           ff('.group-user-actions').last.click
-          wait_for_ajaximations
+          wait_for(method: nil, timeout: 1) { f(".ui-menu-item .edit-group-assignment").displayed? }
           ff('.edit-group-assignment').last.click
-          wait_for_ajaximations
+          wait_for(method: nil, timeout: 2) { fxpath("//*[@data-cid='Tray']//*[@role='dialog']").displayed? }
           click_option('.move-select .move-select__group select', "#{@testgroup.first.name}")
+
+          sleep 0.3 # have to wait for instUI animations
           ff('.move-select button[type="submit"]').last.click
+
           wait_for_ajaximations
 
           select_change_groups_option

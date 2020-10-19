@@ -17,8 +17,6 @@
 
 module Outcomes
   module Import
-    include OutcomeImporter
-
     class InvalidDataError < RuntimeError; end
     class DataFormatError < RuntimeError; end
 
@@ -83,8 +81,9 @@ module Outcomes
       model = find_prior_group(group)
       unless model.context == context
         raise InvalidDataError, I18n.t(
-          'Group "%{guid}" exists in incorrect context',
-          guid: group[:vendor_guid]
+          'Group with ID %{guid} already exists in another unrelated course or account (%{name})',
+          guid: group[:vendor_guid],
+          name: model.context.name
         )
       end
       if model.outcome_import_id == outcome_import_id
@@ -115,8 +114,9 @@ module Outcomes
       model.context = context if model.new_record?
       unless context_visible?(model.context)
         raise InvalidDataError, I18n.t(
-          'Outcome "%{guid}" not in visible context',
-          guid: outcome[:vendor_guid]
+          'Outcome with ID %{guid} already exists in another unrelated course or account (%{name})',
+          guid: outcome[:vendor_guid],
+          name: model.context.name
         )
       end
       if model.outcome_import_id == outcome_import_id
@@ -130,10 +130,10 @@ module Outcomes
       model.title = outcome[:title]
       model.description = infer_nil_value(model, :description, outcome)
       model.display_name = infer_nil_value(model, :display_name, outcome)
-      model.calculation_method = outcome[:calculation_method].presence || 'highest'
-      model.calculation_int = outcome[:calculation_int]
+      model.calculation_method = outcome[:calculation_method].presence || model.default_calculation_method
+      model.calculation_int = outcome[:calculation_int].presence || model.default_calculation_int
       # let removing the outcome_links content tags delete the underlying outcome
-      model.workflow_state = 'active' if outcome[:workflow_state] == 'active'
+      model.workflow_state = 'active' unless outcome[:workflow_state] == 'deleted'
 
       prior_rubric = model.rubric_criterion || {}
       changed = ->(k) { outcome[k].present? && outcome[k] != prior_rubric[k] }
@@ -179,9 +179,7 @@ module Outcomes
 
     def non_vendor_guid_changes?(model)
       model.has_changes_to_save? && !(model.changes_to_save.length == 1 &&
-        model.changes_to_save.key?(
-          AcademicBenchmark.use_new_guid_columns? ? 'vendor_guid_2' : 'vendor_guid'
-        ))
+        model.changes_to_save.key?('vendor_guid'))
     end
 
     def find_prior_outcome(outcome)
@@ -198,7 +196,7 @@ module Outcomes
         end
       else
         vendor_guid = outcome[:vendor_guid]
-        prior = LearningOutcome.find_by(vendor_clause(vendor_guid))
+        prior = LearningOutcome.where(vendor_guid: vendor_guid).active_first.first
         return prior if prior
         LearningOutcome.new(vendor_guid: vendor_guid)
       end
@@ -206,12 +204,10 @@ module Outcomes
 
     def find_prior_group(group)
       vendor_guid = group[:vendor_guid]
-      clause = vendor_clause(group[:vendor_guid])
-
-      prior = LearningOutcomeGroup.where(clause).find_by(context: context)
+      prior = LearningOutcomeGroup.where(context: context).where(vendor_guid: vendor_guid).active_first.first
       return prior if prior
 
-      match = /canvas_outcome_group:(\d+)/.match(group[:vendor_guid])
+      match = /canvas_outcome_group:(\d+)/.match(vendor_guid)
       if match
         canvas_id = match[1]
         begin
@@ -245,7 +241,7 @@ module Outcomes
 
       guids = object[:parent_guids].strip.split
       LearningOutcomeGroup.where(context: context, outcome_import_id: outcome_import_id).
-        where(plural_vendor_clause(guids)).
+        where(vendor_guid: guids).
         tap do |parents|
           if parents.length < guids.length
             missing = guids - parents.map(&:vendor_guid)
@@ -272,15 +268,17 @@ module Outcomes
         where(workflow_state: 'deleted')
       resurrect.update_all(workflow_state: 'active')
 
+      # add new parents before removing old to avoid deleting last link
+      # to an aligned outcome
+      existing_parent_ids = existing_links.pluck(:associated_asset_id)
+      new_parents = parents.reject { |p| existing_parent_ids.include?(p.id) }
+      new_parents.each { |p| p.add_outcome(outcome) }
+
       kill = existing_links.
         where.not(associated_asset_id: next_parent_ids).
         where(associated_asset_type: 'LearningOutcomeGroup').
         where(workflow_state: 'active')
       kill.destroy_all
-
-      existing_parent_ids = existing_links.pluck(:associated_asset_id)
-      new_parents = parents.reject { |p| existing_parent_ids.include?(p.id) }
-      new_parents.each { |p| p.add_outcome(outcome) }
     end
 
     def outcome_import_id

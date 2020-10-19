@@ -138,7 +138,7 @@
 #
 class ProfileController < ApplicationController
   before_action :require_registered_user, :except => [:show, :settings, :communication, :communication_update]
-  before_action :require_user, :only => [:settings, :communication, :communication_update]
+  before_action :require_user, :only => [:settings, :communication, :communication_update, :qr_mobile_login]
   before_action :require_user_for_private_profile, :only => :show
   before_action :reject_student_view_student
   before_action :require_password_session, :only => [:communication, :communication_update, :update]
@@ -158,7 +158,7 @@ class ProfileController < ApplicationController
     end
 
     @user ||= @current_user
-    @active_tab = "profile"
+    set_active_tab "profile"
     @context = @user.profile if @user == @current_user
 
     @user_data = profile_data(
@@ -203,7 +203,7 @@ class ProfileController < ApplicationController
     @pseudonyms = @user.pseudonyms.active
     @password_pseudonyms = @pseudonyms.select{|p| !p.managed_password? }
     @context = @user.profile
-    @active_tab = "profile_settings"
+    set_active_tab "profile_settings"
     js_env :enable_gravatar => @domain_root_account&.enable_gravatar?
     respond_to do |format|
       format.html do
@@ -223,7 +223,21 @@ class ProfileController < ApplicationController
     @user = @current_user
     @current_user.used_feature(:cc_prefs)
     @context = @user.profile
-    @active_tab = 'notifications'
+    set_active_tab 'notifications'
+
+    # Render updated UI if feature flag is enabled
+    if Account.site_admin.feature_enabled?(:notification_update_account_ui)
+      add_crumb(@current_user.short_name, profile_path)
+      add_crumb(t("Account Notification Settings"))
+      js_env NOTIFICATION_PREFERENCES_OPTIONS: {
+        deprecate_sms_enabled: !@domain_root_account.settings[:sms_allowed] && Account.site_admin.feature_enabled?(:deprecate_sms),
+        allowed_sms_categories: Notification.categories_to_send_in_sms(@domain_root_account),
+        send_scores_in_emails_text: Notification.where(category: 'Grading').first.related_user_setting(@user, @domain_root_account)
+      }
+      js_bundle :account_notification_settings_show
+      render html: '', layout: true
+      return
+    end
 
     # Get the list of Notification models (that are treated like categories) that make up the full list of Categories.
     full_category_list = Notification.dashboard_categories(@user)
@@ -241,7 +255,10 @@ class ProfileController < ApplicationController
       :channels => @user.communication_channels.all_ordered_for_display(@user).map { |c| communication_channel_json(c, @user, session) },
       :policies => NotificationPolicy.setup_with_default_policies(@user, full_category_list).map { |p| notification_policy_json(p, @user, session).tap { |json| json[:communication_channel_id] = p.communication_channel_id } },
       :categories => categories,
+      :deprecate_sms_enabled => !@domain_root_account.settings[:sms_allowed] && Account.site_admin.feature_enabled?(:deprecate_sms),
+      :allowed_sms_categories => Notification.categories_to_send_in_sms(@domain_root_account),
       :update_url => communication_update_profile_path,
+      :show_observed_names => @user.observer_enrollments.any? || @user.as_observer_observation_links.any? ? @user.send_observed_names_in_notifications? : nil
       },
       :READ_PRIVACY_INFO => @user.preferences[:read_notification_privacy_info],
       :ACCOUNT_PRIVACY_NOTICE => @domain_root_account.settings[:external_notification_warning]
@@ -334,14 +351,17 @@ class ProfileController < ApplicationController
     respond_to do |format|
       user_params = params[:user] ? params[:user].
         permit(:name, :short_name, :sortable_name, :time_zone, :show_user_services, :gender,
-          :avatar_image, :subscribe_to_emails, :locale, :bio, :birthdate)
+          :avatar_image, :subscribe_to_emails, :locale, :bio, :birthdate, :pronouns)
         : {}
       if !@user.user_can_edit_name?
         user_params.delete(:name)
         user_params.delete(:short_name)
         user_params.delete(:sortable_name)
       end
-      if @user.update_attributes(user_params)
+      if user_params[:pronouns].present? && @domain_root_account.pronouns.exclude?(user_params[:pronouns].strip)
+        user_params.delete(:pronouns)
+      end
+      if @user.update(user_params)
         pseudonymed = false
         if params[:default_email_id].present?
           @email_channel = @user.communication_channels.email.active.where(id: params[:default_email_id]).first
@@ -371,7 +391,7 @@ class ProfileController < ApplicationController
             pseudonym_params.delete :password_confirmation
           end
           params[:pseudonym].delete :password_id
-          if !pseudonym_params.empty? && pseudonym_to_update && !pseudonym_to_update.update_attributes(pseudonym_params)
+          if !pseudonym_params.empty? && pseudonym_to_update && !pseudonym_to_update.update(pseudonym_params)
             pseudonymed = true
             flash[:error] = t('errors.profile_update_failed', "Login failed to update")
             format.html { redirect_to user_profile_url(@current_user) }
@@ -400,6 +420,7 @@ class ProfileController < ApplicationController
     @context = @profile
 
     short_name = params[:user] && params[:user][:short_name]
+    @user.pronouns = params[:pronouns] if params[:pronouns]
     @user.short_name = short_name if short_name && @user.user_can_edit_name?
     if params[:user_profile]
       user_profile_params = params[:user_profile].permit(:title, :bio)
@@ -411,9 +432,13 @@ class ProfileController < ApplicationController
       @profile.links = []
       params[:link_urls].zip(params[:link_titles]).
         reject { |url, title| url.blank? && title.blank? }.
-        each { |url, title|
-          @profile.links.build :url => url, :title => title
-        }
+        each do |url, title|
+          new_link = @profile.links.build :url => url, :title => title
+          # since every time we update links, we delete and recreate everything,
+          # deleting invalid link records will make sure the rest of the
+          # valid ones still save
+          new_link.delete unless new_link.valid?
+        end
     elsif params[:delete_links]
       @profile.links = []
     end
@@ -455,14 +480,54 @@ class ProfileController < ApplicationController
     if @domain_root_account.parent_registration?
       js_env(AUTH_TYPE: @domain_root_account.parent_auth_type)
     end
-    if @domain_root_account.feature_enabled?(:observer_pairing_code)
-      js_env(USE_PAIRING_CODE: true)
-    end
     @user ||= @current_user
-    @active_tab = 'observees'
+    set_active_tab 'observees'
     @context = @user.profile if @user == @current_user
 
     add_crumb(@user.short_name, profile_path)
     add_crumb(t('crumbs.observees', "Observing"))
+
+    @google_analytics_page_title = "Students Being Observed"
+    join_title(t(:page_title, 'Students Being Observed'), @user.name)
+    js_bundle :user_observees
+
+    render html: '', layout: true
+  end
+
+  def content_shares
+    raise not_found unless @domain_root_account.feature_enabled?(:direct_share) && @current_user.can_content_share?
+
+    @user ||= @current_user
+    set_active_tab 'content_shares'
+    @context = @user.profile
+
+    ccv_settings = Canvas::DynamicSettings.find('common_cartridge_viewer') || {}
+    js_env({
+      COMMON_CARTRIDGE_VIEWER_URL: ccv_settings['base_url']
+    })
+    render :content_shares
+  end
+
+  def qr_mobile_login
+    unless instructure_misc_plugin_available? && !!@domain_root_account&.mobile_qr_login_is_enabled?
+      head 404
+      return
+    end
+
+    @user ||= @current_user
+    set_active_tab 'qr_mobile_login'
+    @context = @user.profile if @user == @current_user
+
+    add_crumb(@user.short_name, profile_path)
+    add_crumb(t('crumbs.mobile_qr_login', "QR for Mobile Login"))
+
+    js_bundle :qr_mobile_login
+
+    render html: '', layout: true
   end
 end
+
+def instructure_misc_plugin_available?
+  Object.const_defined?("InstructureMiscPlugin")
+end
+private :instructure_misc_plugin_available?

@@ -17,9 +17,12 @@
 
 class MasterCourses::MasterMigration < ActiveRecord::Base
   belongs_to :master_template, :class_name => "MasterCourses::MasterTemplate"
+  belongs_to :root_account, :class_name => 'Account'
   belongs_to :user
 
   has_many :migration_results, :class_name => "MasterCourses::MigrationResult"
+
+  before_create :set_root_account_id
 
   serialize :export_results, Hash
   serialize :migration_settings, Hash
@@ -65,6 +68,10 @@ class MasterCourses::MasterMigration < ActiveRecord::Base
 
   def copy_settings=(val)
     self.migration_settings[:copy_settings] = val
+  end
+
+  def publish_after_initial_sync=(val)
+    self.migration_settings[:publish_after_initial_sync] = val
   end
 
   def hours_until_expire
@@ -181,6 +188,7 @@ class MasterCourses::MasterMigration < ActiveRecord::Base
     ce.settings[:master_migration_type] = type
     ce.settings[:master_migration_id] = self.id # so we can find on the import side when we copy attachments
     ce.settings[:primary_master_migration] = is_primary
+    ce.settings[:selected_content] = selected_content(type)
     ce.user = self.user
     ce.save!
     ce.master_migration = self # don't need to reload
@@ -189,8 +197,22 @@ class MasterCourses::MasterMigration < ActiveRecord::Base
       ce.settings[:referenced_file_migration_ids] = ce.referenced_files.values
       ce.save!
     end
-    detect_updated_attachments(type) if ce.exported_for_course_copy? && is_primary
+    if ce.exported_for_course_copy? && is_primary
+      detect_updated_attachments(type)
+      detect_updated_syllabus(type, ce)
+    end
     ce
+  end
+
+  def selected_content(type)
+    {}.tap do |h|
+      h[:all_course_settings] = if migration_settings.has_key?(:copy_settings)
+        migration_settings[:copy_settings]
+      else
+        type == :full
+      end
+      h[:syllabus_body] = type == :full || master_template.course.syllabus_updated_at&.>(last_export_at || master_template.created_at)
+    end
   end
 
   def last_export_at
@@ -217,11 +239,16 @@ class MasterCourses::MasterMigration < ActiveRecord::Base
     end
   end
 
+  def detect_updated_syllabus(type, content_export)
+    selected_content = content_export.settings[:selected_content]
+    @updates['syllabus'] = true if @updates && selected_content && selected_content[:syllabus_body]
+  end
+
   def add_exported_asset(asset)
     return unless @export_type == :selective
     @export_count += 1
     return if @export_count > Setting.get('master_courses_history_count', '150').to_i
-    set = asset.created_at >= last_export_at ? @creations : @updates
+    set = (last_export_at.nil? || asset.created_at >= last_export_at) ? @creations : @updates
     set[asset.class.name] ||= []
     set[asset.class.name] << master_template.content_tag_for(asset).migration_id
   end
@@ -242,7 +269,9 @@ class MasterCourses::MasterMigration < ActiveRecord::Base
       cm.migration_settings[:hide_from_index] = true # we may decide we want to show this after all, but hide them for now
       cm.migration_settings[:master_course_export_id] = export.id
       cm.migration_settings[:master_migration_id] = self.id
+      cm.migration_settings[:publish_after_completion] = type == :full && self.migration_settings[:publish_after_initial_sync]
       cm.child_subscription_id = sub.id
+      cm.source_course_id = self.master_template.course_id # apparently this is how some lti tools try to track copied content :/
       cm.workflow_state = 'exported'
       cm.exported_attachment = export.attachment
       cm.user_id = export.user_id
@@ -300,5 +329,8 @@ class MasterCourses::MasterMigration < ActiveRecord::Base
     "!/blueprint/blueprint_templates/#{master_template_id}/#{id}"
   end
 
-end
+  def set_root_account_id
+    self.root_account_id = self.master_template.root_account_id
+  end
 
+end

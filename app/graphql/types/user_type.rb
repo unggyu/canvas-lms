@@ -16,6 +16,13 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+class NotificationPreferencesContextType < Types::BaseEnum
+  graphql_name 'NotificationPreferencesContextType'
+  description 'Context types that can be associated with notification preferences'
+  value 'Course'
+  value 'Account'
+end
+
 module Types
   class UserType < ApplicationObjectType
     #
@@ -27,11 +34,11 @@ module Types
     #
     graphql_name "User"
 
-    implements GraphQL::Relay::Node.interface
+    implements GraphQL::Types::Relay::Node
     implements Interfaces::TimestampInterface
+    implements Interfaces::LegacyIDInterface
 
     global_id_field :id
-    field :_id, ID, "legacy canvas id", null: false, method: :id
 
     field :name, String, null: true
     field :sortable_name, String,
@@ -41,24 +48,39 @@ module Types
       "A short name the user has selected, for use in conversations or other less formal places through the site.",
       null: true
 
+    field :pronouns, String, null: true
+
     field :avatar_url, UrlType, null: true
 
     def avatar_url
       object.account.service_enabled?(:avatars) ?
-        AvatarHelper.avatar_url_for_user(object, context[:request]) :
+        AvatarHelper.avatar_url_for_user(object, context[:request], use_fallback: false) :
         nil
     end
 
     field :email, String, null: true
 
     def email
-      return nil unless object.grants_right? context[:current_user], :read_profile
-      if object.email_cached?
-        object.email
-      else
-        Loaders::AssociationLoader.for(User, :communication_channels).
+      return nil unless object.grants_all_rights?(context[:current_user], :read_profile, :read_email_addresses)
+
+      return object.email if object.email_cached?
+
+      Loaders::AssociationLoader.for(User, :communication_channels).
+        load(object).
+        then { object.email }
+    end
+
+    field :sis_id, String, null: true
+    def sis_id
+      domain_root_account = context[:domain_root_account]
+      if domain_root_account.grants_any_right?(context[:current_user], :read_sis, :manage_sis)
+        Loaders::AssociationLoader.for(User, :pseudonyms).
           load(object).
-          then { object.email }
+          then do
+            pseudonym = SisPseudonym.for(object, domain_root_account, type: :implicit, require_sis: false,
+                root_account: domain_root_account, in_region: true)
+            pseudonym&.sis_user_id
+          end
       end
     end
 
@@ -69,7 +91,7 @@ module Types
         prepare: GraphQLHelpers.relay_or_legacy_id_prepare_func("Course")
     end
 
-    def enrollments(course_id:)
+    def enrollments(course_id: nil)
       course_ids = [course_id].compact
       Loaders::UserCourseEnrollmentLoader.for(
         course_ids: course_ids
@@ -78,6 +100,61 @@ module Types
           object == context[:current_user] ||
             enrollment.grants_right?(context[:current_user], context[:session], :read)
         }
+      end
+    end
+
+    field :trophies, [TrophyType], null: true
+    def trophies
+      Loaders::AssociationLoader.for(User, :trophies).load(object).then do |trophies|
+        locked_trophies = Trophy.trophy_names - trophies.map(&:name)
+        trophies.to_a.concat(locked_trophies.map { |name| Trophy.blank_trophy(name) })
+      end
+    end
+
+    field :notification_preferences_enabled, Boolean, null: false do
+      argument :account_id, ID, required: false, prepare: GraphQLHelpers.relay_or_legacy_id_prepare_func('Account')
+      argument :course_id, ID, required: false, prepare: GraphQLHelpers.relay_or_legacy_id_prepare_func('Course')
+      argument :context_type, NotificationPreferencesContextType, required: true
+    end
+    def notification_preferences_enabled(account_id: nil, course_id: nil, context_type: nil)
+      enabled_for = ->(context) do
+        NotificationPolicyOverride.enabled_for(object, context)
+      end
+
+      case context_type
+      when 'Account'
+        enabled_for[Account.find(account_id)]
+      when 'Course'
+        enabled_for[Course.find(course_id)]
+      end
+    rescue ActiveRecord::RecordNotFound
+      nil
+    end
+
+    field :notification_preferences, NotificationPreferencesType, null: true
+    def notification_preferences
+      Loaders::AssociationLoader.for(User, :communication_channels).load(object).then do |comm_channels|
+        {channels: comm_channels.unretired}
+      end
+    end
+
+    # TODO: deprecate this
+    #
+    # we should probably have some kind of top-level field called `self` or
+    # `currentUser` or `viewer` that holds this kind of info.
+    #
+    # (there is no way to view another user's groups via the REST API)
+    #
+    # alternatively, figure out what kind of permissions a person needs to view
+    # another user's groups?
+    field :groups, [GroupType], <<~DESC, null: true
+      **NOTE**: this only returns groups for the currently logged-in user.
+    DESC
+    def groups
+      if object == current_user
+        # FIXME: this only returns groups on the current shard.  it should
+        # behave like the REST API (see GroupsController#index)
+        load_association(:current_groups)
       end
     end
 

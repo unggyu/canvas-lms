@@ -23,7 +23,7 @@
   top: 0;
   #{direction(right)}: 0;
   z-index: 10;
-  padding: 10px 3px;
+  padding: 10px;
   border-bottom-#{direction(left)}-radius: 5px;
   background-color: $electric;
   box-shadow: -1px 1px 2px 0 rgba(0,0,0,.2);
@@ -70,18 +70,12 @@
 
   &.bcs__history-item__change-log-row {
     border-top: none;
-    border-left: none;
-    border-right: none;
+    border-#{direction(left)}: none;
+    border-#{direction(right)}: none;
     padding: 0.8em 0;
 
     &.bcs__history-item__change-log-row__heading {
       padding-bottom: 0.5em;
-
-      .bcs__history-item__content-grid {
-        > span > span > span:first-child {
-          padding-#{direction(left)}: 0,
-        }
-      }
     }
 
     .bcs__history-item__content-grid {
@@ -102,25 +96,13 @@
   }
 
   &:first-of-type {
-    border-top-right-radius: 3px;
-    border-top-left-radius: 3px;
+    border-top-#{direction(right)}-radius: 3px;
+    border-top-#{direction(left)}-radius: 3px;
   }
 
   &:last-of-type {
-    border-bottom-right-radius: 3px;
-    border-bottom-left-radius: 3px;
-  }
-
-  &.bcs__history-item__change__expanded {
-    .pill {
-      background-color: $ic-color-medium;
-      color: $ic-color-light;
-    }
-  }
-
-  .pill {
-    text-transform: uppercase;
-    padding: 0.1em 0.75em;
+    border-bottom-#{direction(right)}-radius: 3px;
+    border-bottom-#{direction(left)}-radius: 3px;
   }
 }
 
@@ -137,7 +119,7 @@
 }
 
 .bcs__history-item__change-exceps {
-  margin: 0 2em;
+  margin: 0 1.125em;
   list-style: none;
 }
 
@@ -157,7 +139,7 @@
 .bcs__history-item__lock-icon {
   position: absolute;
   top: -5px;
-  #{direction(left)}: 10px;
+  #{direction(left)}: 36px;
 }
 
 @keyframes spinning {
@@ -175,8 +157,8 @@
 }
 
 .bcs__sync-btn-text {
-  margin-left: 7px;
-  margin-right: 7px;
+  margin-#{direction(left)}: 7px;
+  margin-#{direction(right)}: 7px;
 }
 
 .bcs__row {
@@ -184,8 +166,8 @@
   border-top: 1px solid $ic-border-color;
 
   & > button:first-child {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-#{direction(left)}: 0 !important;
+    padding-#{direction(right)}: 0 !important;
   }
 
   &.bcs__row__associations {
@@ -203,7 +185,7 @@
   background: $electric;
   position: relative;
   text-align: center;
-  padding: 1.2em 1.75em 1.2em 0;
+  padding: direction-sides(1.2em 1.75em 1.2em 0);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .2);
 }
 
@@ -231,8 +213,8 @@
   position: absolute;
   z-index: 10;
   top: 0;
-  left: 0;
-  right: 0;
+  #{direction(left)}: 0;
+  #{direction(right)}: 0;
   bottom: 0;
   background: rgba(255,255,255,.85);
   text-align: center;
@@ -246,21 +228,6 @@
 
 .bca__footer {
   display: flex; justify-content: flex-end; flex: 0 0 auto;
-}
-
-.bca-course-filter {
-  border: 1px solid $ic-border-color;
-  border-radius: $ic-border-radius;
-
-  input, select {
-    // overwrite instui borders to match design
-    border: none !important;
-  }
-
-  select {
-    // use box shadow magic to create fancy border effect, overwriting instui
-    box-shadow: inset -10px 0 0 7px $ic-color-light, inset 1px 0 0 0 $ic-border-color !important;
-  }
 }
 
 .bca-course-details__wrapper {
@@ -277,8 +244,8 @@
   position: absolute;
   z-index: 10;
   top: 28px;
-  left: 1px;
-  right: 1px;
+  #{direction(left)}: 1px;
+  #{direction(right)}: 1px;
   bottom: 1px;
   background: rgba(255,255,255,.65);
   text-align: center;
@@ -296,8 +263,8 @@
   .btps-table__header-wrapper {
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
+    #{direction(left)}: 0;
+    #{direction(right)}: 0;
 
     .bca-table__head {
       background: $ic-color-medium-light;
@@ -363,10 +330,6 @@
   }
 }
 
-.bcs__history-notification {
-  margin-bottom: 1em;
-}
-
 .bcs__migration-sync__button {
   display: flex;
   justify-content: flex-end;
@@ -395,14 +358,10 @@
 }
 
 .bcs__history-notification__add-message {
-  margin-#{direction(left)}: 1em;
+  margin-#{direction(left)}: 1.5em;
   label {
     margin-#{direction(right)}: .5em;
   }
-}
-
-.bcs__unsynced-changes .bcs__history-notification {
-  padding-top: 1em;
 }
 
 .bcc__master-child-stack {
@@ -478,6 +437,7 @@
       }
       .bcs__unsynced-item__name {
         display: flex;
+        align-items: center;
       }
     }
   }

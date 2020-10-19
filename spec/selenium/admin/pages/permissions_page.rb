@@ -22,12 +22,7 @@ class PermissionsIndex
     include SeleniumDependencies
 
     def visit(account)
-      set_permission_ui_flag(account, "on")
       get("/accounts/#{account.id}/permissions")
-    end
-
-    def set_permission_ui_flag(account, state)
-      account.set_feature_flag! :permissions_v2_ui, state
     end
 
     # ---------------------- Controls ----------------------
@@ -44,7 +39,9 @@ class PermissionsIndex
     end
 
     def filter_item(filter_item)
-      fj("li span:contains(#{filter_item})")
+      selector = "li span:contains(#{filter_item})"
+      wait_for(method: nil, timeout: 2) { fj(selector).displayed? }
+      fj(selector)
     end
 
     def add_role_button
@@ -77,7 +74,7 @@ class PermissionsIndex
     end
 
     def permission_tray_button(permission_name, role_id)
-      ff("##{permission_name}_#{role_id}").last
+      f(".ic-permissions_role_tray ##{permission_name}_#{role_id}")
     end
 
     def permission_menu_item(item_name)
@@ -112,8 +109,12 @@ class PermissionsIndex
       f("#permissions-add-tray-submit-button")
     end
 
+    def edit_name_box
+      f('input[name="edit_name_box"]')
+    end
+
     def role_tray_permission_state(permission, role)
-      icon = ff("##{permission}_#{role} svg").first.attribute('name')
+      icon = fj("##{permission}_#{role} svg:first").attribute('name')
       state = ""
       if icon == "IconTrouble"
         state = "Disabled"
@@ -147,7 +148,14 @@ class PermissionsIndex
       end
     end
 
-    # eventually add a section for the expanded permissions
+    def manage_wiki_button
+      f("button[data-testid='expand_manage_wiki']")
+    end
+
+    def expand_manage_wiki
+      scroll_to_element(manage_wiki_button)
+      manage_wiki_button.click
+    end
 
     # ---------------------- Actions ----------------------
     def choose_tab(tab_name)
@@ -162,28 +170,57 @@ class PermissionsIndex
       close_role_tray_button.click
     end
 
+    def close_add_role_tray_button
+      f("#close-add-role-tray-button")
+    end
+
+    def close_permission_tray_button
+      f("#close")
+    end
+
     def disable_tray_permission(permission_name, role_id)
-      permission_tray_button(permission_name, role_id).click()
-      ff('[role="menuitemradio"]')[2].click()
-      permission_tray_button(permission_name, role_id)
+      permission_tray_button(permission_name, role_id).click
+      permission_menu_item('disable').click
+      wait_for_ajaximations
+    end
+
+    # Focus is being put on the close button after we start tryign to interact
+    # with elements in the tray, causing a race condition where things fail if
+    # we start interacting with elements before the focus has initially landed
+    # on the close button. Wait for it here.
+    def wait_for_tray_ready
+      keep_trying_until(2) do
+        disable_implicit_wait{ yield == current_active_element }
+      end
     end
 
     def open_edit_role_tray(role)
       role_name(role).click
-      edit_role_icon.click
+      wait_for_tray_ready{ close_role_tray_button }
+
+      keep_trying_until do
+        disable_implicit_wait{edit_role_icon.click}
+        disable_implicit_wait{edit_name_box.displayed?}
+      end
+      # sometimes the input loads and the value takes longer, wait for value
+      wait_for(method: nil, timeout: 1) { edit_name_box.attribute('value') == role.name }
     end
 
     def add_role(name)
-      add_role_button.click()
+      add_role_button.click
+      wait_for_tray_ready{ close_add_role_tray_button }
+      add_role_input.click
       set_value(add_role_input, name)
-      add_role_submit_button.click()
+      add_role_submit_button.click
       wait_for_ajaximations
     end
 
     def edit_role(role, new_name)
       open_edit_role_tray(role)
-      set_value(f('input[name="edit_name_box"]'), new_name)
-      driver.action.send_keys(:tab).perform
+      replace_content(edit_name_box, new_name, tab_out: true)
+      # click header since :tab does not tab out of input
+      edit_tray_header.click
+      wait_for_ajaximations
     end
 
     def enter_search(search_term)
@@ -192,8 +229,6 @@ class PermissionsIndex
       wait_for_ajaximations
     end
 
-    # this may need to be implemented differently depending
-    # on which control is used
     def select_filter(filter)
       filter_control.click
       filter_item(filter).click
@@ -202,11 +237,14 @@ class PermissionsIndex
     # setting in the same format as on the menu items
     def change_permission(permission, role_id, setting)
       permission_cell(permission, role_id).click
+      wait_for(method: nil, timeout: 0.5) { permission_menu_item(setting).displayed? }
       permission_menu_item(setting).click
+      wait_for_ajaximations
     end
 
     def open_permission_tray(permission_name)
       permission_link(permission_name).click
+      wait_for_tray_ready{ close_permission_tray_button }
     end
   end
 end

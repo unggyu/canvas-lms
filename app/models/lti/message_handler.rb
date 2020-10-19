@@ -104,6 +104,5 @@ module Lti
         { resource_type_code: resource_handler.resource_type_code }
       )
     end
-
   end
 end

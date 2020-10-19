@@ -25,7 +25,8 @@ describe ErrorReport do
       message << 255.chr
       message << "llo"
       data = { extra: { message: message } }
-      described_class.log_exception_from_canvas_errors('my error', data)
+      expect { described_class.log_exception_from_canvas_errors('my error', data) }.
+        to_not raise_error
     end
 
     it "uses an empty hash as a default for errors with no extra data" do
@@ -40,6 +41,11 @@ describe ErrorReport do
       expect(report.category).to eq(e.class.name)
     end
 
+    it "should ignore category 404" do
+      count = ErrorReport.count
+      ErrorReport.log_error('404', {})
+      expect(ErrorReport.count).to eq(count)
+    end
 
     it "ignores error classes that it's configured to overlook" do
       class ErrorReportSpecException < StandardError; end
@@ -110,6 +116,15 @@ describe ErrorReport do
     report.assign_data(id: 1)
     expect(report.id).to be_nil
     expect(report.data["id"]).to eq 1
+  end
+
+  it "should truncate absurdly long messages" do
+    report = described_class.new
+    long_message = (0...100000).map { 'a' }.join
+    report.assign_data(message: long_message)
+    expect(report.message.length).to eq long_message.length
+    report.save!
+    expect(report.message.length).to be < long_message.length
   end
 
   describe "#safe_url?" do

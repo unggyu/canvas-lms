@@ -41,6 +41,26 @@ describe "Importing Learning Outcomes" do
     expect(log.child_outcome_links.detect{ |link| link.content == lo2 }).not_to be_nil
   end
 
+  context 'selectable_outcomes_in_course_copy enabled' do
+    before(:example) do
+      @context.root_account.enable_feature!(:selectable_outcomes_in_course_copy)
+    end
+
+    after(:example) do
+      @context.root_account.disable_feature!(:selectable_outcomes_in_course_copy)
+    end
+
+    it "should import group" do
+      migration = ContentMigration.create!(:context => @context)
+      migration.migration_ids_to_import = {:copy=>{}}
+      data = [{type: 'learning_outcome_group', title: 'hey', migration_id: 'x'}.with_indifferent_access]
+      data = {'learning_outcomes'=>data}
+      expect do
+        Importers::LearningOutcomeImporter.process_migration(data, migration)
+      end.to change { LearningOutcomeGroup.count }.by 1
+    end
+  end
+
   it "should not fail when passing an outcome that already exists" do
     existing_outcome = LearningOutcome.where(migration_id: "bdf6dc13-5d8f-43a8-b426-03380c9b6781").first
     identifier = existing_outcome.migration_id
@@ -53,10 +73,7 @@ describe "Importing Learning Outcomes" do
     existing_outcome = LearningOutcome.where(migration_id: "bdf6dc13-5d8f-43a8-b426-03380c9b6781").first
     identifier = existing_outcome.migration_id
     lo_data = @data["learning_outcomes"].find{|lo| lo["migration_id"] == identifier }
-    allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(true)
-    Importers::LearningOutcomeImporter.import_from_migration(lo_data, @migration)
-    expect(@context.learning_outcomes.count).to eq 2
-    existing_outcome.write_attribute('migration_id_2', "7321d12e-3705-430d-9dfd-2511b0c73c14")
+    existing_outcome.write_attribute('migration_id', "7321d12e-3705-430d-9dfd-2511b0c73c14")
     existing_outcome.save!
     lo_data[:migration_id] = "7321d12e-3705-430d-9dfd-2511b0c73c14"
     Importers::LearningOutcomeImporter.import_from_migration(lo_data, @migration)
@@ -65,13 +82,13 @@ describe "Importing Learning Outcomes" do
 
   it "change calculation method, calculation int and rubric criterion" do
     existing_outcome = LearningOutcome.where(migration_id: "bdf6dc13-5d8f-43a8-b426-03380c9b6781").first
-    expect(existing_outcome.calculation_method).to eq "highest"
-    expect(existing_outcome.calculation_int).to eq nil
+    expect(existing_outcome.calculation_method).to eq "decaying_average"
+    expect(existing_outcome.calculation_int).to eq 65
     expect(existing_outcome.data).to eq nil
     identifier = existing_outcome.migration_id
     lo_data = @data["learning_outcomes"].find{|lo| lo["migration_id"] == identifier }
-    lo_data[:calculation_method] = "decaying_average"
-    lo_data[:calculation_int] = 65
+    lo_data[:calculation_method] = "highest"
+    lo_data[:calculation_int] = nil
     lo_data[:points_possible] = 5
     lo_data[:mastery_points] = 3
     lo_data[:ratings] = [
@@ -80,8 +97,8 @@ describe "Importing Learning Outcomes" do
       { points: 0, description: "Does Not Meet Expectations" }
     ]
     Importers::LearningOutcomeImporter.import_from_migration(lo_data, @migration, existing_outcome)
-    expect(existing_outcome.calculation_method).to eq "decaying_average"
-    expect(existing_outcome.calculation_int).to eq 65
+    expect(existing_outcome.calculation_method).to eq "highest"
+    expect(existing_outcome.calculation_int).to eq nil
     expect(existing_outcome.data[:rubric_criterion][:mastery_points]).to eq 3
     expect(existing_outcome.data[:rubric_criterion][:points_possible]).to eq 5
     expect(existing_outcome.data[:rubric_criterion][:ratings][0][:points]).to eq 5
@@ -121,8 +138,9 @@ describe "Importing Learning Outcomes" do
       alignment: ContentTag.create!({
         title: 'content',
         context: @course,
-        learning_outcome: existing_outcome})
-      )
+        learning_outcome: existing_outcome
+      })
+    )
     lor.save!
     lo_data[:calculation_method] = "n_mastery"
     lo_data[:calculation_int] = 5
@@ -139,5 +157,69 @@ describe "Importing Learning Outcomes" do
     expect(existing_outcome.data[:rubric_criterion][:mastery_points]).to eq 3
     expect(existing_outcome.data[:rubric_criterion][:points_possible]).to eq 5
     expect(existing_outcome.data[:rubric_criterion][:ratings]).to eq current_ratings
+  end
+
+  describe "with the outcome_guid_course_exports FF enabled" do
+    before(:once) { @context.root_account.enable_feature!(:outcome_guid_course_exports) }
+    it "does not duplicate outcomes in a context with different external_identifiers and the same vendor_guid" do
+      lo1 = LearningOutcome.where(migration_id: "bdf6dc13-5d8f-43a8-b426-03380c9b6781").first
+      lo1.update!(vendor_guid: "vendor-guid-1")
+
+      lo_data = @data["learning_outcomes"].find{|lo| lo["migration_id"] == "bdf6dc13-5d8f-43a8-b426-03380c9b6781" }
+      lo_data[:vendor_guid] = "vendor-guid-1"
+      lo_data[:migration_id] = "7321d12e-3705-430d-9dfd-2511b0c73c14"
+      lo_data[:external_identifier] = "0"
+
+      Importers::LearningOutcomeImporter.import_from_migration(lo_data, @migration)
+      expect(@context.learning_outcomes.count).to eq 2 # lo1 is not duplicated
+    end
+  end
+
+  describe "with the outcome_guid_course_exports FF disabled" do
+    it "duplicates outcomes even if the vendor_guid already exists in the context" do
+      lo1 = LearningOutcome.where(migration_id: "bdf6dc13-5d8f-43a8-b426-03380c9b6781").first
+      lo1.update!(vendor_guid: "vendor-guid-1")
+
+      lo_data = @data["learning_outcomes"].find{|lo| lo["migration_id"] == "bdf6dc13-5d8f-43a8-b426-03380c9b6781" }
+      lo_data[:vendor_guid] = "vendor-guid-1"
+      lo_data[:migration_id] = "7321d12e-3705-430d-9dfd-2511b0c73c14"
+      lo_data[:external_identifier] = "0"
+      Importers::LearningOutcomeImporter.import_from_migration(lo_data, @migration)
+      expect(@context.learning_outcomes.count).to eq 3 # lo1 is duplicated
+    end
+  end
+
+  describe "with the outcome_alignments_course_migration FF enabled" do
+    before(:once) { @context.root_account.enable_feature!(:outcome_alignments_course_migration) }
+    let(:migration) do
+      ContentMigration.create!(:context => @context).tap do |m|
+        m.migration_ids_to_import = {:copy=>{}}
+      end
+    end
+
+    context "with global and account outcomes" do
+      let(:global_outcome) { LearningOutcome.where(migration_id: "bdf6dc13-5d8f-43a8-b426-03380c9b6781").first }
+      let(:account_outcome) { LearningOutcome.where(migration_id: "fa67b467-37c7-4fb9-aef4-21a33a06d0be").first }
+
+      before do
+        global_outcome.update(vendor_guid: 'vendor-guid-1', context: nil)
+        account_outcome.update(vendor_guid: 'vendor-guid-2', context: @context.root_account)
+      end
+
+      it "should include non-imported outcomes as imported items" do
+        @data["learning_outcomes"].find{|lo| lo["migration_id"] == global_outcome.migration_id}.tap do |data|
+          data[:vendor_guid] = "vendor-guid-1"
+          data[:external_identifier] = global_outcome.id.to_s
+          data[:is_global_outcome] = true
+        end
+        @data["learning_outcomes"].find{|lo| lo["migration_id"] == account_outcome.migration_id}.tap do |data|
+          data[:vendor_guid] = "vendor-guid-2"
+          data[:external_identifier] = account_outcome.id.to_s
+        end
+        Importers::LearningOutcomeImporter.process_migration(@data, migration)
+        outcomes = migration.imported_migration_items_hash(LearningOutcome)
+        expect(outcomes.count).to eq 2
+      end
+    end
   end
 end

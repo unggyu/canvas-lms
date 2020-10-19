@@ -20,14 +20,11 @@ module SIS
   class UserObserverImporter < BaseImporter
 
     def process
-      start = Time.zone.now
       importer = Work.new(@batch, @root_account, @logger)
 
-      Enrollment.skip_touch_callbacks(:course) do
-        Enrollment.suspend_callbacks(:set_update_cached_due_dates) do
-          User.skip_updating_account_associations do
-            yield importer
-          end
+      Enrollment.suspend_callbacks(:set_update_cached_due_dates) do
+        User.skip_updating_account_associations do
+          yield importer
         end
       end
 
@@ -36,8 +33,6 @@ module SIS
       end
 
       User.update_account_associations(importer.users_to_update_account_associations.to_a)
-
-      @logger.debug("User Observers took #{Time.zone.now - start} seconds")
 
       importer.success_count
     end
@@ -57,8 +52,6 @@ module SIS
       end
 
       def process_user_observer(observer_id, student_id, status)
-        @logger.debug("Processing user_observer #{[observer_id, student_id, status].inspect}")
-
         raise ImportError, "No observer_id given for a user observer" if observer_id.blank?
         raise ImportError, "No user_id given for a user observer" if student_id.blank?
         raise ImportError, "Can't observe yourself user #{student_id}" if student_id == observer_id
@@ -81,6 +74,7 @@ module SIS
       def add_remove_observer(observer, student, observer_id, student_id, status)
         case status.downcase
         when 'active'
+          check_observer_notification_settings(observer)
           user_observer = UserObservationLink.create_or_restore(observer: observer, student: student, root_account: @root_account)
         when 'deleted'
           user_observer = observer.as_observer_observation_links.for_root_accounts(@root_account).where(user_id: student).take
@@ -96,6 +90,12 @@ module SIS
         @success_count += 1
       end
 
+      def check_observer_notification_settings(observer)
+        if @root_account.settings[:default_notifications_disabled_for_observers]
+          observer.default_notifications_disabled = true
+          observer.save if observer.changed?
+        end
+      end
     end
   end
 end

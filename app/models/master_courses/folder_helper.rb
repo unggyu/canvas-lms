@@ -42,7 +42,7 @@ class MasterCourses::FolderHelper
 
         if locked_folder_ids.any?
           # now find all parents for locked folders
-          all_ids = Folder.connection.select_values(<<-SQL)
+          all_ids = Folder.connection.select_values(<<~SQL)
             WITH RECURSIVE t AS (
               SELECT id, parent_folder_id FROM #{Folder.quoted_table_name} WHERE id IN (#{locked_folder_ids.to_a.sort.join(",")})
               UNION
@@ -58,15 +58,17 @@ class MasterCourses::FolderHelper
     end
   end
 
-  def self.update_folder_names(child_course, content_export)
+  def self.update_folder_names_and_states(child_course, content_export)
     cutoff_time = content_export.master_migration&.master_template&.last_export_completed_at
     return unless cutoff_time
 
     updated_folders = content_export.context.folders.where('updated_at>?', cutoff_time).where.not(cloned_item_id: nil)
     updated_folders.each do |source_folder|
       dest_folder = child_course.folders.active.where(cloned_item_id: source_folder.cloned_item_id).take
-      if dest_folder && dest_folder.name != source_folder.name
-        dest_folder.name = source_folder.name
+      if dest_folder && [:name, :workflow_state, :locked, :lock_at, :unlock_at].any?{|attr| dest_folder.send(attr) != source_folder.send(attr)}
+        [:name, :workflow_state, :locked, :lock_at, :unlock_at].each do |attr|
+          dest_folder.send("#{attr}=", source_folder.send(attr))
+        end
         dest_folder.save!
       end
     end

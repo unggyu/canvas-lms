@@ -18,6 +18,7 @@
 
 class GroupCategory < ActiveRecord::Base
   attr_reader :create_group_count
+  attr_reader :create_group_member_count
   attr_accessor :assign_unassigned_members, :group_by_section
 
   belongs_to :context, polymorphic: [:course, :account]
@@ -223,6 +224,12 @@ class GroupCategory < ActiveRecord::Base
     self.save
   end
 
+  def restore
+    self.groups.where(deleted_at: [self.deleted_at - 10.minutes..self.deleted_at]).update_all(workflow_state: 'available', deleted_at: nil)
+    self.deleted_at = nil
+    self.save!
+  end
+
   # We can't reassign existing group members, groups can have different maximum limits, and we want
   # the groups to be as evenly sized as possible. Think of this like pouring water into an oddly
   # shaped glass. The shape of the glass is determined by existing members and max group sizes,
@@ -248,6 +255,7 @@ class GroupCategory < ActiveRecord::Base
     end
     members = members.to_a
     groups = groups.to_a
+    ActiveRecord::Associations::Preloader.new.preload(groups, :context)
     water_allocation = reserve_space_for_members_in_groups(members.size, groups)
     new_memberships = randomly_add_allocated_members_to_groups(members, groups, water_allocation)
     finish_group_member_assignment
@@ -403,6 +411,10 @@ class GroupCategory < ActiveRecord::Base
       nil
   end
 
+  def create_group_member_count=(num)
+    @create_group_member_count = num && num > 0 ? num : nil
+  end
+
   def set_root_account_id
     # context might be nil since this runs before validations.
     if self.context&.root_account
@@ -412,6 +424,18 @@ class GroupCategory < ActiveRecord::Base
   end
 
   def auto_create_groups
+    split_type = if @create_group_member_count
+      'by_membership_count'
+    elsif @create_group_count
+      'by_group_count'
+    end
+
+    if split_type
+      InstStatsd::Statsd.increment('groups.auto_create',
+       tags: {split_type: split_type, root_account_id: self.root_account&.global_id, root_account_name: self.root_account&.name})
+    end
+
+    calculate_group_count_by_membership if @create_group_member_count
     create_groups(@create_group_count) if @create_group_count
     if @assign_unassigned_members && @create_group_count
       by_section = @group_by_section && self.context.is_a?(Course)
@@ -429,25 +453,31 @@ class GroupCategory < ActiveRecord::Base
     end
   end
 
+  def calculate_group_count_by_membership
+    @create_group_count = (unassigned_users.to_a.length.to_f / @create_group_member_count).ceil
+  end
+
   def unassigned_users
     context.users_not_in_groups(allows_multiple_memberships? ? [] : groups.active)
   end
 
-  def assign_unassigned_members(by_section=false)
+  def assign_unassigned_members(by_section=false, updating_user: nil)
     Delayed::Batch.serial_batch do
-      if by_section
-        distribute_members_among_groups_by_section
-        finish_group_member_assignment
-        if current_progress
-          if self.errors.any?
-            current_progress.message = self.errors.full_messages
-            current_progress.fail
-          else
-            complete_progress
+      DueDateCacher.with_executing_user(updating_user) do
+        if by_section
+          distribute_members_among_groups_by_section
+          finish_group_member_assignment
+          if current_progress
+            if self.errors.any?
+              current_progress.message = self.errors.full_messages
+              current_progress.fail
+            else
+              complete_progress
+            end
           end
+        else
+          distribute_members_among_groups(unassigned_users, groups.active)
         end
-      else
-        distribute_members_among_groups(unassigned_users, groups.active)
       end
     end
   rescue => e
@@ -457,9 +487,9 @@ class GroupCategory < ActiveRecord::Base
     end
   end
 
-  def assign_unassigned_members_in_background(by_section=false)
+  def assign_unassigned_members_in_background(by_section=false, updating_user: nil)
     start_progress
-    send_later_enqueue_args(:assign_unassigned_members, {:priority => Delayed::LOW_PRIORITY}, by_section)
+    send_later_enqueue_args(:assign_unassigned_members, {:priority => Delayed::LOW_PRIORITY}, by_section, updating_user: updating_user)
   end
 
   def clone_groups_and_memberships(new_group_category)
@@ -475,7 +505,7 @@ class GroupCategory < ActiveRecord::Base
         new_group_membership = group_membership.dup
         new_group_membership.uuid = nil
         new_group_membership.group = new_group
-        new_group_membership.save!
+        new_group_membership.save
       end
     end
   end

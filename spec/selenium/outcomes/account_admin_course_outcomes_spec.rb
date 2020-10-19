@@ -33,21 +33,6 @@ describe "account admin outcomes" do
       course_with_admin_logged_in
     end
 
-    it "should be able to manage course rubrics" do
-      get "/courses/#{@course.id}/outcomes"
-      expect_new_page_load { f('.manage_rubrics').click }
-      # this was originally added in OUT-465. It will eventually be moved over
-      # into the below popover menu, so leaving the blow code in place for
-      # when that happens
-
-      # expect_new_page_load do
-      #   f('#popoverMenu button').click
-      #   f('[data-reactid*="manage-rubrics"]').click
-      # end
-
-      expect(f('.add_rubric_link')).to be_displayed
-    end
-
     context "create/edit/delete outcomes" do
 
       it "should create a learning outcome with a new rating (root level)", priority: "1", test_id: 250229 do
@@ -144,7 +129,7 @@ describe "account admin outcomes" do
       1.upto(counter) do |og|
         root_group = root_group.child_outcome_groups.create!(:title => "Level #{og}")
       end
-      Setting.set(AcademicBenchmark.common_core_setting_key, root_group.id.to_s)
+      Shard.current.settings[:common_core_outcome_group_id] = root_group.id
     end
 
     def open_outcomes_find

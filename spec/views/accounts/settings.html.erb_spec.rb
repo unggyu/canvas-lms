@@ -297,7 +297,8 @@ describe "accounts/settings.html.erb" do
 
       it "should show quota options" do
         render
-        expect(@controller.js_env.include?(:ACCOUNT)).to be_truthy
+        expect(@controller.js_env).to include :ACCOUNT
+        expect(@controller.js_env[:ACCOUNT]).to include 'default_storage_quota_mb'
         expect(response).to have_tag '#tab-quotas-link'
         expect(response).to have_tag '#tab-quotas'
       end
@@ -312,9 +313,41 @@ describe "accounts/settings.html.erb" do
 
       it "should not show quota options" do
         render
-        expect(@controller.js_env.include?(:ACCOUNT)).to be_falsey
+        expect(@controller.js_env).to include :ACCOUNT
+        expect(@controller.js_env[:ACCOUNT]).not_to include 'default_storage_quota_mb'
         expect(response).not_to have_tag '#tab-quotas-link'
         expect(response).not_to have_tag '#tab-quotas'
+      end
+    end
+  end
+
+  describe "reports" do
+    before do
+      @account = Account.default
+      assign(:account, @account)
+      assign(:account_users, [])
+      assign(:root_account, @account)
+      assign(:associated_courses_count, 0)
+      assign(:announcements, AccountNotification.none.paginate)
+    end
+
+    context "with :read_reports" do
+      it "should show reports tab link" do
+        admin = account_admin_user
+        view_context(@account, admin)
+        assign(:current_user, admin)
+        render
+        expect(response).to have_tag '#tab-reports-link'
+      end
+    end
+
+    context "without :read_reports" do
+      it "should not show reports tab link" do
+        admin = account_admin_user_with_role_changes(:account => @account, :role_changes => {'read_reports' => false})
+        view_context(@account, admin)
+        assign(:current_user, admin)
+        render
+        expect(response).not_to have_tag '#tab-reports-link'
       end
     end
   end
@@ -350,6 +383,137 @@ describe "accounts/settings.html.erb" do
       assign(:current_user, admin)
       render
       expect(response).to include("Let sub-accounts use the Theme Editor")
+    end
+  end
+
+  context "smart alerts" do
+    let(:account) { Account.default }
+    let(:admin) { account_admin_user }
+
+    before(:each) do
+      assign(:context, account)
+      assign(:account, account)
+      assign(:root_account, account)
+      assign(:current_user, admin)
+      assign(:account_users, [])
+      assign(:associated_courses_count, 0)
+      assign(:announcements, AccountNotification.none.paginate)
+
+      view_context(account, admin)
+    end
+
+    def expect_threshold_to_be(value)
+      expect(response).to have_tag(
+        "select#account_settings_smart_alerts_threshold" +
+        "  option[value=\"#{value}\"][selected]"
+      )
+    end
+
+    it "should show a threshold control" do
+      account.enable_feature!(:smart_alerts)
+
+      render
+
+      expect(response).to include('Smart Assignment Alerts')
+      expect(response).to include('Hours (from due date) before students are alerted')
+    end
+
+    it "does not show if the feature flag is turned off" do
+      account.disable_feature!(:smart_alerts)
+
+      render
+
+      expect(response).not_to include('Smart Assignment Alerts')
+    end
+
+    it "defaults to a 36 hour threshold" do
+      account.enable_feature!(:smart_alerts)
+
+      render
+
+      expect_threshold_to_be(36)
+    end
+
+    it "selects the current threshold" do
+      account.enable_feature!(:smart_alerts)
+      account.settings[:smart_alerts_threshold] = 24
+      account.save!
+
+      render
+
+      expect_threshold_to_be(24)
+    end
+  end
+
+  context 'privacy' do
+    let(:account) { account_model }
+    let(:account_admin) { account_admin_user(account: account) }
+    let(:dom) { Nokogiri::HTML(response) }
+    let(:enable_fullstory) { dom.at_css('#account_settings_enable_fullstory') }
+    let(:enable_google_analytics) { dom.at_css('#account_settings_enable_google_analytics') }
+    let(:site_admin) { site_admin_user }
+    let(:sub_account) { account_model(root_account: account) }
+
+    def render_for(target_account, target_user, &block)
+      assign(:context, target_account)
+      assign(:account, target_account)
+      assign(:root_account, target_account)
+      assign(:current_user, target_user)
+      assign(:account_users, [])
+      assign(:associated_courses_count, 0)
+      assign(:announcements, AccountNotification.none.paginate)
+
+      view_context(target_account, target_user)
+      render
+      yield if block_given?
+    end
+
+    it 'is not available to account admins' do
+      render_for(account, account_admin) do
+        expect(response).not_to have_tag('#tab-privacy')
+      end
+    end
+
+    it 'is not available for the site_admin account' do
+      render_for(Account.site_admin, site_admin) do
+        expect(response).not_to have_tag('#tab-privacy')
+      end
+    end
+
+    it 'is not available for sub accounts' do
+      render_for(sub_account, site_admin) do
+        expect(response).not_to have_tag('#tab-privacy')
+      end
+    end
+
+    it 'opts in to Google Analytics by default' do
+      render_for(account, site_admin) do
+        expect(enable_google_analytics).to be_checked
+      end
+    end
+
+    it 'allows opting out of Google Analytics' do
+      account.settings[:enable_google_analytics] = false
+      account.save!
+
+      render_for(account, site_admin) do
+        expect(enable_google_analytics).not_to be_checked
+      end
+    end
+
+    it 'opts in to FullStory by default' do
+      render_for(account, site_admin) do
+        expect(enable_fullstory).to be_checked
+      end
+    end
+
+    it 'allows opting out of FullStory' do
+      account.settings[:enable_fullstory] = false
+      account.save!
+
+      render_for(account, site_admin) do
+        expect(enable_fullstory).not_to be_checked
+      end
     end
   end
 end

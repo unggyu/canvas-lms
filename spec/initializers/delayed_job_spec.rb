@@ -19,7 +19,7 @@ require File.expand_path('../sharding_spec_helper', File.dirname( __FILE__ ))
 
 describe 'Delayed::Job' do
   it "should define job.account" do
-    job = Delayed::Job.create
+    job = Delayed::Job.new
     expect(job).to respond_to(:account)
   end
 
@@ -44,6 +44,37 @@ describe 'Delayed::Job' do
     context "sharding" do
       specs_require_sharding
       include_examples "delayed_jobs_shards"
+    end
+  end
+
+  describe "log format" do
+    specs_require_sharding
+    it "defines a useful log format" do
+      @shard1.activate do
+        account = account_model
+        job = Delayed::Job.new(priority: 20, created_at: Time.zone.now, strand: "test", account_id: account.id)
+        job.current_shard = @shard1
+        log_hash = JSON.parse(job.to_log_format).with_indifferent_access
+        expect(log_hash["priority"]).to eq(20)
+        expect(log_hash["strand"]).to eq("test")
+        expect(log_hash["shard_id"]).to eq(@shard1.id)
+        expect(log_hash["account_id"]).to eq(account.global_id)
+        expect(log_hash["root_account_id"]).to eq(account.global_id)
+        expect(log_hash["jobs_cluster"]).to eq(Shard.current.delayed_jobs_shard.id)
+        expect(log_hash["db_cluster"]).to eq(Shard.current.database_server.id)
+      end
+    end
+
+    it "is resiliant to unexpected data" do
+      job = Delayed::Job.new(priority: 20, created_at: Time.zone.now, strand: "test", account_id: 12345)
+      log_hash = JSON.parse(job.to_log_format).with_indifferent_access
+      expect(log_hash["priority"]).to eq(20)
+      expect(log_hash["strand"]).to eq("test")
+      expect(log_hash["shard_id"]).to eq(Shard.current.id)
+      expect(log_hash["account_id"]).to eq(12345)
+      expect(log_hash["root_account_id"]).to be_nil
+      expect(log_hash["jobs_cluster"]).to eq(Shard.current.delayed_jobs_shard.id)
+      expect(log_hash["db_cluster"]).to eq(Shard.current.database_server.id)
     end
   end
 end

@@ -20,7 +20,6 @@ module DashboardHelper
   def user_dashboard_view
     dashboard_view = @current_user&.dashboard_view
     dashboard_view = 'activity' if @current_user&.preferences&.dig(:recent_activity_dashboard) && !@current_user.preferences[:dashboard_view]
-    dashboard_view = 'cards' if dashboard_view == 'planner' && !@current_user.account.feature_enabled?(:student_planner)
     dashboard_view
   end
 
@@ -147,6 +146,16 @@ module DashboardHelper
 
   def todo_link_classes(activity_type)
     todo_ignore_dropdown_type?(activity_type) ? 'al-trigger disable_item_link' : 'disable_item_link disable-todo-item-link'
+  end
+
+  def map_courses_for_menu(courses, opts={})
+    Course.preload_menu_data_for(courses, @current_user, preload_favorites: true)
+    mapped = courses.map do |course|
+      presenter = CourseForMenuPresenter.new(course, @current_user, @domain_root_account, session, opts)
+      presenter.to_h
+    end
+
+    mapped.sort_by {|h| h[:position] || ::CanvasSort::Last}
   end
 
 end

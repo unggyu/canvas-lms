@@ -18,8 +18,8 @@
 
 import React, {Component} from 'react'
 import {arrayOf, bool, func, oneOf, shape, string} from 'prop-types'
-import ScreenReaderContent from '@instructure/ui-a11y/lib/components/ScreenReaderContent'
-import Select from '@instructure/ui-forms/lib/components/Select'
+import {ScreenReaderContent} from '@instructure/ui-a11y'
+import {Select} from '@instructure/ui-forms'
 import I18n from 'i18n!assignment_grade_summary'
 
 import numberHelper from '../../../../shared/helpers/numberHelper'
@@ -134,10 +134,10 @@ export default class GradeSelect extends Component {
     this.handleClose = this.handleClose.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
 
-    this.state = this.constructor.getDerivedStateFromProps(props)
+    this.state = this.constructor.createStateFromProps(props)
   }
 
-  static getDerivedStateFromProps(props) {
+  static createStateFromProps(props) {
     const graderOptions = optionsForGraders(props.graders, props.grades)
     const options = [...graderOptions]
 
@@ -151,7 +151,7 @@ export default class GradeSelect extends Component {
       }
     }
 
-    let selectedOption = options.find(option => option.gradeInfo.selected)
+    var selectedOption = options.find(option => option.gradeInfo.selected)
     if (!selectedOption) {
       selectedOption = {gradeInfo: {}, label: '–', value: NO_SELECTION}
       options.unshift(selectedOption)
@@ -166,7 +166,7 @@ export default class GradeSelect extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState(this.constructor.getDerivedStateFromProps(nextProps))
+    this.setState(this.constructor.createStateFromProps(nextProps))
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -182,9 +182,9 @@ export default class GradeSelect extends Component {
       selectedOption == null ||
       selectedOption.value === NO_SELECTION
     ) {
-      if (_event.type === 'blur') {
+      setTimeout(() => {
         this.$input.value = this.state.selectedOption.label
-      }
+      })
       return
     }
 
@@ -207,7 +207,10 @@ export default class GradeSelect extends Component {
   }
 
   handleClose() {
-    if (this.$input === document.activeElement || this.$menu.contains(document.activeElement)) {
+    if (
+      this.$input === document.activeElement ||
+      (this.$menu && this.$menu.contains(document.activeElement))
+    ) {
       this.select.focus()
     }
 

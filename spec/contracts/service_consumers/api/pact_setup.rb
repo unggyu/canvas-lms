@@ -16,6 +16,7 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
 require 'database_cleaner'
+require_relative '../../../support/test_database_utils'
 
 Pact.configure do |config|
   config.include Factories
@@ -24,11 +25,12 @@ end
 Pact.set_up do
   DatabaseCleaner.strategy = :transaction
   DatabaseCleaner.start
+
+  ActiveRecord::Base.connection.tables.each do |t|
+    TestDatabaseUtils.reset_pk_sequence!(t)
+  end
 end
 
 Pact.tear_down do
   DatabaseCleaner.clean
-  ActiveRecord::Base.connection.tables.each do |t|
-    ActiveRecord::Base.connection.reset_pk_sequence!(t)
-  end
 end

@@ -20,22 +20,19 @@ require_relative '../../spec_helper'
 
 describe Login::CanvasHelper do
   describe "#session_timeout_enabled" do
-    context "when the sessions plugin is enabled" do 
-      before do 
-        expect(PluginSetting).to receive(:settings_for_plugin).with('sessions').and_return({"session_timeout" => 123})
-      end
-
+    context "when the sessions plugin is enabled" do
       it "returns true" do
+        ps = PluginSetting.new
+        ps.name = 'sessions'
+        ps.disabled = false
+        ps.settings = {"session_timeout" => 123}
+        ps.save!
         expect(helper.session_timeout_enabled?).to be_truthy
       end
     end
 
-    context "when the sessions plugin is disabled" do 
-      before do 
-        expect(PluginSetting).to receive(:settings_for_plugin).with('sessions').and_return(nil)
-      end
-
-      it "returns false" do 
+    context "when the sessions plugin is disabled" do
+      it "returns false" do
         expect(helper.session_timeout_enabled?).to be_falsey
       end
     end
@@ -51,11 +48,6 @@ describe Login::CanvasHelper do
     end
 
     it 'returns the proper template without an auth type' do
-      expect(helper.reg_link_data(nil)[:template]).to eq 'parentDialog'
-    end
-
-    it 'returns the proper template when the root account has pairing codes turned on' do
-      @domain_root_account.enable_feature!(:observer_pairing_code)
       expect(helper.reg_link_data(nil)[:template]).to eq 'newParentDialog'
     end
   end

@@ -17,8 +17,8 @@
 #
 
 class GroupMembership < ActiveRecord::Base
-
   include Workflow
+  extend RootAccountResolver
 
   belongs_to :group
   belongs_to :user
@@ -50,7 +50,15 @@ class GroupMembership < ActiveRecord::Base
     joins(:group).active.where(user_id: users, groups: { context_id: context, workflow_state: 'available'})
   }
 
+  resolves_root_account through: :group
+
   alias_method :context, :group
+
+  attr_writer :updating_user
+
+  def course_broadcast_data
+    group.broadcast_data
+  end
 
   set_broadcast_policy do |p|
     p.dispatch :new_context_group_membership
@@ -63,6 +71,7 @@ class GroupMembership < ActiveRecord::Base
         record.group&.can_participate?(self.user) &&
         record.sis_batch_id.blank?
     }
+    p.data { course_broadcast_data }
 
     p.dispatch :new_context_group_membership_invitation
     p.to { self.user }
@@ -74,14 +83,17 @@ class GroupMembership < ActiveRecord::Base
         record.group&.can_participate?(self.user) &&
         record.sis_batch_id.blank?
     }
+    p.data { course_broadcast_data }
 
     p.dispatch :group_membership_accepted
     p.to { self.user }
     p.whenever {|record| record.changed_state(:accepted, :requested) }
+    p.data { course_broadcast_data }
 
     p.dispatch :group_membership_rejected
     p.to { self.user }
     p.whenever {|record| record.changed_state(:rejected, :requested) }
+    p.data { course_broadcast_data }
 
     p.dispatch :new_student_organized_group
     p.to { self.group.context.participating_admins }
@@ -92,6 +104,7 @@ class GroupMembership < ActiveRecord::Base
       record.group.group_memberships.count == 1 &&
       record.group.student_organized?
     }
+    p.data { course_broadcast_data }
   end
 
   def assign_uuid
@@ -164,8 +177,10 @@ class GroupMembership < ActiveRecord::Base
 
     assignments = Assignment.where(context_type: group.context_type, context_id: group.context_id).
       where(group_category_id: group.group_category_id).pluck(:id)
+    assignments += DiscussionTopic.where(context_type: group.context_type, context_id: group.context_id).
+      where.not(:assignment_id => nil).where(group_category_id: group.group_category_id).pluck(:assignment_id)
 
-    DueDateCacher.recompute_users_for_course(user.id, group.context_id, assignments)
+    DueDateCacher.recompute_users_for_course(user.id, group.context_id, assignments) if assignments.any?
   end
 
   def touch_groups
@@ -197,7 +212,7 @@ class GroupMembership < ActiveRecord::Base
   end
 
   def invalidate_user_membership_cache
-    Rails.cache.delete(self.user.group_membership_key)
+    self.user.clear_cache_key(:groups)
   end
 
   alias_method :destroy_permanently!, :destroy

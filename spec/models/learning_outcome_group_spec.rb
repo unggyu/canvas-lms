@@ -125,6 +125,18 @@ describe LearningOutcomeGroup do
       expect(group.child_outcome_links.map(&:content_id)).to include(outcome.id)
     end
 
+    it 'touches context when adding outcome to group' do
+      group = @course.learning_outcome_groups.create!(:title => 'groupage')
+      outcome = @course.created_learning_outcomes.create!(:title => 'o1')
+      expect { group.add_outcome(outcome) }.to change { group.context.reload.updated_at }
+    end
+
+    it 'does not touch context if skip_touch is true' do
+      group = @course.learning_outcome_groups.create!(:title => 'groupage')
+      outcome = @course.created_learning_outcomes.create!(:title => 'o1')
+      expect { group.add_outcome(outcome, skip_touch: true) }.not_to change { group.context.reload.updated_at }
+    end
+
     it 'no-ops if a link already exists' do
       group = @course.learning_outcome_groups.create!(:title => 'groupage')
       outcome = @course.created_learning_outcomes.create!(:title => 'o1')
@@ -138,20 +150,28 @@ describe LearningOutcomeGroup do
   end
 
   describe '#add_outcome_group' do
+    before :each do
+      @group1 = @course.learning_outcome_groups.create!(:title => 'group1')
+      @group2 = @course.learning_outcome_groups.create!(:title => 'group2')
+      @outcome1 = @course.created_learning_outcomes.create!(:title => 'o1')
+      @group2.add_outcome(@outcome1)
+    end
+
     it 'adds a child outcome group and copies all contents' do
-      group1 = @course.learning_outcome_groups.create!(:title => 'group1')
-      group2 = @course.learning_outcome_groups.create!(:title => 'group2')
-      outcome1 = @course.created_learning_outcomes.create!(:title => 'o1')
-      group2.add_outcome(outcome1)
+      expect(@group1.child_outcome_groups).to be_empty
 
-      expect(group1.child_outcome_groups).to be_empty
+      child_outcome_group = @group1.add_outcome_group(@group2)
 
-      child_outcome_group = group1.add_outcome_group(group2)
-
-      expect(child_outcome_group.title).to eq(group2.title)
+      expect(child_outcome_group.title).to eq(@group2.title)
       expect(child_outcome_group.child_outcome_links.map(&:content_id)).to eq(
-        group2.child_outcome_links.map(&:content_id)
+        @group2.child_outcome_links.map(&:content_id)
       )
+    end
+
+    it 'touches context exactly once' do
+      expect(@group1.child_outcome_groups).to be_empty
+      expect(@group1.context).to receive(:touch).once.and_return true
+      @group1.add_outcome_group(@group2)
     end
   end
 
@@ -225,6 +245,14 @@ describe LearningOutcomeGroup do
 
       expect(root).not_to eq(course_root)
     end
+
+    it 'sends live events even when they have been otherwise disabled' do
+      expect(Canvas::LiveEvents).to receive(:learning_outcome_group_created)
+      ActiveRecord::Base.observers.disable LiveEventsObserver do
+        new_course = course_factory
+        LearningOutcomeGroup.find_or_create_root(new_course, true)
+      end
+    end
   end
 
   describe '#destroy' do
@@ -254,38 +282,20 @@ describe LearningOutcomeGroup do
     end
   end
 
-  context 'enable new guid columns' do
-    before :once do
-      course_factory
-      @group = @course.learning_outcome_groups.create!(:title => 'groupage')
+  context 'root account resolution' do
+    it 'sets root_account_id using Account context' do
+      group = LearningOutcomeGroup.create!(title: 'group', context: Account.default)
+      expect(group.root_account).to eq Account.default
     end
 
-    it "should read vendor_guid_2" do
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@group.vendor_guid).to be_nil
-      @group.vendor_guid = "GUID-XXXX"
-      @group.save!
-      expect(@group.vendor_guid).to eql "GUID-XXXX"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(true)
-      expect(@group.vendor_guid).to eql "GUID-XXXX"
-      @group.write_attribute('vendor_guid_2', "GUID-YYYY")
-      expect(@group.vendor_guid).to eql "GUID-YYYY"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@group.vendor_guid).to eql "GUID-XXXX"
+    it 'sets root_account_id using Course context' do
+      group = @course.learning_outcome_groups.create!(title: 'group')
+      expect(group.root_account).to eq @course.root_account
     end
 
-    it "should read migration_id_2" do
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@group.migration_id).to be_nil
-      @group.migration_id = "GUID-XXXX"
-      @group.save!
-      expect(@group.migration_id).to eql "GUID-XXXX"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(true)
-      expect(@group.migration_id).to eql "GUID-XXXX"
-      @group.write_attribute('migration_id_2', "GUID-YYYY")
-      expect(@group.migration_id).to eql "GUID-YYYY"
-      allow(AcademicBenchmark).to receive(:use_new_guid_columns?).and_return(false)
-      expect(@group.migration_id).to eql "GUID-XXXX"
+    it 'sets root_acount_id 0 when global (context is nil)' do
+      group = LearningOutcomeGroup.create!(title: 'group', context_id: nil)
+      expect(group.root_account_id).to eq 0
     end
   end
 end

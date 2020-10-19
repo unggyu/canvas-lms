@@ -22,11 +22,10 @@ import actions from '../actions'
 
 import {COURSE, ACCOUNT} from '../propTypes'
 import {PERMISSIONS, ROLES} from './examples'
-import {moxiosWait} from '../test-utils'
+import {moxiosWait} from 'jest-moxios-utils'
 
 // This is needed for $.screenReaderFlashMessageExclusive to work.
-// TODO: This is terrible, make it unterrible
-import 'compiled/jquery.rails_flash_notifications' // eslint-disable-line
+import 'compiled/jquery.rails_flash_notifications'
 
 it('searchPermissions dispatches updatePermissionsSearch', done => {
   const state = {contextId: 1, permissions: PERMISSIONS, roles: []}
@@ -115,10 +114,19 @@ it('setAndOpenPermissionTray dispatches hideAllTrays and dispalyPermissionTray',
 })
 
 it('filterRoles dispatches updateRoleFilters', () => {
-  const state = {contextId: 1, permissions: PERMISSIONS, roles: ROLES}
+  const state = {
+    contextId: 1,
+    permissions: PERMISSIONS,
+    roles: ROLES,
+    selectedRoles: [{id: '104', label: 'kitty', children: 'kitty', value: '104'}]
+  }
   const dispatchMock = jest.fn()
   actions.filterRoles({selectedRoles: [ROLES[0]], contextType: COURSE})(dispatchMock, () => state)
-  const expectedDispatch = {
+  const expectedFirstDispatch = {
+    type: 'UPDATE_SELECTED_ROLES',
+    payload: [ROLES[0]]
+  }
+  const expectedSecondDispatch = {
     type: 'UPDATE_ROLE_FILTERS',
     payload: {
       selectedRoles: [ROLES[0]],
@@ -126,8 +134,33 @@ it('filterRoles dispatches updateRoleFilters', () => {
     }
   }
 
+  expect(dispatchMock).toHaveBeenCalledTimes(2)
+  expect(dispatchMock).toHaveBeenCalledWith(expectedFirstDispatch)
+  expect(dispatchMock).toHaveBeenCalledWith(expectedSecondDispatch)
+})
+
+it('filterRemovedRole dispatches updateRoleFilters and filterDeletedRole', () => {
+  const state = {
+    selectedRoles: [
+      {id: '104', label: 'kitty', children: 'kitty', value: '104'},
+      {id: '108', label: 'meow', children: 'meow', value: '108'}
+    ]
+  }
+  const dispatchMock = jest.fn()
+  actions.filterRemovedRole('Course')(dispatchMock, () => state)
+  const expectedUpdateRoleDispatch = {
+    type: 'UPDATE_ROLE_FILTERS',
+    payload: {
+      selectedRoles: [
+        {id: '104', label: 'kitty', children: 'kitty', value: '104'},
+        {id: '108', label: 'meow', children: 'meow', value: '108'}
+      ],
+      contextType: 'Course'
+    }
+  }
+
   expect(dispatchMock).toHaveBeenCalledTimes(1)
-  expect(dispatchMock).toHaveBeenCalledWith(expectedDispatch)
+  expect(dispatchMock).toHaveBeenCalledWith(expectedUpdateRoleDispatch)
 })
 
 it('tabChanged dispatches permissionsTabChanged', () => {
@@ -143,6 +176,8 @@ it('tabChanged dispatches permissionsTabChanged', () => {
   expect(dispatchMock).toHaveBeenCalledWith(expectedDispatch)
 })
 
+/* eslint-disable promise/catch-or-return */
+/* eslint-disable promise/no-callback-in-promise */
 describe('api actions', () => {
   beforeEach(() => {
     moxios.install()
@@ -159,7 +194,7 @@ describe('api actions', () => {
     const state = {contextId: 1, permissions: PERMISSIONS, roles: []}
     const getState = () => state
     actions.updateRoleName('1', 'steven', 'StudentRoll')(mockDispatch, getState)
-    return moxiosWait(() => {
+    moxiosWait(() => {
       const request = moxios.requests.mostRecent()
       request
         .respondWith({
@@ -193,7 +228,7 @@ describe('api actions', () => {
     const state = {contextId: 1, permissions: PERMISSIONS, roles: []}
     const getState = () => state
     actions.createNewRole('steven', 'StudentRoll')(mockDispatch, getState)
-    return moxiosWait(() => {
+    moxiosWait(() => {
       const request = moxios.requests.mostRecent()
       request
         .respondWith({
@@ -240,44 +275,10 @@ describe('api actions', () => {
             type: 'HIDE_ALL_TRAYS'
           }
 
-          expect(mockDispatch).toHaveBeenCalledTimes(5)
+          expect(mockDispatch).toHaveBeenCalledTimes(6)
           expect(mockDispatch).toHaveBeenCalledWith(expectedStartDispatch)
           expect(mockDispatch).toHaveBeenCalledWith(expectedDisplayAddSuccessDispatch)
           expect(mockDispatch).toHaveBeenCalledWith(expectedHideDispatch)
-          done()
-        })
-    })
-  })
-
-  it('updateRoleNameAndBaseType dispatches updateRole', done => {
-    const mockDispatch = jest.fn()
-    const state = {contextId: 1, permissions: PERMISSIONS, roles: []}
-    const getState = () => state
-    actions.updateRoleNameAndBaseType('1', 'steven', 'StudentRoll')(mockDispatch, getState)
-    return moxiosWait(() => {
-      const request = moxios.requests.mostRecent()
-      request
-        .respondWith({
-          status: 200,
-          response: {
-            id: '9',
-            role: 'steven',
-            label: 'steven',
-            base_role_type: 'StudentEnrollment',
-            workflow_state: 'active'
-          }
-        })
-        .then(() => {
-          expect(mockDispatch).toHaveBeenCalledWith({
-            type: 'UPDATE_ROLE',
-            payload: {
-              id: '9',
-              role: 'steven',
-              label: 'steven',
-              base_role_type: 'StudentEnrollment',
-              workflow_state: 'active'
-            }
-          })
           done()
         })
     })
@@ -288,7 +289,7 @@ describe('api actions', () => {
     const state = {contextId: 1, permissions: PERMISSIONS, roles: []}
     const getState = () => state
     actions.createNewRole('steven', 'StudentRoll')(mockDispatch, getState)
-    return moxiosWait(() => {
+    moxiosWait(() => {
       const request = moxios.requests.mostRecent()
       request
         .respondWith({
@@ -346,6 +347,16 @@ describe('api actions', () => {
       }
     }
 
+    const expectedApiBusyDispatch = {
+      type: 'API_PENDING',
+      payload: {id: '3', name: 'delete_course'}
+    }
+
+    const expectedApiUnbusyDispatch = {
+      type: 'API_COMPLETE',
+      payload: {id: '3', name: 'delete_course'}
+    }
+
     actions.modifyPermissions({
       name: 'delete_course',
       id: '3',
@@ -354,7 +365,7 @@ describe('api actions', () => {
       explicit: true,
       inTray: false
     })(dispatchMock, () => state)
-    return moxiosWait(() => {
+    moxiosWait(() => {
       const request = moxios.requests.mostRecent()
       request
         .respondWith({
@@ -365,9 +376,11 @@ describe('api actions', () => {
           }
         })
         .then(() => {
+          expect(dispatchMock).toHaveBeenCalledWith(expectedApiBusyDispatch)
           expect(dispatchMock).toHaveBeenCalledWith(expectedUpdatePermsDispatch)
           expect(dispatchMock).toHaveBeenCalledWith(expectedFixFocusDispatch)
-          expect(dispatchMock).toHaveBeenCalledTimes(2)
+          expect(dispatchMock).toHaveBeenCalledWith(expectedApiUnbusyDispatch)
+          expect(dispatchMock).toHaveBeenCalledTimes(4)
           done()
         })
     })
@@ -379,7 +392,7 @@ describe('api actions', () => {
     const failCallbackMock = jest.fn()
     const mockDispatch = jest.fn()
     actions.deleteRole(ROLES[1], successCallbackMock, failCallbackMock)(mockDispatch, () => state)
-    return moxiosWait(() => {
+    moxiosWait(() => {
       const request = moxios.requests.mostRecent()
       request.respondWith({status: 200, response: {data: 'who cares'}}).then(() => {
         expect(successCallbackMock).toHaveBeenCalledTimes(1)
@@ -388,7 +401,7 @@ describe('api actions', () => {
           type: 'DELETE_ROLE_SUCCESS',
           payload: ROLES[1]
         }
-        expect(mockDispatch).toHaveBeenCalledTimes(1)
+        expect(mockDispatch).toHaveBeenCalledTimes(2)
         expect(mockDispatch).toHaveBeenCalledWith(expectedDeleteRoleDispatch)
         done()
       })
@@ -401,7 +414,7 @@ describe('api actions', () => {
     const failCallbackMock = jest.fn()
     const mockDispatch = jest.fn()
     actions.deleteRole(ROLES[1], successCallbackMock, failCallbackMock)(mockDispatch, () => state)
-    return moxiosWait(() => {
+    moxiosWait(() => {
       const request = moxios.requests.mostRecent()
       request.respondWith({status: 400, response: {data: 'who cares'}}).then(() => {
         expect(successCallbackMock).toHaveBeenCalledTimes(0)
@@ -413,3 +426,5 @@ describe('api actions', () => {
     })
   })
 })
+/* eslint-enable promise/catch-or-return */
+/* eslint-enable promise/no-callback-in-promise */

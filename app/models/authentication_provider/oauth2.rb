@@ -19,6 +19,9 @@
 require 'oauth2'
 require 'canvas/core_ext/oauth2'
 
+class OauthValidationError < RuntimeError
+end
+
 class AuthenticationProvider::Oauth2 < AuthenticationProvider::Delegated
 
   SENSITIVE_PARAMS = [ :client_secret ].freeze
@@ -39,7 +42,7 @@ class AuthenticationProvider::Oauth2 < AuthenticationProvider::Delegated
     client.auth_code.authorize_url({ redirect_uri: redirect_uri, state: state }.merge(authorize_options))
   end
 
-  def get_token(code, redirect_uri)
+  def get_token(code, redirect_uri, _params)
     client.auth_code.get_token(code, { redirect_uri: redirect_uri }.merge(token_options))
   end
 

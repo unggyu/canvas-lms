@@ -72,37 +72,75 @@ describe LatePolicy do
       policy = LatePolicy.new
       expect(policy.late_submission_minimum_percent).to be_zero
     end
+
+    describe "root_account_id" do
+      before(:once) do
+        @course = Course.create!
+      end
+
+      context "on create" do
+        it "sets root_account_id to the course's root_account_id if root_account_id is nil" do
+          policy = LatePolicy.create!(course: @course)
+          expect(policy.root_account_id).to eq @course.root_account_id
+        end
+
+        it "does not modify root_account_id if it is already set" do
+          second_account = account_model
+          policy = LatePolicy.create!(course: @course, root_account_id: second_account.id)
+          expect(policy.root_account_id).to eq second_account.id
+        end
+      end
+
+      context "on update" do
+        before(:once) do
+          @policy = LatePolicy.create!(course: @course)
+        end
+
+        it "sets root_account_id to the course's root_account_id if root_account_id is nil" do
+          @policy.update_column(:root_account_id, nil)
+          @policy.update!(late_submission_minimum_percent: 20)
+          expect(@policy.root_account_id).to eq @course.root_account_id
+        end
+
+        it "does not modify root_account_id if it is already set" do
+          second_account = account_model
+          second_course = Course.create!(root_account: second_account)
+          @policy.update!(course: second_course)
+          expect(@policy.root_account_id).to eq @course.root_account_id
+        end
+      end
+    end
   end
 
   describe 'rounding' do
     it 'only keeps 2 digits after the decimal for late_submission_minimum_percent' do
       policy = LatePolicy.new(late_submission_minimum_percent: 25.223)
-      expect(policy.late_submission_minimum_percent).to eql BigDecimal.new('25.22')
+      expect(policy.late_submission_minimum_percent).to eql BigDecimal('25.22')
     end
 
     it 'rounds late_submission_minimum_percent' do
       policy = LatePolicy.new(late_submission_minimum_percent: 25.225)
-      expect(policy.late_submission_minimum_percent).to eql BigDecimal.new('25.23')
+      expect(policy.late_submission_minimum_percent).to eql BigDecimal('25.23')
     end
 
     it 'only keeps 2 digits after the decimal for missing_submission_deduction' do
       policy = LatePolicy.new(missing_submission_deduction: 25.223)
-      expect(policy.missing_submission_deduction).to eql BigDecimal.new('25.22')
+      expect(policy.missing_submission_deduction).to eql BigDecimal('25.22')
     end
 
     it 'rounds missing_submission_deduction' do
       policy = LatePolicy.new(missing_submission_deduction: 25.225)
-      expect(policy.missing_submission_deduction).to eql BigDecimal.new('25.23')
+      expect(policy.missing_submission_deduction).to eql BigDecimal('25.23')
     end
 
     it 'only keeps 2 digits after the decimal for late_submission_deduction' do
       policy = LatePolicy.new(late_submission_deduction: 25.223)
-      expect(policy.late_submission_deduction).to eql BigDecimal.new('25.22')
+      expect(policy.late_submission_deduction).to eql BigDecimal('25.22')
     end
 
     it 'rounds late_submission_deduction' do
       policy = LatePolicy.new(late_submission_deduction: 25.225)
-      expect(policy.late_submission_deduction).to eql BigDecimal.new('25.23')
+      expect(policy.late_submission_deduction).to eql BigDecimal('25.23')
     end
   end
 

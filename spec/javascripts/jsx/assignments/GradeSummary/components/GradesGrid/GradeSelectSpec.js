@@ -22,6 +22,8 @@ import {mount} from 'enzyme'
 import GradeSelect from 'jsx/assignments/GradeSummary/components/GradesGrid/GradeSelect'
 import {FAILURE, STARTED, SUCCESS} from 'jsx/assignments/GradeSummary/grades/GradeActions'
 
+import {waitFor} from '../../../../support/Waiters'
+
 function Container(props) {
   /*
    * This class exists because Enzyme does not update props of children, which
@@ -31,7 +33,6 @@ function Container(props) {
   return (
     <div>
       <GradeSelect {...props} />
-      <button id="next-element">Next Element</button>
     </div>
   )
 }
@@ -44,16 +45,10 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
 
   let $container
   let props
-  let qunitTimeout
-  let resolveOpenCloseState
-  let resolvePositioned
   let selectedGrade
   let wrapper
 
   suiteHooks.beforeEach(() => {
-    qunitTimeout = QUnit.config.testTimeout
-    QUnit.config.testTimeout = 500 // prevent accidental unresolved async
-
     $container = document.createElement('div')
     document.body.appendChild($container)
 
@@ -97,15 +92,6 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
           studentId: '1111'
         }
       },
-      onClose() {
-        resolveOpenCloseState()
-      },
-      onOpen() {
-        resolveOpenCloseState()
-      },
-      onPositioned() {
-        resolvePositioned()
-      },
       onSelect: sinon.stub().callsFake(gradeInfo => {
         selectedGrade = gradeInfo
       }),
@@ -115,16 +101,15 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
     }
   })
 
-  suiteHooks.afterEach(() => {
+  suiteHooks.afterEach(async () => {
+    if (getOptionList()) {
+      await clickOff()
+    }
     wrapper.unmount()
-    QUnit.config.testTimeout = qunitTimeout
   })
 
   function mountComponent() {
-    return new Promise(resolve => {
-      resolvePositioned = resolve
-      wrapper = mount(<Container {...props} />, {attachTo: $container})
-    })
+    wrapper = mount(<Container {...props} />, {attachTo: $container})
   }
 
   function blurElement($el) {
@@ -140,16 +125,17 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   }
 
   function getTextInput() {
-    return wrapper.find('input').get(0)
+    return wrapper
+      .find('input')
+      .at(0)
+      .instance()
   }
 
   function clickInputToOpenMenu() {
-    return new Promise(resolve => {
-      resolveOpenCloseState = resolve
-      const $input = getTextInput()
-      focusElement($input)
-      $input.click()
-    })
+    const $input = getTextInput()
+    focusElement($input)
+    $input.click()
+    return waitFor(getOptionList)
   }
 
   function keyDownOnInput(keyCode) {
@@ -161,8 +147,8 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   }
 
   function getOptionList() {
-    const controlledContentId = wrapper.find('input').prop('aria-controls')
-    return document.getElementById(controlledContentId)
+    const controlledContentId = getTextInput().getAttribute('aria-controls')
+    return controlledContentId ? document.getElementById(controlledContentId) : null
   }
 
   function getOptions() {
@@ -180,17 +166,18 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   }
 
   function clickOption(optionLabel) {
-    return new Promise(resolve => {
-      resolveOpenCloseState = resolve
-      getOption(optionLabel).click()
-    })
+    getOption(optionLabel).click()
+    return menuClosed()
   }
 
   function arrowDownTo(optionLabel) {
     const options = getOptions()
-    const steps = getOptionLabels().indexOf(optionLabel)
+    const indexOfHighlightedOption = options.findIndex(
+      $option => $option.getAttribute('aria-selected') === 'true'
+    )
+    const indexOfTargetOption = getOptionLabels().indexOf(optionLabel)
 
-    for (let i = 0; i < steps; i++) {
+    for (let i = indexOfHighlightedOption; i < indexOfTargetOption; i++) {
       const event = new Event('keydown', {bubbles: true, cancelable: true})
       event.keyCode = 40 // down arrow
       options[i].dispatchEvent(event)
@@ -215,15 +202,13 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   }
 
   function clickOff() {
-    return new Promise(resolve => {
-      resolveOpenCloseState = resolve
-      blurElement(getTextInput())
-    })
+    blurElement(getTextInput())
+    return menuClosed()
   }
 
   function setInputText(value) {
     const input = wrapper.find('input[type="text"]')
-    input.get(0).value = value
+    input.at(0).instance().value = value
     input.simulate('change', {target: {value}})
   }
 
@@ -237,19 +222,25 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
     return `${score} (Custom)`
   }
 
-  async function mountAndClick() {
-    await mountComponent()
-    await clickInputToOpenMenu()
+  function mountAndClick() {
+    mountComponent()
+    return clickInputToOpenMenu()
   }
 
-  test('renders a text input', async () => {
-    await mountComponent()
+  function menuClosed() {
+    if (getOptionList()) {
+      return waitFor(() => !getOptionList())
+    }
+  }
+
+  test('renders a text input', () => {
+    mountComponent()
     const input = wrapper.find('input[type="text"]')
     strictEqual(input.length, 1)
   })
 
-  test('uses the student name for a label', async () => {
-    await mountComponent()
+  test('uses the student name for a label', () => {
+    mountComponent()
     const label = wrapper.find('label')
     strictEqual(label.text(), 'Grade for Adam Jones')
   })
@@ -260,28 +251,31 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
     })
 
     test('excludes an option for "no selection"', async () => {
-      await mountComponent()
+      await mountAndClick()
       notOk(getOptionLabels().includes('–'))
     })
 
     test('does not include an option for graders who did not grade', async () => {
-      await mountComponent()
+      await mountAndClick()
       const labels = getOptionLabels().filter(label => label.match(/Krabappel/))
       strictEqual(labels.length, 0)
     })
 
     test('includes an option for each grader who graded', async () => {
-      await mountComponent()
+      await mountAndClick()
       deepEqual(getOptionLabels(), ['frizz', 'robin', 'feeny'].map(labelForGrader))
     })
 
-    test('sets as the input value the selected provisional grade', async () => {
-      await mountComponent()
+    test('sets as the input value the selected provisional grade', () => {
+      mountComponent()
       equal(getTextInput().value, labelForGrader('robin'))
     })
   })
 
   QUnit.module('when the input is dismissed by clicking elsewhere', () => {
+    function clickOffAndWaitForValue(value) {
+      return clickOff().then(() => waitFor(() => getTextInput().value === value))
+    }
     test('does not call the onSelect prop', async () => {
       await mountAndClick()
       await clickOff()
@@ -306,7 +300,7 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
       props.grades.robin.selected = true
       await mountAndClick()
       setInputText('')
-      await clickOff()
+      await clickOffAndWaitForValue(labelForGrader('robin'))
       equal(getTextInput().value, labelForGrader('robin'))
     })
 
@@ -321,47 +315,53 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
       }
       await mountAndClick()
       setInputText('')
-      await clickOff()
+      await clickOffAndWaitForValue(customLabel('11'))
       equal(getTextInput().value, customLabel('11'))
     })
 
     test('resets the input to the "no selection" option when no grade is selected', async () => {
       await mountAndClick()
       setInputText('')
-      await clickOff()
+      await clickOffAndWaitForValue('–')
+      equal(getTextInput().value, '–')
+    })
+
+    test('resets the input to the "no selection" option when some text has been entered', async () => {
+      await mountAndClick()
+      setInputText('5')
+      await clickOffAndWaitForValue('–')
       equal(getTextInput().value, '–')
     })
 
     test('restores the full list of options for subsequent selection', async () => {
       await mountAndClick()
       setInputText('7.9')
-      await clickOff()
+      await clickOffAndWaitForValue('–')
+      await clickInputToOpenMenu()
       deepEqual(getOptionLabels(), ['frizz', 'robin', 'feeny'].map(labelForGrader))
     })
   })
 
   QUnit.module('when no grade has been selected', () => {
     test('includes an option for "no selection"', async () => {
-      await mountComponent()
+      await mountAndClick()
       strictEqual(getOptionLabels()[0], '–')
     })
 
     test('displays the grade and grader name as option labels', async () => {
-      await mountComponent()
+      await mountAndClick()
       deepEqual(getOptionLabels().slice(1), ['frizz', 'robin', 'feeny'].map(labelForGrader))
     })
 
-    test('set the input value to "–" (en dash)', async () => {
-      await mountComponent()
+    test('set the input value to "–" (en dash)', () => {
+      mountComponent()
       strictEqual(getTextInput().value, '–')
     })
   })
 
   QUnit.module('when selecting an existing grade', () => {
-    async function openAndSelect(optionLabel) {
-      await mountComponent()
-      await clickInputToOpenMenu()
-      await clickOption(optionLabel)
+    function openAndSelect(optionLabel) {
+      return mountAndClick().then(() => clickOption(optionLabel))
     }
 
     test('calls the onSelect prop', async () => {
@@ -496,9 +496,9 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when a grade selection is pending', hooks => {
-    hooks.beforeEach(async () => {
+    hooks.beforeEach(() => {
       props.selectProvisionalGradeStatus = STARTED
-      await mountComponent()
+      mountComponent()
     })
 
     test('sets the input to read-only while grade selection is pending', () => {
@@ -508,22 +508,20 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
 
     test('enables the input when grade selection was successful', () => {
       wrapper.setProps({selectProvisionalGradeStatus: SUCCESS})
-      const input = wrapper.find('input[type="text"]')
-      strictEqual(input.prop('aria-disabled'), null)
+      strictEqual(wrapper.find('Select').prop('editable'), true)
     })
 
     test('enables the input when grade selection has failed', () => {
       wrapper.setProps({selectProvisionalGradeStatus: FAILURE})
-      const input = wrapper.find('input[type="text"]')
-      strictEqual(input.prop('aria-disabled'), null)
+      strictEqual(wrapper.find('Select').prop('editable'), true)
     })
   })
 
   QUnit.module('when not given an onSelect prop (grades have been published)', hooks => {
-    hooks.beforeEach(async () => {
+    hooks.beforeEach(() => {
       props.grades.frizz.selected = true
       props.onSelect = null
-      await mountComponent()
+      mountComponent()
     })
 
     test('sets the input to read-only', () => {
@@ -544,13 +542,12 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
      * grader are allowed to grade. Doing this will prevent as-yet-unexplored
      * scenarios from causing as-yet-unconsidered problems.
      */
-    hooks.beforeEach(async () => {
+    hooks.beforeEach(() => {
       props.disabledCustomGrade = true
-      await mountComponent()
-      await clickInputToOpenMenu()
+      return mountAndClick()
     })
 
-    test('prevents adding custom options to the options list', async () => {
+    test('prevents adding custom options to the options list', () => {
       setInputText('5')
       notOk(getOptionLabels().includes(customLabel('5')))
     })
@@ -568,10 +565,10 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when entered text partially matches other grades', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
-      setInputText('8')
+    hooks.beforeEach(() => {
+      return mountAndClick().then(() => {
+        setInputText('8')
+      })
     })
 
     test('excludes the "no selection" option', () => {
@@ -601,12 +598,12 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when entered text exactly matches other grades', hooks => {
-    hooks.beforeEach(async () => {
+    hooks.beforeEach(() => {
       props.grades.frizz.score = 7.9
       props.grades.feeny.score = 7
-      await mountComponent()
-      await clickInputToOpenMenu()
-      setInputText('7')
+      return mountAndClick().then(() => {
+        setInputText('7')
+      })
     })
 
     test('excludes the "no selection" option', () => {
@@ -649,10 +646,7 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when entered text partially matches grader names', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
-    })
+    hooks.beforeEach(mountAndClick)
 
     test('includes grades from graders whose names partially match the entered text', () => {
       setInputText('z')
@@ -677,19 +671,14 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when entered text does not match grades or grader names', () => {
-    async function openAndClick() {
-      await mountComponent()
-      await clickInputToOpenMenu()
-    }
-
     test('includes only the custom grade when the text is a valid score', async () => {
-      await openAndClick()
+      await mountAndClick()
       setInputText('3')
       deepEqual(getOptionLabels(), [customLabel('3')])
     })
 
     test('filters out all options when the text is not a valid score', async () => {
-      await openAndClick()
+      await mountAndClick()
       setInputText('oops')
       deepEqual(getOptionLabels(), ['---'])
     })
@@ -703,17 +692,17 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
         selected: true,
         studentId: '1111'
       }
-      await openAndClick()
+      await mountAndClick()
       setInputText('custom')
       deepEqual(getOptionLabels(), [customLabel('11')])
     })
   })
 
   QUnit.module('when entered text is updated', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
-      setInputText('8')
+    hooks.beforeEach(() => {
+      return mountAndClick().then(() => {
+        setInputText('8')
+      })
     })
 
     test('adds options matching the updated text', () => {
@@ -735,15 +724,14 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when the input has focus and Escape is pressed', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
+    hooks.beforeEach(() => {
+      mountComponent()
+      return clickInputToOpenMenu()
     })
 
     test('dismisses the options list', () => {
       keyUpOnInput(keyCodes.ESCAPE)
-      const style = window.getComputedStyle(getOptionList())
-      equal(style.display, 'none')
+      strictEqual(getOptionList(), null)
     })
 
     test('does not call the onSelect prop', () => {
@@ -753,7 +741,7 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
 
     test('sets focus on the input', () => {
       keyUpOnInput(keyCodes.ESCAPE)
-      strictEqual(document.activeElement, wrapper.find('input').get(0))
+      strictEqual(document.activeElement, getTextInput())
     })
 
     test('resets the input value when text was entered', () => {
@@ -764,16 +752,15 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when an option has focus and Escape is pressed', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
+    hooks.beforeEach(() => {
+      mountComponent()
+      return clickInputToOpenMenu()
     })
 
     test('dismisses the options list', () => {
       focusOption(labelForGrader('robin'))
       keyUpOnOption(labelForGrader('robin'), keyCodes.ESCAPE)
-      const style = window.getComputedStyle(getOptionList())
-      equal(style.display, 'none')
+      strictEqual(getOptionList(), null)
     })
 
     test('does not call the onSelect prop', () => {
@@ -785,20 +772,19 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
     test('sets focus on the input', () => {
       focusOption(labelForGrader('robin'))
       keyUpOnOption(labelForGrader('robin'), keyCodes.ESCAPE)
-      strictEqual(document.activeElement, wrapper.find('input').get(0))
+      strictEqual(document.activeElement, getTextInput())
     })
   })
 
   QUnit.module('when the input has focus and Enter is pressed', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
+    hooks.beforeEach(() => {
+      mountComponent()
+      return clickInputToOpenMenu()
     })
 
     test('dismisses the options list', async () => {
       await keyDownOnInput(keyCodes.ENTER)
-      const style = window.getComputedStyle(getOptionList())
-      equal(style.display, 'none')
+      strictEqual(getOptionList(), null)
     })
 
     test('calls the onSelect prop when the input has changed', async () => {
@@ -835,17 +821,17 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when an option has focus and Enter is pressed', () => {
-    async function openAndSelect(optionLabel) {
-      await mountComponent()
-      await clickInputToOpenMenu()
-      arrowDownTo(optionLabel)
-      await keyDownOnOption(optionLabel, keyCodes.ENTER)
+    function openAndSelect(optionLabel) {
+      mountComponent()
+      return clickInputToOpenMenu().then(() => {
+        arrowDownTo(optionLabel)
+        return keyDownOnOption(optionLabel, keyCodes.ENTER)
+      })
     }
 
     test('dismisses the options list', async () => {
       await openAndSelect(labelForGrader('robin'))
-      const style = window.getComputedStyle(getOptionList())
-      equal(style.display, 'none')
+      strictEqual(getOptionList(), null)
     })
 
     test('calls the onSelect prop when the input has changed', async () => {
@@ -872,11 +858,12 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
   })
 
   QUnit.module('when selecting a new custom grade', hooks => {
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      await clickInputToOpenMenu()
-      setInputText('5')
-      await clickOption(customLabel('5'))
+    hooks.beforeEach(() => {
+      mountComponent()
+      return clickInputToOpenMenu().then(() => {
+        setInputText('5')
+        return clickOption(customLabel('5'))
+      })
     })
 
     test('calls the onSelect prop', () => {
@@ -893,21 +880,24 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
       strictEqual(gradeInfo.studentId, '1111')
     })
 
-    test('restores the full list of options for subsequent selection', () => {
+    test('restores the full list of options for subsequent selection', async () => {
+      await clickInputToOpenMenu()
       const graderOptionLabels = ['frizz', 'robin', 'feeny'].map(labelForGrader)
       deepEqual(getOptionLabels(), [...graderOptionLabels, customLabel('5')])
+      await clickOff()
     })
   })
 
   QUnit.module('when updating from having no grades to having grades', hooks => {
-    hooks.beforeEach(async () => {
+    hooks.beforeEach(() => {
       const {grades} = props
       props.grades = {}
-      await mountComponent()
-      props.grades = grades
+      return mountAndClick().then(() => {
+        props.grades = grades
+      })
     })
 
-    test('includes only grader options when one of the grades is selected', async () => {
+    test('includes only grader options when one of the grades is selected', () => {
       props.grades.frizz.selected = true
       wrapper.setProps({grades: props.grades})
       deepEqual(getOptionLabels(), ['frizz', 'robin', 'feeny'].map(labelForGrader))
@@ -927,12 +917,13 @@ QUnit.module('GradeSummary GradeSelect', suiteHooks => {
      * between old state and new props.
      */
 
-    hooks.beforeEach(async () => {
-      await mountComponent()
-      props = JSON.parse(JSON.stringify(props))
-      props.studentName = 'Betty Ford'
-      props.grades.frizz.studentId = '1112'
-      props.grades.robin.studentId = '1112'
+    hooks.beforeEach(() => {
+      return mountAndClick().then(() => {
+        props = JSON.parse(JSON.stringify(props))
+        props.studentName = 'Betty Ford'
+        props.grades.frizz.studentId = '1112'
+        props.grades.robin.studentId = '1112'
+      })
     })
 
     test('includes an option for "no selection" when the student has no selected grade', () => {

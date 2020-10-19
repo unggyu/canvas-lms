@@ -18,6 +18,9 @@
 
 class Rubric < ActiveRecord::Base
   include Workflow
+  include HtmlTextHelper
+
+  POINTS_POSSIBLE_PRECISION = 4
 
   attr_writer :skip_updating_points_possible
   belongs_to :user
@@ -32,6 +35,7 @@ class Rubric < ActiveRecord::Base
   validates_length_of :title, :maximum => maximum_string_length, :allow_nil => false, :allow_blank => false
 
   before_validation :default_values
+  before_create :set_root_account_id
   after_save :update_alignments
   after_save :touch_associations
 
@@ -52,6 +56,9 @@ class Rubric < ActiveRecord::Base
 
     given {|user, session| self.context.grants_right?(user, session, :manage)}
     can :read and can :create and can :delete_associations
+
+    given {|user, session| self.context.grants_right?(user, session, :read_rubrics) }
+    can :read
 
     # read_only means "associated with > 1 object for grading purposes"
     given {|user, session| !self.read_only && self.rubric_associations.for_grading.length < 2 && self.context.grants_right?(user, session, :manage_assignments)}
@@ -110,12 +117,15 @@ class Rubric < ActiveRecord::Base
   # of rubrics.  The two main values for the 'purpose' field on
   # a rubric_association are 'grading' and 'bookmark'.  Confusing,
   # I know.
-  def destroy_for(context)
+  def destroy_for(context, current_user: nil)
     ras = rubric_associations.where(:context_id => context, :context_type => context.class.to_s)
     if context.class.to_s == 'Course'
       # if rubric is removed at the course level, we want to destroy any
       # assignment associations found in the context of the course
-      ras.each(&:destroy)
+      ras.each do |association|
+        association.updating_user = current_user
+        association.destroy
+      end
     else
       ras.update_all(:bookmarked => false, :updated_at => Time.now.utc)
     end
@@ -157,14 +167,6 @@ class Rubric < ActiveRecord::Base
     OpenObject.process(self.data)
   end
 
-  def display_name
-    res = ""
-    res += self.user.name + ", " rescue ""
-    res += self.context.name rescue ""
-    res = t('unknown_details', "Unknown Details") if res.empty?
-    res
-  end
-
   def criteria
     self.data
   end
@@ -183,7 +185,12 @@ class Rubric < ActiveRecord::Base
                                    :use_for_grading => !!opts[:use_for_grading],
                                    :purpose => purpose
     ra.skip_updating_points_possible = opts[:skip_updating_points_possible] || @skip_updating_points_possible
-    ra.tap &:save
+    ra.updating_user = opts[:current_user]
+    if ra.save
+      association.mark_downstream_changes(["rubric"]) if association.is_a?(Assignment)
+    end
+    ra.updating_user = nil
+    ra
   end
 
   def update_with_association(current_user, rubric_params, context, association_params)
@@ -271,7 +278,11 @@ class Rubric < ActiveRecord::Base
     (params[:criteria] || {}).each do |idx, criterion_data|
       criterion = {}
       criterion[:description] = (criterion_data[:description].presence || t('no_description', "No Description")).strip
-      criterion[:long_description] = (criterion_data[:long_description] || "").strip
+      # Outcomes descriptions are already html sanitized, so use that if an outcome criteria
+      # is present. Otherwise we need to sanitize the input ourselves.
+      unless criterion_data[:learning_outcome_id].present?
+        criterion[:long_description] = format_message((criterion_data[:long_description] || "").strip).first
+      end
       criterion[:points] = criterion_data[:points].to_f || 0
       criterion_data[:id].strip! if criterion_data[:id]
       criterion_data[:id] = nil if criterion_data[:id] && criterion_data[:id].empty?
@@ -280,6 +291,7 @@ class Rubric < ActiveRecord::Base
       ratings = []
       if criterion_data[:learning_outcome_id].present?
         outcome = LearningOutcome.where(id: criterion_data[:learning_outcome_id]).first
+        criterion[:long_description] = outcome&.description || ''
         if outcome
           criterion[:learning_outcome_id] = outcome.id
           criterion[:mastery_points] = ((criterion_data[:mastery_points] || outcome.data[:rubric_criterion][:mastery_points]).to_f rescue nil)
@@ -296,7 +308,7 @@ class Rubric < ActiveRecord::Base
       criteria[idx.to_i] = criterion
     end
     criteria = criteria.compact
-    points_possible = total_points_from_criteria(criteria)
+    points_possible = total_points_from_criteria(criteria)&.round(POINTS_POSSIBLE_PRECISION)
     CriteriaData.new(criteria, points_possible, title)
   end
 
@@ -323,5 +335,14 @@ class Rubric < ActiveRecord::Base
     else
       criteria
     end
+  end
+
+  def set_root_account_id
+    self.root_account_id ||=
+      if context_type == 'Account' && context.root_account?
+        self.context.id
+      else
+        self.context&.root_account_id
+      end
   end
 end

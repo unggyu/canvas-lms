@@ -79,6 +79,10 @@
     width: auto;
   }
 
+  .ic-item-row__content-container {
+    width: auto;
+  }
+
   h3 {
     font-weight: 600;
     font-size: 1rem;
@@ -105,13 +109,19 @@
 }
 
 .ic-item-row__meta-col {
-  // prevent flex from resizing this box, necessary because it has a sibling with flex-grow: 1
-  // that would otherwise steal width from this element, not the same as width: 200px
-  min-width: 230px;
-  max-width: 230px;
   display: flex;
   flex-direction: column;
   text-align: direction(right);
+
+  @include desktop-only {
+    & {
+      // prevent flex from resizing this box, necessary because it has a sibling
+      // with flex-grow: 1 that would otherwise steal width from this element,
+      // not the same as width: 200px
+      min-width: 230px;
+      max-width: 230px;
+    }
+  }
 
   .ic-item-row__meta-actions {
     height: 23px;
@@ -133,6 +143,18 @@
   padding: direction-sides(8px 8px 7px 8px);
 }
 
+.ic-drag-handle-container{
+  padding: 0.375rem;
+  flex-shrink: 1;
+}
+
+.ic-discussion-content-container{
+  flex-grow: 1;
+  flex-shrink: 1;
+  box-sizing: border-box;
+  min-width: 0.0625rem;
+}
+
 .icon-blueprint-lock {
   margin-bottom: 3px;
   padding: direction-sides(8px 8px 7px 8px);
@@ -146,10 +168,17 @@
 
     .ic-item-row__master-course-lock {
       &:focus { @include ic-focus-variant; }
-      margin-left: 2px;
-      margin-right: 2px;
+      margin-#{direction(left)}: 2px;
+      margin-#{direction(right)}: 2px;
     }
   }
+}
+
+.ic-discussion-row-container{
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .ic-discussion-row {
