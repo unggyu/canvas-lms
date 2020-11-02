@@ -27,6 +27,7 @@ class AssessmentQuestion < ActiveRecord::Base
   simply_versioned :automatic => false
   acts_as_list :scope => :assessment_question_bank
   before_validation :infer_defaults
+  before_save :validate_blank_questions
   after_save :translate_links_if_changed
   validates_length_of :name, :maximum => maximum_string_length, :allow_nil => true
   validates_presence_of :workflow_state, :assessment_question_bank_id
@@ -59,6 +60,15 @@ class AssessmentQuestion < ActiveRecord::Base
     end
     self.name = self.question_data[:question_name] || self.name
     self.assessment_question_bank ||= AssessmentQuestionBank.unfiled_for_context(self.initial_context)
+  end
+
+  def validate_blank_questions
+    qd = Quizzes::QuizQuestion::QuestionData.new(self.question_data || HashWithIndifferentAccess.new)
+    return if qd && !(qd.is_type?(:fill_in_multiple_blanks) || qd.is_type?(:short_answer))
+    qd.answers = qd.answers.select { |answer| !answer['text'].empty? }
+    self.question_data = qd.to_hash
+    self.question_data_will_change!
+    true
   end
 
   def translate_links_if_changed
