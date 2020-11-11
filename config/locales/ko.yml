@@ -1123,7 +1123,7 @@ ko:
         select_label: 검색하려는 로그 유형을 선택하십시오.
       user_date_range_search_form:
         search_people: 사용자 검색
-        search: ID 또는 이름으로 사람 검색
+        search: ID 또는 이름으로 사용자 검색
         message_date_from: 시작 날짜
         message_date_to: 끝 날짜
         find: 검색
@@ -1223,14 +1223,14 @@ ko:
         mfa_settings: 다단계 인증
         mobile_qr_login_is_enabled: QR 코드를 사용하여 모바일 앱에 로그인 허용
         self_enrollment: 직접 등록 허용
-        trusted_referers: 신뢰할 수있는 HTTP 참조 자
+        trusted_referers: Trusted HTTP Referers
         prevent_course_renaming_by_teachers: 교수가 과목 이름을 변경하지 못하도록 함
-        allow_sending_scores_in_emails: 학생이 이메일 알림에 점수를 받도록 옵트인할 수 있습니다.
+        allow_sending_scores_in_emails: 학생들은 이메일을 통해 채점 점수 알림을 받도록 선택할 수 있습니다.
         include_students_in_global_survey: 글로벌 설문 조사에 학생 포함
-        restrict_quiz_questions: 과목 종료일 이후 학생이 퀴즈 문제를 보지 못하도록 제한
-        locked: 하위 계정 및 과목에 대해이 설정을 잠급니다.
+        restrict_quiz_questions: 과목 종료일 이후 학생들이 퀴즈 문제를 보는 것을 제한합니다.
+        locked: 하위 계정 및 과목의 경우 이 설정 잠금
         restrict_student_future_listing: 학생이 등록 목록에서 향후 과목을 볼 수 없도록 제한
-        value: 공지 사항에 대한 댓글 비활성화
+        value: 공지 사항에 대한 코멘트 사용 중지
         can_add_pronouns: 개인 대명사 활성화
         domain: '도메인:'
         admins_can_change_passwords: 관리자가 설정한 암호
@@ -1244,24 +1244,24 @@ ko:
         show_scheduler: 일정 관리 사용
         enable_profiles: 프로필 사용
         limit_parent_app_web_access: Canvas Parent 앱에서 Canvas 웹에 대한 액세스 제한
-        sub_account_includes: 하위 계정에서 추가 포함 파일을 정의하도록 허용
+        sub_account_includes: 하위 계정이 테마 편집기를 사용하여 커스터마이징 할 수 있음
         open_registration: 공개 등록
-        users_can_edit_name: 사용자는 자신의 이름을 편집 할 수 있습니다.
-        edit_institution_email: 사용자가 기관에서 할당한 이메일 주소를 삭제할 수 있음
-        author_email_in_notifications: 사용자 상호 작용 알림을 위해 보낸 사람의 이메일 주소 표시
+        users_can_edit_name: 사용자 자신의 이름 수정 허용
+        edit_institution_email: 사용자가 교육 기관에서 할당한 이메일 주소를 삭제할 수 있음
+        author_email_in_notifications: 상호 작용 알림에 발신자의 이메일 주소 표시
         enable_course_catalog: '"공개 과목 색인에이 과목 포함"플래그를 활성화하여이 루트 계정에서 검색 가능한 과목 목록을 표시합니다.'
         equella: Equella
         enable_turnitin: Turnitin
         equella_endpoint: Equella 끝점
         equella_teaser: Equella 설명
-        turnitin_pledge: Turnitin 서약
+        turnitin_pledge: 서약
         turnitin_account_id: Turnitin 계정 ID
         turnitin_shared_secret: Turnitin 공유 비밀
         turnitin_host: Turnitin 호스트
         turnitin_comments: 제출물 설명
         originality_report_visibility: 학생들은 독창성 보고서를 볼 수 있습니다.
         teachers_can_create_courses: 교수
-        no_enrollments_can_create_courses: 등록하지 않은 사용자
+        no_enrollments_can_create_courses: 미등록 사용자
         students_can_create_courses: 학생
         enable_google_analytics: Google Analytics로 추적 허용
         enable_fullstory: FullStory로 추적 허용
@@ -1285,7 +1285,7 @@ ko:
         subject: 주제
         turnitin: Turnitin
       no_language_preference: 미설정 (기본값은 %{language})
-      default_language_description: 이는 브라우저/OS 언어 설정을 재정의합니다. 기본 언어는 과목 및 사용자 수준에서도 설정할 수 있습니다.
+      default_language_description: 이 설정은 브라우저 및 OS의 언어 설정보다 우선시 됩니다. 기본 언어는 과목 및 사용자 수준에서도 설정할 수 있습니다.
       select:
         mfa:
           disabled: 사용 안 함
@@ -1310,7 +1310,7 @@ ko:
       open_registration_delegated_warning_message: 외부 ID 공급자를 사용하는 경우에 개방형 등록을 통해서 생성된 사용자는 외부 공급자의 로그인 양식에 %{url}을(를) 가리키는 링크가 없으면 로그인을 할 수 없습니다.
       equella_settings_title: Equella 설정
       equall_endpoint_help: Equella 서비스에 대한 URL입니다. URL은 "%{sample_url}"와(과) 비슷한 형식입니다.
-      turnitin_pledge_help: 학생이 이 서약에 동의하는 것을 인정하는 상자에 체크해야 함
+      turnitin_pledge_help: 학생이 서약에 동의하여야 함
       turnitin_settings_title: Turnitin 설정
       confirm_turnitin_settings_link: Turnitin 설정 확인
       turnitin_comments_help: 이 설명은 Turnitin을 사용하는 과제를 제출하는 학생에게 표시됨
@@ -1356,8 +1356,8 @@ ko:
       interpolate_user_id: 사용자의 고유 캔버스 ID를 대체하려면 "{{CANVAS_USER_ID}}"를 입력하십시오.
       alerts_title: 알림
       manual_quotas:
-        manual_quotas_title: 수동으로 설정할 수 있는 할당량
-        select_type_label: 과목이나 그룹 검색
+        manual_quotas_title: 할당량 수동 설정
+        select_type_label: 과목이나 그룹 찾기
         select_type_courses: 과목 ID
         select_type_groups: 그룹 ID
         placeholder_course_or_group_id: 아이디 입력 ...
@@ -1445,16 +1445,16 @@ ko:
     statistics:
       page_title: '%{account}에 대한 통계'
       page_header_title: 계정 통계
-      general_numbers_title: 일반적인 숫자
+      general_numbers_title: 일반 정보
       labels:
-        generated_at: 만든 시간
+        generated_at: 생성 일시
         courses: 과목
         teachers: 교수
         students: 학생
         users: 사용자
-        uploaded_storage: 업로드했음
+        uploaded_storage: 업로드
         media_storage: 미디어
-      over_time_link: 시간 외
+      over_time_link: 일자별 추이
       uploaded_data:
         one: '*파일 %{count}개* %{file_size} '
         other: '*파일 %{count}개* %{file_size} '
@@ -1463,15 +1463,15 @@ ko:
         one: '*파일 %{count} 개* %{file_size}'
         other: '*파일 %{count} 개* %{file_size}'
       media_file_storage_header: 미디어 파일 저장소
-      recently_created_courses_title: 최근 개설한 과목
+      recently_created_courses_title: 최근 개설 과목
       created_at_by: '[%{teacher}](%{url})이(가) %{at}에 작성함'
       created_at: '%{at}에 작성함'
       none_message: 표시할 내용 없음
-      recently_started_courses_title: 최근 시작한 과목
+      recently_started_courses_title: 최근 개시 과목
       started_at: '%{at}에 시작'
-      recently_ended_courses_title: 최근 종료된 과목
+      recently_ended_courses_title: 최근 종료 과목
       concluded_at: '%{at}에 종결'
-      recently_logged_in_users_title: 최근 로그인한 사용자
+      recently_logged_in_users_title: 최근 로그인 사용자
       last_logged_in_at: '%{at}에 마지막으로 로그인함'
       download_csv_link: CSV로 다운로드
       file_storage_header: 파일 저장소
@@ -2025,7 +2025,7 @@ ko:
         send_confirmation: 계정 생성에 대해 이메일로 사용자에게 알림
         short_name: 표시 이름
         sis_user_id: SIS ID
-        sortable_name: 정렬 가능한 이름
+        sortable_name: 정렬용 이름
       sortable_name_help: 이 이름은 정렬된 목록에 표시됩니다.
     add_user_button: 사용자 추가
     add_user_dialog_title: 새 사용자 추가
@@ -2675,10 +2675,10 @@ ko:
     veri_cite_settings_dialog:
       vericite_settings:
         originality_report_visibility: 학생들은 독창성 보고서를 볼 수 있습니다
-        originality_report_visible_immediately: 바로
+        originality_report_visible_immediately: 즉시
         originality_report_visible_after_grading: 과제 채점 후
         originality_report_visible_after_due_date: 마감일 이후
-        originality_report_never: 못
+        originality_report_never: 불가
       buttons:
         update_settings: 설정 업데이트
     assignment_list_item_score:
@@ -4327,7 +4327,7 @@ ko:
         can_only_grade_students_in_section: 자신의 섹션에 있는 학생만 평가할 수 있음
       index:
         group_set: 그룹 세트
-        search_people: 사람 검색
+        search_people: 사용자 검색
         filter_field_description: 사람들을 검색하십시오. 이 필드에 입력하면 입력 한 이름과 일치하는 사람 만 포함하도록 사람 목록이 자동으로 필터링됩니다.
         role_to_search: 역할으로 검색을 제한
         cannot_add_users: 이 과목이 종료되어 새 사용자를 추가할 수 없음
@@ -5483,7 +5483,7 @@ ko:
       add_unassigned_menu:
         add_unassigned_student: 할당 안 된 학생 추가
         add_unassigned_user: 할당 안 된 사용자 추가
-        search_people: 사람 검색
+        search_people: 사용자 검색
       add_unassigned_user:
         add_user_to_group: 사용자 %{name}을(를) 그룹에 추가
         add_to_group: 사용자를 그룹에 추가
@@ -6041,7 +6041,7 @@ ko:
       name: EtherPad
       description: EtherPad 문서 공유
     google_drive:
-      name: 구글 드라이브
+      name: google drive
       description: Google 드라이브 파일 공유
     kaltura:
       name: Kaltura
@@ -6591,7 +6591,7 @@ ko:
         more_options: 추가 옵션
         add_account: 계정 추가
         view_your_profile: 프로필 보기
-        google_drive: 구글 드라이브
+        google_drive: google drive
         skype: Skype
         twitter: Twitter
         delicious: Delicious
@@ -8327,7 +8327,7 @@ ko:
       labels:
         full_name: 전체 이름
         display_name: 표시 이름
-        sortable_name: 정렬 가능한 이름
+        sortable_name: 정렬용 이름
         profile_picture: 프로필 사진
         default_email: 기본 이메일
         time_zone: 표준 시간대
@@ -8544,13 +8544,13 @@ ko:
   if_none_are_selected_show_to_everyone_in_the_entir_568a1dfc: (선택하지 않은 경우 전체 하위 계정의 모든 사람에게 표시)
   use_parent_account_setting_f25a721f: 부모 계정 설정 사용
   turnitin_settings:
-    originality_report_visible_immediately: 바로
+    originality_report_visible_immediately: 즉시
     originality_report_visible_after_grading: 과제 채점 후
     originality_report_visible_after_due_date: 마감일 이후
-    originality_report_never: 못
+    originality_report_never: 불가
   card_view_eaf73185: 과목 카드보기
   recent_activity_51239235: 최근 활동
-  list_view_430aecce: 목록보기
+  list_view_430aecce: 할 일 목록 보기
   canvas_by_instructure_1490381: Instructure 별 캔버스
   help_with_content_licensing_a146fb0e: 콘텐츠 라이선스에 대한 도움말
   help_with_course_visibilities_6b6e22a4: 과목 가시성에 대한 도움말
@@ -9927,36 +9927,36 @@ ko:
   act_as_users_de7ee378: 가상로그인
   users_act_as_d922940: 사용자-역할
   import_sis_data_428cc803: SIS 데이터 가져 오기
-  sis_data_import_8bb623ce: SIS 데이터-가져 오기
-  admins_add_remove_26811ce5: 관리자-추가 / 제거
-  account_level_settings_manage_4fca6f8e: 계정 수준 설정-관리
+  sis_data_import_8bb623ce: SIS 데이터 가져 오기
+  admins_add_remove_26811ce5: 계정에 대한 다른 관리자 추가/제거
+  account_level_settings_manage_4fca6f8e: 계정 수준 설정 관리
   global_announcements_add_edit_delete_843ca4d2: 전체 공지 사항-추가 / 수정 / 삭제
   catalog_manage_f57e50f3: 카탈로그-관리
   courses_add_edit_delete_aa2b55d3: 과목-추가 / 편집 / 삭제
   data_services_manage_9b8f96da: 데이터 서비스-관리
   change_course_visibility_eaa2ffc: 과목 가시성 변경
   courses_change_visibility_9150ff1b: 과목-가시성 변경
-  developer_keys_manage_806da2d: 개발자 키-관리
+  developer_keys_manage_806da2d: 개발자 키 관리
   users_moderate_content_36d6eed7: 사용자-중간 콘텐츠
   view_feature_settings_at_an_account_level_ec7f5e10: 계정 수준에서 기능 설정보기
   feature_options_view_a170e80c: 기능 옵션 - 보기
   feature_options_enable_disable_7e748054: 기능 옵션 - 켜기 / 끄기
   blueprint_courses_create_edit_associate_delete_bf41988e: 블루프린트 과목 (생성 / 편집 / 연결 / 삭제)
   blueprint_courses_add_edit_associate_delete_bc26d5c2: 블루프린트 과목-추가 / 편집 / 연결 / 삭제
-  permissions_manage_9eea4f8f: 권한-관리
+  permissions_manage_9eea4f8f: 권한 관리
   storage_quotas_manage_6ca14bbb: 스토리지 할당량-관리
-  sis_data_manage_328a4799: SIS 데이터-관리
+  sis_data_manage_328a4799: SIS 데이터 관리
   users_manage_login_details_9462b30f: 사용자-로그인 상세 정보 관리
   users_add_remove_observers_d1273d9: 사용자-관찰자 추가 / 제거
   course_content_view_5f68a57: 과목 콘텐츠-보기
-  courses_view_list_47885585: 과목-목록보기
+  courses_view_list_47885585: 과목 목록보기
   reset_multi_factor_authentication_2b63a558: 다단계 인증 재설정
   courses_view_change_logs_25af6a45: 과목-변경 로그보기
   grades_view_change_logs_6bc1b959: 성적-변경 로그보기
   notifications_view_f9a60770: 알림-보기
   statistics_view_b19458: 통계-보기
   courses_undelete_1f689a97: 과목-삭제 취소
-  course_state_manage_2edd46dc: 과목 상태-관리
+  course_state_manage_2edd46dc: 과목 상태 바꾸기
   student_collaborations_create_b9e312c1: 학생 협업-생성
   web_conferences_create_8a9869c3: 웹 컨퍼런스-만들기
   create_new_discussions_6ab69da2: 새 토론 만들기
@@ -9965,19 +9965,19 @@ ko:
   import_learning_outcomes_36d28a2b: 학습 성과 가져 오기
   learning_outcomes_import_eca3a09c: 학습 성과-가져 오기
   lti_add_and_edit_a359d8da: LTI 추가 및 편집
-  lti_add_edit_delete_15905170: LTI-추가 / 편집 / 삭제
-  users_add_remove_teachers_course_designers_or_tas__b480dd9: 사용자-강의에서 교수, 강의 설계자 또는 TA 추가 / 제거
+  lti_add_edit_delete_15905170: LTI 추가 / 편집 / 삭제
+  users_add_remove_teachers_course_designers_or_tas__b480dd9: 사용자 과목에서 교수, 강의 설계자 또는 TA 추가 / 제거
   assignments_and_quizzes_add_edit_delete_5bac17ed: 과제 및 퀴즈-추가 / 편집 / 삭제
   course_calendar_add_edit_delete_events_76b97c04: 그룹 캘린더 - 일정 추가 / 편집 / 삭제
   course_content_add_edit_delete_ea877eca: 과목 콘텐츠-추가 / 편집 / 삭제
-  course_files_add_edit_delete_24678a2f: 과목 파일-추가 / 편집 / 삭제
+  course_files_add_edit_delete_24678a2f: 과목 파일 관리 (추가 / 편집 / 삭제)
   grades_edit_773dfc24: 성적-편집
   groups_add_edit_delete_1536bbb4: 그룹-추가 / 편집 / 삭제
   alerts_add_edit_delete_d71091c6: 알림-추가 / 편집 / 삭제
   learning_outcomes_add_edit_delete_b686457a: 학습 성과-추가 / 편집 / 삭제
   outcome_proficiency_calculations_add_edit_5a2217b7: 성과 숙련도 계산-추가 / 편집
   outcome_proficiency_scales_add_edit_58da6a3: 성과 숙련도 척도-추가 / 편집
-  course_sections_add_edit_delete_c4f4ac19: 과목 섹션 - 추가 / 편집 / 삭제
+  course_sections_add_edit_delete_c4f4ac19: 과목 섹션 관리 (만들기 / 편집 / 삭제)
   users_add_remove_students_in_courses_efe7e748: 사용자-과목에서 학생 추가 / 제거
   faculty_journal_manage_entries_efc09599: 교수 저널-항목 관리
   rubrics_add_edit_delete_8299eff7: 루브릭-추가 / 편집 / 삭제
@@ -9988,17 +9988,17 @@ ko:
   pages_delete_ce201950: 페이지-삭제
   update_pages_c91d7ba: 페이지 업데이트
   pages_update_6c1750af: 페이지-업데이트
-  discussions_moderate_d1e69c7e: 토론-보통
+  discussions_moderate_d1e69c7e: 토론 중재(검토)
   discussions_post_62f64091: 토론-게시
   view_announcements_b6d6d819: 공지 사항보기
-  announcements_view_1019d00d: 공지 사항-보기
+  announcements_view_1019d00d: 공지사항 보기
   see_other_users_primary_email_address_59c8473f: 다른 사용자의 기본 이메일 주소보기
   users_view_primary_email_address_14f4978f: 사용자-기본 이메일 주소보기
   discussions_view_c6818792: 토론-보기
   question_banks_view_and_link_e6d9cde2: 문제 은행-보기 및 링크
-  courses_view_usage_reports_3daed8fe: 과목-사용 보고서보기
+  courses_view_usage_reports_3daed8fe: 분석 페이지 보기
   users_view_list_861c7a3f: 사용자-목록보기
-  sis_data_read_ac68a29: SIS 데이터-읽기
+  sis_data_read_ac68a29: SIS 데이터 읽기
   grades_select_final_grade_for_moderation_ae8585d1: 성적-검토 할 최종 성적 선택
   conversations_send_messages_to_individual_course_m_733620b: 대화-개별 과목 회원에게 메시지 보내기
   conversations_send_messages_to_entire_class_3f414741: 대화-전체 수업에 메시지 보내기
@@ -11043,7 +11043,7 @@ ko:
     report_header_section_id: 섹션 ID
     report_header_section_sis_id: 섹션 sis id
     report_header_section_name: 섹션명
-    report_header_course_name: 과목 명
+    report_header_course_name: 과목명
     report_header_enrollment_state: 등록 상태
     report_header_last_access_at: 마지막 액세스
     report_header_last_ip: 마지막 IP
@@ -11148,7 +11148,7 @@ ko:
   learning_outcome_id_88ff198c: 학습 성과 ID
   attempt_3dd42b18: 시도
   outcome_score_141cf00a: 성과 점수
-  course_name_45175338: 과목 명
+  course_name_45175338: 과목명
   course_sis_id_bbed1a60: 물론 sis id
   section_name_edb51b2: 섹션명
   section_sis_id_6f989834: 섹션 sis id
@@ -11634,13 +11634,13 @@ ko:
   qti_display: QTI
   qti_file_description: QTI .zip 파일
   respondus_lockdown_browser_support_413352eb: Respondus LockDown Browser 지원
-  google_drive_7cb003c9: 구글 드라이브
-  google_docs_preview_9f41b23c: Google 문서 미리보기
+  google_drive_7cb003c9: google drive
+  google_docs_preview_9f41b23c: Google Docs Preview
   skype_18850ba7: Skype
   twitter_fcef6b54: Twitter
   delicious_7f9ac66f: Delicious
   diigo_993c4646: Diigo
-  user_avatars_e4fc4ed3: 사용자 아바타
+  user_avatars_e4fc4ed3: 아바타 사용
   account_surveys_b0039876: 계정 설문 조사
   messageableuser_library_767eed20: MessageableUser 라이브러리
   assignments_api:
@@ -14023,7 +14023,7 @@ ko:
   if_you_wish_you_can_rename_sis_to_something_more_f_ac9ef13b: 원하는 경우 "SIS"의 이름을 직원에게 더 친숙한 이름으로 바꿀 수 있습니다.
   sis_friendly_name_52b5683d: SIS 이름
   sis_imports_17308c02: SIS 가져 오기
-  include_integration_ids_in_the_gradebook_exports_4b94c795: 성적 기록 내보내기에 통합 ID를 포함합니다.
+  include_integration_ids_in_the_gradebook_exports_4b94c795: 성적 기록 내보내기 시 통합ID를 포함합니다.
   sis_syncing_635bfb63: SIS 동기화
   additional_settings_for_sis_syncing_f926973e: SIS 동기화를위한 추가 설정
   lock_this_setting_for_sub_accounts_2ae5af17: 하위 계정에 대해이 설정 잠금
@@ -14093,17 +14093,17 @@ ko:
   download_report_77164f62: 보고서 다운로드
   security_7a7e8808: 보안
   this_is_a_comma_separated_list_of_url_s_to_trust_t_a6611f4: 신뢰할 수있는 쉼표로 구분 된 URL 목록입니다. 이 목록에있는 URL을 신뢰하면 Canvas에 로그인 할 때 CSRF 토큰을 우회합니다.
-  default_view_for_dashboard_ea91b60f: 대시 보드의 기본보기
+  default_view_for_dashboard_ea91b60f: 대시보드 기본 보기
   overwrite_all_users_existing_default_dashboard_pre_9b2ad7d1: 모든 사용자의 기존 기본 대시 보드 환경 설정 덮어 쓰기
-  restrict_students_from_accessing_courses_before_st_f7c22c00: 시작일 이전에 학생이 과목에 액세스하지 못하도록 제한
-  restrict_students_from_accessing_courses_after_end_7dd66bce: 종료일 이후 학생이 과목에 액세스하지 못하도록 제한
-  allow_students_to_download_course_content_and_view_810e66ec: 학생이 과목 콘텐츠를 다운로드하고 오프라인으로 볼 수 있도록 허용
-  copyright_and_license_information_must_be_provided_5feffaf: 파일을 공개하기 전에 저작권 및 라이센스 정보를 제공해야합니다.
+  restrict_students_from_accessing_courses_before_st_f7c22c00: 시작일 전에 강좌에 액세스하지 못하도록 제한
+  restrict_students_from_accessing_courses_after_end_7dd66bce: 종료일 이후에 학생들이 과목에 액세스하지 못하도록 제한
+  allow_students_to_download_course_content_and_view_810e66ec: 학생들이 과목 콘텐츠를 다운로드하고 오프라인으로 볼 수 있도록 허용
+  copyright_and_license_information_must_be_provided_5feffaf: 파일을 공개하기 전에 저작권 및 라이센스 정보를 제공해야 합니다.
   disable_uploads_to_canvas_media_from_the_enhanced__2381c79b: 향상된 리치 콘텐츠 편집기에서 캔버스 미디어로의 업로드 비활성화
   slack_api_key_92f0c667: 슬랙 API 키
   current_slack_api_key_9eba6a5: '현재 Slack API 키 :'
   new_slack_api_key_453d04d: 새로운 Slack API 키
-  personal_pronouns_7d271f52: 인칭 대명사
+  personal_pronouns_7d271f52: 인칭 대명사(Personal Pronouns)
   acceptable_use_policy_29a28124: 허용되는 사용 정책
   license_type_6b74b543: 라이센스 유형
   old_policy_39e4f77: 이전 정책
@@ -14116,13 +14116,13 @@ ko:
   features_2581da: 풍모
   custom_css_and_javascript_may_cause_accessibility__93d2a823: 사용자 정의 CSS 및 Javascript는 접근성 문제 또는 향후 Canvas 업데이트와 충돌을 일으킬 수 있습니다!
   before_implementing_custom_css_or_javascript_pleas_128da8cd: 사용자 정의 CSS 또는 Javascript를 구현하기 전에 * 문서 *를 참조하십시오.
-  enable_gravatar_8a865b41: Gravatar 허용하기
-  similarity_detection_platform_9e424d70: 유사성 감지 플랫폼
-  students_can_see_originality_score_797fe634: 학생들은 독창성 점수를 볼 수 있습니다.
-  enabled_web_services_f620b2be: 활성화 된 웹 서비스
+  enable_gravatar_8a865b41: Gravatar 사용
+  similarity_detection_platform_9e424d70: 유사성 검출 플랫폼
+  students_can_see_originality_score_797fe634: 독창성 점수 확인 가능 시기
+  enabled_web_services_f620b2be: 웹 서비스 사용
   who_can_create_new_courses_7a6c1338: 새로운 과목을 만들 수있는 사람
-  smart_assignment_alerts_abc2224: 스마트 할당 경고
-  hours_from_due_date_before_students_are_alerted_6584bae6: 학생에게 알림을 보내기 전 (마감일부터) 시간
+  smart_assignment_alerts_abc2224: 스마트 과제 알림
+  hours_from_due_date_before_students_are_alerted_6584bae6: 마감일로부터 몇 시간 전 알림을 보낼 지 설정 (시간)
   add_account_admins_99c03c9e: 계정 관리자 추가
   add_more_e1ffaa65: 더 추가
   edit_announcement_title_cce0b4e: 공지 사항 %{title} 편집
@@ -15141,7 +15141,7 @@ ko:
   required_to_view_quiz_results_dba7368b: 퀴즈 결과를 보려면 필수
   assign_eedf72bb: 할당
   notify_users_this_quiz_has_changed_c5b05995: 이 퀴즈가 변경되었음을 사용자에게 알리기
-  save_publish_36440725: 저장
+  save_publish_36440725: 저장 및 공개
   show_rubric_dca783f2: 루브릭 표시
   points_n_e0b20623: 점수 %{n}
   not_published_73f7079: 비공개
@@ -15155,7 +15155,7 @@ ko:
     yes: 예
     no: 아니오
   logged_out_user_index_68a0edb2: 사용자 %{index} 로그아웃
-  search_people_4782671a: 사람 검색
+  search_people_4782671a: 사용자 검색
   search_people_as_you_type_in_this_field_the_list_o_5755e8ad: 사람을 검색하십시오. 이 필드에 입력하면 입력 한 이름과 일치하는 사람 만 포함하도록 사람 목록이 자동으로 필터링됩니다.
   quiz_attempts_whose_availability_dates_have_passed_b0d98829: 이용 가능 날짜가 지난 퀴즈 시도는 연장 된 시간이 만료되지 않은 경우에도 자동으로 제출됩니다.
   available_until_date_cd125c62: 날짜까지 이용 가능
@@ -15263,9 +15263,9 @@ ko:
   this_course_cannot_be_added_to_the_courses_menu_un_c932b9c7: 이 과목은 과목이 활성화되어 있지 않으면 과목 메뉴에 추가 할 수 없습니다.
   chat_2153c6b7: 잡담
   all_terms_cd27b0fb: 모든 학기
-  active_terms_83df727e: 활성 학기
+  active_terms_83df727e: 유효 학기
   future_terms_7fba2ae6: 미래 학기
-  past_terms_4b6ec40e: 과거 학기
+  past_terms_4b6ec40e: 지난 학기
   all_grading_periods_77974940: 모든 채점 기간
   select_a_grading_period_5ea50f1: 채점 기간 선택 ...
   find_an_existing_grading_scheme_d836ea: 기존 채점 체계 찾기
@@ -15397,7 +15397,7 @@ ko:
     one: '이 메모를 저장할 수없는 오류 1 개 :'
     other: '%{count} 오류로 인해이 메모가 저장되지 않았습니다.'
   note_8b73ce09: 노트
-  never_df100b49: 못
+  never_df100b49: 불가
   notifications_cbfa7704: 알림
   tell_us_how_and_when_you_would_like_to_be_notified_de3ed2bc: "[알림 기본 설정]을 눌러 활동에 대한 알림 여부 및 시기를 지정할 수 있습니다."
   this_login_is_for_provider_6f17462: 이 로그인은 %{provider} 용입니다.
@@ -15686,7 +15686,7 @@ ko:
   data_point_over_time_8d0a54cc: 시간 경과에 따른 %{data_point}
   date_ee500367: 데이트
   loading_6ac402e1: 로드 중 ...
-  over_time_bee1a733: 시간이 지남에
+  over_time_bee1a733: 일자별 추이
   ajax_errors:
     no_text: 텍스트 없음
     errors:
@@ -18208,7 +18208,7 @@ ko:
   course_name_successfully_added_48116a50: '%{course_name}이 (가) 성공적으로 추가되었습니다!'
   something_went_wrong_creating_the_course_please_tr_431adff5: 과목을 만드는 데 문제가 발생했습니다. 다시 시도하십시오.
   add_a_new_course_4a041207: 새 과목 추가
-  course_name_63b973d1: 과목 명
+  course_name_63b973d1: 과목명
   reference_code_3e8355dd: 참조 코드
   subaccount_91f4c279: 하위 계정
   enrollment_term_7bfe840: 등록 기간
@@ -18227,7 +18227,7 @@ ko:
   act_as_name_16d15bfa: '%{name} 역할'
   send_message_to_name_c8ac05fc: '%{name}에게 메시지 보내기'
   edit_name_cbdef0c2: '%{name} 편집'
-  search_people_44f36cd2: 사람 검색 ...
+  search_people_44f36cd2: 사용자 검색 ...
   filter_by_user_type_dbbd3e3d: 사용자 유형으로 필터링
   all_roles_f3bba14d: 모든 역할
   add_people_7948b7da: 사용자 추가
@@ -18280,8 +18280,8 @@ ko:
   account_notification_settings_error_page_66c0bc61: 계정 알림 설정 오류 페이지
   user_information_6353d7e1: 사용자 정보
   full_name_14c958f7: '성명 :'
-  display_name_6c2cfc58: '이름 표시하기:'
-  sortable_name_e25fe66c: '정렬 가능한 이름 :'
+  display_name_6c2cfc58: '표시 이름:'
+  sortable_name_e25fe66c: '정렬용 이름 :'
   default_email_5cb9fa04: '기본 이메일 :'
   login_id_bc943b97: '로그인 ID:'
   sis_id_70eda157: 'SIS ID :'
@@ -18526,7 +18526,7 @@ ko:
   submitted_318fad53: 제출됨
   unavailable_46d2c344: 없는
   upload_8b403d05: 업로드
-  uploaded_285a2bfb: 업로드했음
+  uploaded_285a2bfb: 업로드
   button_a1577211: 버튼
   complete_4f4efbc: 완전한
   incomplete_95612d72: 불완전한
@@ -20166,7 +20166,7 @@ ko:
   left_group_group_name_aac4e813: 왼쪽 그룹 %{group_name}
   joined_group_group_name_e3802c04: 그룹 %{group_name}에 가입했습니다.
   add_new_group_7ac49f31: 새 그룹 추가
-  search_groups_or_people_6c15d6ad: 그룹 또는 사람 검색
+  search_groups_or_people_6c15d6ad: 그룹 또는 사용자 검색
   as_you_type_in_this_field_the_list_of_groups_will__16688a5f: 이 필드에 입력하면 입력 한 이름과 일치하는 그룹 만 포함하도록 그룹 목록이 자동으로 필터링됩니다.
   group_name_in_group_category_name_group_category_29bf3254: '%{group_category_name} 그룹 카테고리의 %{group_category_name}'
   you_are_the_group_leader_for_this_group_b8629b70: 당신은이 그룹의 그룹 리더입니다
@@ -20258,8 +20258,8 @@ ko:
   close_move_tray_8609e988: 닫기 이동 트레이
   group_select_330df8bd: 그룹 선택
   at_the_top_fa836591: 맨 위로
-  before_cb32fc0: 변경 전..
-  after_48b9d69: 변경 후..
+  before_cb32fc0: 이전에
+  after_48b9d69: 이후에
   at_the_bottom_a6a5f0fe: 맨 밑으로
   current_of_totalsteps_19d7ee37: '%{totalSteps} 중 %{totalSteps}'
   not_now_afa29fa7: 지금은 아님
@@ -20715,11 +20715,11 @@ ko:
   partially_enabled_and_locked_9a39d38a: 부분적으로 활성화되고 잠김
   disabled_and_locked_d14dc6c2: 비활성화 및 잠금
   use_default_890939b7: 기본값 사용
-  assigned_roles_ace6c950: 할당 된 역할
-  unassigned_roles_cb9e95ec: 할당되지 않은 역할
+  assigned_roles_ace6c950: 권한이 부여된 역할
+  unassigned_roles_cb9e95ec: 권한이 부여되지 않은 역할
   value_added_1846cc30: '%{value} Added'
   value_removed_bba9430c: '%{value} 제거됨'
-  search_permissions_915bbd09: 검색 권한
+  search_permissions_915bbd09: 권한 검색
   filter_roles_12cf2271: 필터 역할
   start_typing_to_search_press_the_down_arrow_to_nav_72815747: 검색하려면 입력을 시작하세요. 결과를 탐색하려면 아래쪽 화살표를 누릅니다.
   remove_role_filter_label_a27b6797: 역할 필터 %{label} 제거
@@ -20741,8 +20741,8 @@ ko:
   last_changed_b544504d: '마지막 변경 :'
   edit_label_769ed6c5: '%{label} 편집'
   expand_permission_c61d5958: 권한 확장
-  what_it_does_d4debc07: 그것이하는 일
-  additional_considerations_3ee46e5b: 추가 고려 사항
+  what_it_does_d4debc07: 권한 설명
+  additional_considerations_3ee46e5b: 부가 정보
   create_delete_update_pages_be209769: 페이지 생성 / 삭제 / 업데이트
   account_settings_fe083453: 계정 설정
   allows_user_to_view_and_manage_the_settings_and_no_e223e6b8: 사용자가 계정 설정에서 설정 및 알림 탭을보고 관리 할 수 있습니다.
@@ -20764,7 +20764,7 @@ ko:
   commons_ed0252fb: 평민
   allows_user_to_access_and_edit_the_admin_settings__b3390b66: 사용자가 Commons의 관리자 설정에 액세스하고 편집 할 수 있습니다. 사용자가 그룹을 만들고 관리 할 수 있습니다. 사용자가 계정의 공유 리소스를 관리 할 수 있습니다.
   allows_user_to_designate_a_course_as_a_blueprint_c_208ec223: 사용자가 과목을 블루 프린트 과목로 지정할 수 있습니다. 사용자가 과목 설정에서 Blueprint 과목 설정을 관리 할 수 있습니다. 사용자가 관련 과목을 추가 할 수 있습니다.
-  course_roles_can_only_manage_blueprint_courses_if__4902d00b: 과목 역할은 Blueprint 과목에 교수, TA 또는 디자이너 역할로 추가 된 경우에만 Blueprint 과목을 관리 할 수 ​​있습니다. Blueprint 과목 사이드 바에 액세스하려면 과목-과목 추가 / 편집 / 삭제를 활성화해야합니다. 연결된 과목을 추가하려면 과목-목록보기 및 과목-추가 / 편집 / 삭제도 활성화되어야합니다. Blueprint 객체 유형에 대한 잠금 설정을 편집하려면 과목-추가 / 편집 / 삭제를 활성화해야합니다.
+  course_roles_can_only_manage_blueprint_courses_if__4902d00b: 과목 역할은 Blueprint 과목에 교수, TA 또는 디자이너 역할로 추가 된 경우에만 Blueprint 과목을 관리 할 수 ​​있습니다. Blueprint 과목 사이드 바에 액세스하려면 과목-과목 추가 / 편집 / 삭제를 활성화해야합니다. 연결된 과목을 추가하려면 과목 목록보기 및 과목-추가 / 편집 / 삭제도 활성화되어야합니다. Blueprint 객체 유형에 대한 잠금 설정을 편집하려면 과목-추가 / 편집 / 삭제를 활성화해야합니다.
   to_manage_blueprint_course_settings_in_course_sett_c3bfdd4f: 과목 설정에서 Blueprint 과목 설정을 관리하려면 과목-추가 / 편집 / 삭제도 활성화되어야합니다.
   admin_tools_restore_courses_tab_b07bbfa7: 관리 도구 (과목 복원 탭)
   allows_user_to_restore_a_course_not_available_at_t_3a749177: 사용자가 과목을 복원 할 수 있습니다. (하위 계정 수준에서는 사용할 수 없습니다.)
@@ -20783,7 +20783,7 @@ ko:
   to_edit_blueprint_course_settings_in_course_settin_59befcfa: 과목 설정에서 블루 프린트 과목 설정을 편집하려면 블루 프린트 과목 (추가 / 편집 / 연결 / 삭제)도 활성화되어야합니다. 연관된 과목을 추가하려면 Blueprint 과목-추가 / 편집 / 연결 / 삭제-및 과목-보기 목록도 활성화해야합니다. Blueprint 개체에 대한 잠금 설정을 편집하려면이 권한을 활성화해야합니다. 파일에 대한 잠금 설정을 편집하려면 과목 파일-추가 / 편집 / 삭제도 활성화되어야합니다. 퀴즈, 과제 및 퀴즈의 잠금 설정을 편집하려면 추가 / 편집 / 삭제도 활성화되어야합니다.
   to_access_the_courses_link_in_account_navigation_c_5aa3d76c: 계정 탐색에서 과목 링크에 액세스하려면 과목-보기 목록을 활성화해야합니다.
   to_manage_course_content_course_content_add_edit_d_94caa77f: 과목 콘텐츠를 관리하려면 과목 콘텐츠-추가 / 편집 / 삭제가 활성화되어 있어야합니다.
-  to_cross_list_a_section_course_sections_add_edit_d_160006f7: 섹션을 교차 나열하려면 과목 섹션-추가 / 편집 / 삭제도 활성화되어야합니다. 과목 SIS ID를 편집하려면 SIS 데이터-관리도 활성화되어야합니다. 계정 수준 사용자가 과목을 삭제하도록 허용하려면 과목 상태-관리도 활성화되어야합니다.
+  to_cross_list_a_section_course_sections_add_edit_d_160006f7: 섹션을 교차 나열하려면 과목 섹션-추가 / 편집 / 삭제도 활성화되어야합니다. 과목 SIS ID를 편집하려면 SIS 데이터 관리도 활성화되어야합니다. 계정 수준 사용자가 과목을 삭제하도록 허용하려면 과목 상태-관리도 활성화되어야합니다.
   to_view_grades_in_a_course_grades_view_all_grades__acecd649: 과목의 성적을 보려면 성적-모든 성적보기도 활성화되어야합니다.
   student_context_cards_must_be_enabled_for_an_accou_f194b7c4: 관리자가 계정에 대해 학생 컨텍스트 카드를 활성화해야합니다. 이 권한이 활성화되지 않은 경우에도 사용자는 성적을 통해 학생 컨텍스트 카드를 볼 수 있습니다.
   allows_user_to_filter_for_blueprint_courses_as_the_45dc2c3d: 사용자가 계정 수준으로 블루프린트 과목을 필터링 할 수 있습니다. 사용자가 관련 과목을 추가 할 수 있습니다.
@@ -20810,7 +20810,7 @@ ko:
   determines_visibility_and_management_of_sis_import_bf386823: 계정 탐색에서 SIS 가져 오기 링크의 가시성 및 관리를 결정합니다.
   sis_import_14517892: SIS 가져오기
   allows_user_to_import_sis_data_583b20a5: 사용자가 SIS 데이터를 가져올 수 있습니다.
-  to_manage_sis_data_sis_data_manage_must_also_be_en_748806e8: SIS 데이터를 관리하려면 SIS 데이터-관리도 활성화되어야합니다.
+  to_manage_sis_data_sis_data_manage_must_also_be_en_748806e8: SIS 데이터를 관리하려면 SIS 데이터 관리도 활성화되어야합니다.
   not_available_at_the_subaccount_level_6ee9b41f: 하위 계정 수준에서는 사용할 수 없습니다.
   determines_visibility_of_sis_import_link_in_accoun_6f8cecdf: 계정 탐색에서 SIS 가져 오기 링크의 가시성을 결정합니다. 사용자가 이전 SIS 가져 오기 날짜, 오류 및 가져온 항목을 볼 수 있습니다.
   allows_user_to_edit_the_course_sis_id_e1eccee3: 사용자가 과목 SIS ID를 편집 할 수 있습니다.
@@ -20820,8 +20820,8 @@ ko:
   allows_user_to_view_and_insert_data_in_the_sis_id__921967c: 사용자가 SIS ID 필드의 데이터를보고 삽입 할 수 있습니다.
   to_edit_course_settings_courses_add_edit_delete_mu_844988d0: 과목 설정을 편집하려면 과목-추가 / 편집 / 삭제가 활성화되어야합니다.
   to_view_or_edit_a_user_s_sis_id_or_integration_id__76b8d055: 사용자의 SIS ID 또는 통합 ID를 보거나 편집하려면 사용자-목록보기 및 사용자-로그인 상세 정보 관리도 모두 활성화되어야합니다.
-  if_this_permission_is_enabled_users_do_not_need_th_49974dc2: 이 권한이 활성화 된 경우 사용자는 SIS 데이터-읽기 권한 활성화가 필요하지 않습니다. 계정 권한은 과목 권한보다 우선합니다. 사용자가 과목 수준에서 SIS ID를 관리하는 것을 허용하지 않으려면 SIS 데이터-관리 및 SIS 데이터-읽기를 모두 비활성화해야합니다. SIS ID를 통해 과목에 사용자를 추가하려면 사용자-과목에서 학생 추가 / 제거-및 또는 사용자-과목에서 교수, 과목 디자이너 또는 TA 추가 / 제거도 활성화되어야합니다.
-  to_import_sis_data_sis_data_import_must_also_be_en_187c39b: SIS 데이터를 가져 오려면 SIS 데이터-가져 오기도 활성화되어야합니다.
+  if_this_permission_is_enabled_users_do_not_need_th_49974dc2: 이 권한이 활성화 된 경우 사용자는 SIS 데이터 읽기 권한 활성화가 필요하지 않습니다. 계정 권한은 과목 권한보다 우선합니다. 사용자가 과목 수준에서 SIS ID를 관리하는 것을 허용하지 않으려면 SIS 데이터 관리 및 SIS 데이터 읽기를 모두 비활성화해야합니다. SIS ID를 통해 과목에 사용자를 추가하려면 사용자-과목에서 학생 추가 / 제거-및 또는 사용자-과목에서 교수, 과목 디자이너 또는 TA 추가 / 제거도 활성화되어야합니다.
+  to_import_sis_data_sis_data_import_must_also_be_en_187c39b: SIS 데이터를 가져 오려면 SIS 데이터 가져 오기도 활성화되어야합니다.
   account_statistics_2b52a1c9: 계정 통계
   allows_admin_user_to_view_account_statistics_341f00d9: 관리자가 계정 통계를 볼 수 있습니다.
   admin_tools_logging_tab_680698f3: 관리 도구 (로깅 탭)
@@ -20842,7 +20842,7 @@ ko:
   allows_user_to_create_accounts_for_new_users_with__30b55094: 사용자가 계정 수준의 사용자 추가 버튼을 사용하여 새 사용자의 계정을 만들 수 있습니다. 사용자가 계정에서 사용자를 제거하고 병합 할 수 있습니다. 사용자가 이름, 이메일 및 시간대와 같은 사용자 계정 상세 사항을 수정할 수 있습니다. 사용자가 사용자의 로그인 정보를보고 수정할 수 있습니다.
   allows_user_to_generate_login_logout_activity_repo_bba62f2: 사용자가 관리 도구에서 로그인 / 로그 아웃 활동 보고서를 생성 할 수 있습니다.
   if_users_manage_login_details_or_statistics_view_i_cff4155d: 사용자-로그인 상세 정보 관리 또는 통계-보기가 활성화 된 경우 사용자는 관리 도구에서 로그인 / 로그 아웃 활동을 생성 할 수 있습니다. 관리 도구에서 로그인 / 로그 아웃 활동 옵션을 숨기려면이 두 권한을 모두 비활성화해야합니다.
-  to_view_users_and_user_account_details_users_view__ff62392: 사용자 및 사용자 계정 상세 정보를 보려면 사용자-목록보기를 활성화해야합니다. 사용자 암호를 변경하려면 사용자-보기도 활성화해야합니다. 사용자의 SIS ID를 보려면 SIS 데이터-관리 또는 SIS 데이터-읽기도 활성화되어야합니다. 사용자의 통합 ID를 보려면 SIS 데이터-관리도 활성화되어야합니다.
+  to_view_users_and_user_account_details_users_view__ff62392: 사용자 및 사용자 계정 상세 정보를 보려면 사용자-목록보기를 활성화해야합니다. 사용자 암호를 변경하려면 사용자-보기도 활성화해야합니다. 사용자의 SIS ID를 보려면 SIS 데이터 관리 또는 SIS 데이터 읽기도 활성화되어야합니다. 사용자의 통합 ID를 보려면 SIS 데이터 관리도 활성화되어야합니다.
   this_permission_only_controls_adding_users_at_the__5a2463b1: 이 권한은 계정 수준에서 사용자 추가 만 제어합니다. 과목에 사용자를 추가하려면 사용자-과목에서 학생 추가 / 제거 또는 사용자-과목에서 과목에 대한 교수, 과목 디자이너 또는 TA 추가 / 제거를 활성화해야합니다.
   eportfolios_f6dc4579: e 포트폴리오
   allows_user_to_view_the_eportfolio_moderation_page_5a6be051: 사용자가 ePortfolio 중재 페이지를보고 ePortfolio 스팸 콘텐츠를 관리 할 수 있습니다.
@@ -20864,8 +20864,8 @@ ko:
   allows_user_to_view_the_announcements_link_in_cour_f6b03e9a: 사용자가 과목 탐색에서 공지 사항 링크를 볼 수 있습니다. 사용자가 과목 공지 사항을 볼 수 있습니다.
   to_view_recent_announcements_on_the_home_page_cour_ffc52530: 홈 페이지에서 최근 공지 사항을 보려면 과목 콘텐츠-보기를 활성화해야하며 과목 설정에서 과목 홈 페이지에 최근 공지 사항 표시 확인란을 선택해야합니다. 과목 공지 사항을 관리하려면 토론-중간도 활성화되어야합니다.
   this_permission_only_affects_course_announcements__6bc2b0a5: 이 권한은 과목 공지에만 영향을줍니다. 전체 공지 사항을 관리하려면 전체 공지 사항-추가 / 편집 / 삭제를 활성화해야합니다.
-  allows_user_to_access_the_announcements_link_in_co_2783579a: 사용자가 과목 탐색의 공지 사항 링크에 액세스 할 수 있습니다. 사용자가 과목 공지 사항을 볼 수 있습니다. 사용자가 과목 홈 페이지에서 최근 공지 사항을 볼 수 있습니다.
-  to_add_announcements_discussions_moderate_must_als_2496cbd7: 공지 사항을 추가하려면 토론-검토도 활성화해야합니다. 홈 페이지에서 최근 공지 사항을 보려면 과목 설정에서 과목 홈 페이지에 최근 공지 사항 표시 확인란을 선택해야합니다.
+  allows_user_to_access_the_announcements_link_in_co_2783579a: 사용자가 과목 메뉴 상의 공지 메뉴에 액세스 할 수 있습니다. 사용자가 과목 공지 사항을 볼 수 있습니다. 사용자가 과목 홈에서 최근 공지 사항을 볼 수 있습니다.
+  to_add_announcements_discussions_moderate_must_als_2496cbd7: "공지 사항을 추가하려면 '토론 중재(검토')도 활성화 해야합니다. 과목 홈에서 최근 공지 사항을 보려면 과목 설정에서 과목 홈에 최근 공지 사항 표시 옵션을 활성화 해야 합니다."
   allows_user_to_add_edit_delete_and_publish_and_unp_4f9c2fd4: 사용자가 과제를 추가, 편집, 삭제, 게시 및 게시 취소 할 수 있습니다. 사용자가 과제 설정을 관리 할 수 있습니다. 사용자가 과목에 과제 그룹을 추가 할 수 있습니다. 사용자가 과목에서 과제 그룹 비중을 활성화하고 편집 할 수 있습니다.
   allows_user_to_edit_blueprint_lock_settings_on_the_a2534937: 사용자가 Blueprint 마스터 과목의 과제 및 퀴즈 색인 페이지에서 Blueprint 잠금 설정을 편집 할 수 있습니다.
   allows_user_to_share_a_quiz_to_commons_6746e0da: 사용자가 Commons에 퀴즈를 공유 할 수 있습니다.
@@ -20921,29 +20921,29 @@ ko:
   if_courses_add_edit_delete_and_courses_undelete_ar_2949051: 과목-추가 / 편집 / 삭제 및 과목-삭제 취소도 활성화 된 경우 계정 수준 사용자는 관리 도구에서 삭제 된 과목을 복원 할 수 있습니다.
   if_disabled_user_will_still_have_access_to_course__d78fddc4: 비활성화 된 경우 사용자는 과목 설정에 계속 액세스 할 수 있습니다. 사용자는 해당 콘텐츠 항목에 대한 적절한 권한없이 개별 과목 콘텐츠를 관리 할 수 없습니다. 과목 가시성이 과목에 등록 된 사용자로 제한되는 경우이 권한을 통해 사용자는 과목에 등록하지 않고도 과목 콘텐츠를 볼 수 있습니다.
   to_view_the_gradebook_grades_view_all_grades_must__7ead435: 성적 부를 보려면 성적-모든 성적보기도 활성화되어야합니다.
-  allows_user_to_edit_blueprint_lock_settings_on_the_9f51663c: 사용자가 블루 프린트 마스터 과목의 파일 페이지에서 블루 프린트 잠금 설정을 편집 할 수 있습니다.
-  allows_user_to_add_edit_and_delete_course_files_an_5adadbf5: 사용자가 과목 파일 및 폴더를 추가, 편집 및 삭제할 수 있습니다. 사용자가 파일을 zip 파일로 다운로드하고, zip 파일을 가져오고, 파일을 잠 그거나 잠금 해제 할 수 있습니다.
+  allows_user_to_edit_blueprint_lock_settings_on_the_9f51663c: 사용자가 블루 프린트 과목의 파일 페이지에서 블루 프린트 잠금 설정을 편집 할 수 있습니다.
+  allows_user_to_add_edit_and_delete_course_files_an_5adadbf5: 사용자가 과목 파일 및 폴더를 추가, 편집 및 삭제할 수 있습니다. 사용자가 파일을 zip 파일로 다운로드하고, zip 파일을 가져오고, 파일을 잠그거나 잠금 해제 할 수 있습니다.
   allows_user_to_access_the_files_tab_in_the_content_a5187929: 사용자가 콘텐츠 선택기의 파일 탭에 액세스 할 수 있습니다.
   blueprint_courses_must_be_enabled_for_an_account_b_a8e326ea: 관리자가 계정에 대해 Blueprint 과목을 활성화해야합니다. 과목 파일에 대한 블루프린트 잠금 설정을 편집하려면 과목-추가 / 편집 / 삭제도 활성화되어야합니다.
   if_disabled_user_can_still_view_and_download_files_336ffc30: 비활성화 된 경우 사용자는 여전히 파일을보고 zip 파일로 다운로드 할 수 있습니다.
-  to_import_files_using_the_course_import_tool_cours_a0c2db0c: 과목 가져 오기 도구를 사용하여 파일을 가져 오려면 과목 콘텐츠-추가 / 편집 / 삭제도 활성화되어야합니다.
-  blueprint_courses_must_be_enabled_for_an_account_b_ffb3ac4b: 관리자가 계정에 대해 Blueprint 과목을 활성화해야합니다. 과목 역할은 Blueprint 과목에 교수, TA 또는 디자이너 역할로 추가 된 경우에만 Blueprint 과목의 콘텐츠를 관리 할 수 있습니다.
+  to_import_files_using_the_course_import_tool_cours_a0c2db0c: 과목 가져오기 도구를 사용하여 파일을 가져오려면 '과목 콘텐츠-추가 / 편집 / 삭제'도 활성화되어야 합니다.
+  blueprint_courses_must_be_enabled_for_an_account_b_ffb3ac4b: 관리자가 계정에 대해 블루프린트과목을 활성화해야합니다. 과목 역할은 블루프린트 과목에 교수, TA 또는 디자이너 역할로 추가 된 경우에만 블루프린트 과목의 콘텐츠를 관리 할 수 있습니다.
   course_settings_sections_tab_4ae03a9a: 과목 설정 (섹션 탭)
   allows_user_to_add_edit_and_delete_course_sections_92715d3: 사용자가 과목 섹션을 추가, 편집 및 삭제할 수 있습니다. 사용자가 섹션을 교차 나열 할 수 있습니다.
   to_cross_list_sections_courses_add_edit_delete_mus_f395401f: 섹션을 교차 나열하려면 과목-추가 / 편집 / 삭제도 활성화되어야합니다.
   the_user_must_also_be_enrolled_as_an_instructor_in_e7e22eea: 또한 사용자는 교차 목록을 작성하려는 과목에 교수로 등록되어 있어야합니다.
-  determines_whether_the_publish_course_and_unpublis_432a4bbc: 과목 게시 및 과목 게시 취소 버튼이 과목 홈 페이지에 표시되는지 여부를 결정합니다.
+  determines_whether_the_publish_course_and_unpublis_432a4bbc: 과목 공개/비공개 버튼을 과목 홈에 표시할지 여부를 결정합니다.
   affects_viewing_the_delete_this_course_and_conclud_1ac257e: 이 과목 삭제 및 과목 종료 버튼보기에 영향을줍니다.
-  determines_whether_a_publish_button_is_included_in_f7ad9b56: 공개되지 않은 과목의 과목 카드에 공개 버튼이 포함되는지 여부를 결정합니다 (과목 카드보기 대시 보드).
+  determines_whether_a_publish_button_is_included_in_f7ad9b56: 비공개 과목의 과목 카드에 공개 버튼을 표시할지 여부를 결정합니다.  (과목 카드보기 대시 보드).
   affects_viewing_the_conclude_course_and_permanentl_d943656e: >-
-    과목 종료 및 이 과목 영구 삭제 버튼 보기에 영향을 줍니다. 이 과목 영구 삭제 버튼은 수동으로 생성 된 과목에만 나타납니다.
+    과목 종료 및 과목 영구 삭제 버튼 보기와 연관이 있습니다. 과목 영구 삭제 버튼은 수동으로 생성 된 과목에만 나타납니다.
             과목 레벨 사용자의 경우 과목 삭제는 과목 상태-권한 관리의 일부입니다. 그러나 계정 수준 사용자의 경우 과목를 삭제하려면이 권한과 과목-추가 / 편집 / 삭제가 필요합니다.
   to_see_the_course_setup_checklist_option_on_the_co_6c485483: 과목 홈 페이지에서 과목 설정 체크리스트 옵션을 보려면 과목 관리-과목 추가 / 편집 / 삭제도 활성화되어야합니다.
-  the_course_state_manage_permission_allows_the_user_1d9da094: 과목 상태-관리 권한을 통해 사용자는 모듈이 포함되지 않은 과목을 게시 할 수 있습니다. 모듈 콘텐츠를 게시 및 게시 취소하려면 과목 콘텐츠-추가 / 편집 / 삭제가 활성화되어 있어야합니다.
+  the_course_state_manage_permission_allows_the_user_1d9da094: 과목 상태-관리 권한을 통해 사용자는 모듈이 포함되지 않은 과목을 공개 할 수 있습니다. 모듈 콘텐츠를 공개/공개 취소하려면 과목 콘텐츠-추가 / 편집 / 삭제가 활성화되어 있어야합니다.
   course_setup_checklist_course_home_page_f8baa04a: 과목 설정 체크리스트, 과목 홈 페이지
-  determines_whether_a_publish_course_option_is_incl_ac5eed8f: 과목 게시 옵션이 과목 설정 체크리스트 및 과목 홈 페이지에 포함되는지 여부를 결정합니다.
-  affects_viewing_the_conclude_course_and_permanentl_8216fcc2: 과목 종료 및 이 과목 영구 삭제 버튼 보기에 영향을 줍니다. 이 과목 영구 삭제 버튼은 수동으로 생성 된 과목에만 나타납니다.
-  the_course_state_manage_permission_allows_users_to_a4fe62af: 과목 상태-관리 권한을 통해 사용자는 모듈이 포함되지 않은 과목을 게시 할 수 있습니다. 모듈 콘텐츠를 게시 및 게시 취소하려면 과목 콘텐츠-추가 / 편집 / 삭제가 활성화되어 있어야합니다.
+  determines_whether_a_publish_course_option_is_incl_ac5eed8f: 과목 공개 옵션이 과목 설정 체크리스트 및 과목 홈에 포함되는지 여부를 결정합니다.
+  affects_viewing_the_conclude_course_and_permanentl_8216fcc2: 과목 종료 및 과목 영구 삭제 버튼 보기와 연관이 있습니다. 과목 영구 삭제 버튼은 수동으로 생성 된 과목에만 나타납니다.
+  the_course_state_manage_permission_allows_users_to_a4fe62af: 과목 상태-관리 권한을 통해 사용자는 모듈이 포함되지 않은 과목을 공개 할 수 있습니다. 모듈 콘텐츠를 공개/공개 취소하려면 과목 콘텐츠-추가 / 편집 / 삭제가 활성화되어 있어야합니다.
   reports_1b9ab7a7: 보고서
   allows_user_to_view_and_configure_reports_in_accou_e8c6f9a1: 사용자가 계정 설정에서 보고서를보고 구성 할 수 있습니다. 사용자가 액세스 보고서를 볼 수 있습니다. 사용자가 사람 페이지에서 마지막 활동 및 총 활동 정보를 볼 수 있습니다.
   to_view_last_activity_and_total_activity_informati_b24e3864: 과목 사용자 페이지에서 마지막 활동 및 총 활동 정보를 보려면 사용자-보기 목록도 활성화해야합니다. 과목 사용자 페이지에 액세스하려면 사용자-목록보기도 활성화되어야합니다.
@@ -20962,7 +20962,7 @@ ko:
   to_view_announcements_announcements_view_must_also_75f652df: 공지 사항을 보려면 공지 사항-보기도 활성화해야합니다.
   to_edit_blueprint_lock_settings_on_the_discussions_9dfd2c8f: 토론 색인 페이지에서 블루프린트 잠금 설정을 편집하려면 과목-추가 / 편집 / 삭제 및 토론-보기도 활성화되어야합니다. 이 권한이 활성화되지 않고 과목-추가 / 편집 / 삭제 및 토론-보기가 활성화 된 경우 개별 토론에서 블루프린트 잠금 설정을 편집 할 수 있습니다.
   both_discussions_create_and_discussions_moderate_a_1c00baf0: 토론-만들기 및 토론-중재를 통해 사용자는 토론 페이지에서 토론을 만들 수 있습니다. 이 권한이 활성화 된 경우 토론-만들기가 필요하지 않습니다. 과목에서 토론을 보려면 토론-보기를 활성화해야합니다. 토론에 응답하려면 토론-게시도 활성화되어야합니다. 토론에서 과제 상세 정보를 수정하려면 과제 및 퀴즈-추가 / 수정 / 삭제도 활성화되어야합니다.
-  blueprint_courses_must_be_enabled_for_an_account_b_4ef094f4: 관리자가 계정에 대해 Blueprint 과목을 활성화해야합니다. 과목 역할은 Blueprint 과목에 교수, TA 또는 디자이너 역할로 추가 된 경우에만 Blueprint 과목의 콘텐츠를 관리 할 수 있습니다. 이 설정이 비활성화되고 토론-보기가 활성화 된 경우에도 사용자는 Blueprint 마스터 과목의 개별 토론에 대한 콘텐츠 잠금 설정을 조정할 수 있습니다.
+  blueprint_courses_must_be_enabled_for_an_account_b_4ef094f4: 관리자가 계정에 대해 블루프린트과목을 활성화해야합니다. 과목 역할은 블루프린트 과목에 교수, TA 또는 디자이너 역할로 추가 된 경우에만 블루프린트 과목의 콘텐츠를 관리 할 수 있습니다.
   allows_user_to_reply_to_a_discussion_post_83f43e19: 사용자가 토론 게시물에 응답 할 수 있습니다.
   to_view_discussions_in_a_course_discussions_view_m_545cbe9b: 과목에서 토론을 보려면 토론-보기도 활성화되어야합니다. 토론을 관리하려면 토론-중재를 활성화해야합니다.
   allows_user_to_edit_blueprint_content_lock_setting_25128c82: 사용자가 개별 토론에서 블루프린트 콘텐츠 잠금 설정을 편집 할 수 있습니다.
@@ -21001,11 +21001,11 @@ ko:
   gradebook_speedgrader_66cb7a6a: Gradebook, SpeedGrader
   gradebook_and_speedgrader_will_be_inaccessible_if__eda88bc3: Grades (편집 및 Grades)가 모두 비활성화 된 경우 Gradebook 및 SpeedGrader에 액세스 할 수 없습니다.
   to_view_student_analytics_users_view_list_and_anal_41d32ecb: 학생 분석을 보려면 사용자-보기 목록 및 분석-보기도 활성화되어야합니다.
-  to_moderate_a_quiz_assignments_and_quizzes_add_edi_92b4d1d6: 퀴즈를 조정하려면 과제 및 퀴즈-추가 / 편집 / 삭제도 활성화됩니다. 퀴즈 항목 분석 CSV 파일에서 사용자 SIS ID 열을 보려면 SIS 데이터-읽기도 활성화되어야합니다. 제출 로그를 보려면 퀴즈-제출 로그보기도 활성화되어야합니다.
+  to_moderate_a_quiz_assignments_and_quizzes_add_edi_92b4d1d6: 퀴즈를 조정하려면 과제 및 퀴즈-추가 / 편집 / 삭제도 활성화됩니다. 퀴즈 항목 분석 CSV 파일에서 사용자 SIS ID 열을 보려면 SIS 데이터 읽기도 활성화되어야합니다. 제출 로그를 보려면 퀴즈-제출 로그보기도 활성화되어야합니다.
   to_access_the_student_interactions_report_courses__e8432cd0: 학생 상호 작용 보고서에 액세스하려면 과목-사용 보고서보기도 활성화되어야합니다.
   allows_user_to_edit_grading_schemes_98c35117: 사용자가 등급 체계를 편집 할 수 있습니다.
   allows_user_to_edit_grades_in_the_gradebook_allows_432849ce: 사용자가 성적부에서 성적을 편집 할 수 있습니다. 사용자가 성적 기록에 액세스 할 수 있습니다. 사용자가 Learning Mastery Gradebook에 액세스 할 수 있습니다 (활성화 된 경우).
-  to_moderate_a_quiz_assignments_and_quizzes_add_edi_22d5e3b1: 퀴즈를 검토하려면 과제 및 퀴즈-추가 / 편집 / 삭제도 활성화되어야합니다. 퀴즈 항목 분석 CSV 파일에서 사용자 SIS ID 열을 보려면 SIS 데이터-읽기도 활성화되어야합니다.
+  to_moderate_a_quiz_assignments_and_quizzes_add_edi_22d5e3b1: 퀴즈를 검토하려면 과제 및 퀴즈-추가 / 편집 / 삭제도 활성화되어야합니다. 퀴즈 항목 분석 CSV 파일에서 사용자 SIS ID 열을 보려면 SIS 데이터 읽기도 활성화되어야합니다.
   course_grading_schemes_can_be_enabled_disabled_in__26b298b3: 과목 설정에서 과목 채점 체계를 활성화 / 비활성화 할 수 있습니다.
   allows_user_to_view_the_moderate_button_for_modera_5f3c6d21: 사용자가 중재 된 과제에 대한 중재 버튼을 볼 수 있습니다. 참고 :이 권한은 더 이상 사용되지 않습니다. 사용자가 중재 버튼을 볼 수 있도록하려면 성적-중재 할 최종 성적 선택을 활성화합니다.
   to_publish_final_grades_for_a_moderated_assignment_713090cf: 검토 된 과제에 대한 최종 성적을 게시하려면 성적-수정도 활성화되어야합니다.
@@ -21034,7 +21034,7 @@ ko:
   allows_user_to_create_edit_and_delete_account_grou_abc8c12: 사용자가 계정 그룹을 생성, 편집 및 삭제할 수 있습니다.
   course_groups_e8239a1e: 과목 그룹
   allows_user_to_create_edit_and_delete_course_group_36097d72: 사용자가 과목 그룹을 생성, 편집 및 삭제할 수 있습니다. 사용자가 학생이 만든 과목 그룹을 생성, 편집 및 삭제할 수 있습니다.
-  if_this_permission_is_disabled_at_the_account_leve_b5f6dfa4: 이 권한이 비활성화 된 경우 계정 수준에서 사용자는 기존 계정 그룹을 볼 수 없습니다. 과목 수준에서 사용자는 학생이 만든 그룹을 포함하여 기존 그룹을 볼 수 있지만 액세스 할 수는 없습니다. 그룹을 보려면 사용자-목록보기도 활성화되어야합니다. CSV를 통해 계정 수준 그룹을 추가하려면 SIS 데이터-가져 오기도 사용 설정해야합니다.
+  if_this_permission_is_disabled_at_the_account_leve_b5f6dfa4: 이 권한이 비활성화 된 경우 계정 수준에서 사용자는 기존 계정 그룹을 볼 수 없습니다. 과목 수준에서 사용자는 학생이 만든 그룹을 포함하여 기존 그룹을 볼 수 있지만 액세스 할 수는 없습니다. 그룹을 보려면 사용자-목록보기도 활성화되어야합니다. CSV를 통해 계정 수준 그룹을 추가하려면 SIS 데이터 가져 오기도 사용 설정해야합니다.
   by_default_students_can_always_create_groups_in_a__149d08b7: 기본적으로 학생은 과목에서 항상 그룹을 만들 수 있습니다. 학생이 그룹을 생성하지 못하도록 제한하려면 과목-추가 / 편집 / 삭제를 활성화하고 과목 설정에서 학생이 자신의 그룹을 구성하도록 허용 확인란을 선택 취소해야합니다.
   to_access_the_people_page_and_view_groups_users_vi_43aceac3: 사람 페이지에 액세스하고 그룹을 보려면 사용자-목록보기도 활성화해야합니다.
   people_groups_tab_b245a614: 사람 (그룹 탭)
@@ -21047,7 +21047,7 @@ ko:
   allows_user_to_manually_add_and_delete_an_app_in_c_18250cad: 사용자가 과목 설정에서 앱을 수동으로 추가하고 삭제할 수 있습니다.
   allows_user_to_edit_configurations_for_manually_ad_7e0f496c: 사용자가 수동으로 추가 한 외부 앱의 구성을 편집 할 수 있습니다.
   external_apps_account_course_settings_78de2b2f: 외부 앱 (계정, 과목 설정)
-  if_this_permission_is_disabled_users_can_still_ins_4e3cef83: 이 권한이 비활성화 된 경우에도 사용자는 Canvas App Center를 통해 승인 된 앱을 계속 설치할 수 있습니다 (기관에서 활성화 된 경우). 또한이 권한이 비활성화 된 경우 사용자는 수동으로 추가 한 외부 앱을 삭제할 수 없습니다.
+  if_this_permission_is_disabled_users_can_still_ins_4e3cef83: 이 권한이 비활성화 된 경우에도 사용자는 Canvas App Center를 통해 승인 된 앱을 계속 설치할 수 있습니다 (학교 기관에서 활성화 한 경우). 또한이 이 권한이 비활성화 된 경우 사용자는 수동으로 추가 한 외부 앱을 삭제할 수 없습니다.
   external_apps_course_settings_1f045644: 외부 앱 (과목 설정)
   outcome_proficiency_calculations_5959b681: 성과 숙련도 계산
   allows_user_to_set_outcome_proficiency_calculation_73761bf4: 사용자가 계정 및 과목 수준에서 성과 숙련도 계산을 설정할 수 있습니다.
@@ -21087,8 +21087,8 @@ ko:
   account_and_subaccount_40c6430: 계정 및 하위 계정
   users_and_terms_are_located_at_the_account_so_the__6896b895: 사용자 및 학기는 계정에 있으므로 SIS 끝점은 항상 계정에 따라 사용자의 권한을 확인합니다. 하위 계정은 과목 및 섹션의 소유권 만 갖습니다. 그들은 사용자 데이터를 소유하지 않습니다. 하위 계정 관리자는 과목에서 교수 역할도 부여받지 않는 한 SIS 정보를 볼 수 없습니다. 교수 역할에는 계정 수준에서 SIS 데이터를 읽을 수있는 권한이 있으므로 하위 계정 관리자는 과목 연결없이 SIS 정보를 볼 수 없습니다.
   to_view_a_user_s_login_details_users_view_list_and_6d42118b: 사용자의 로그인 상세 정보를 보려면 사용자-목록보기 및 사용자에 대한 로그인 상세 정보 수정도 모두 활성화되어야합니다.
-  to_view_the_list_of_users_in_the_course_users_view_bc0462e3: 과목의 사용자 목록을 보려면 사용자-목록보기도 활성화되어야합니다. SIS ID를 통해 사용자를 추가하려면 사용자-과목에서 학생 추가 / 제거 및 또는 사용자-과목에서 교수, 과목 디자이너 또는 TA 추가 / 제거도 활성화되어야합니다.
-  to_manage_sis_data_sis_data_manage_must_be_enabled_a92ce831: SIS 데이터를 관리하려면 SIS 데이터-관리를 활성화해야합니다. SIS 데이터-관리가 활성화되고 SIS 데이터-읽기가 비활성화 된 경우 계정 권한이 과목 권한보다 우선합니다. SIS 데이터-관리가 비활성화되고 SIS 데이터-읽기가 활성화 된 경우 사용자는 과목, 사용자 및 하위 계정 SIS ID 만 볼 수 있습니다. 사용자가 과목 수준에서 SIS ID를 볼 수 없도록하려면 SIS 데이터-관리 및 SIS 데이터-읽기를 모두 비활성화해야합니다.
+  to_view_the_list_of_users_in_the_course_users_view_bc0462e3: "과목의 사용자 목록을 보려면 '사용자-목록보기'도 활성화 되어야 합니다. SIS ID를 통해 사용자를 추가하려면 '사용자-과목에서 학생 추가 / 제거'와  '사용자 - 과목에서 교수, 과목 디자이너, 또는 TA 추가/제거'도 활성화 되어야 합니다."
+  to_manage_sis_data_sis_data_manage_must_be_enabled_a92ce831: SIS 데이터를 관리하려면 SIS 데이터 관리를 활성화해야합니다. SIS 데이터 관리가 활성화되고 SIS 데이터 읽기가 비활성화 된 경우 계정 권한이 과목 권한보다 우선합니다. SIS 데이터 관리가 비활성화되고 SIS 데이터 읽기가 활성화 된 경우 사용자는 과목, 사용자 및 하위 계정 SIS ID 만 볼 수 있습니다. 사용자가 과목 수준에서 SIS ID를 볼 수 없도록하려면 SIS 데이터-관리 및 SIS 데이터-읽기를 모두 비활성화해야합니다.
   allows_user_to_view_course_sis_id_3a1818a5: 사용자가 과목 SIS ID를 볼 수 있습니다.
   allows_user_to_view_user_sis_ids_68a9d218: 사용자가 사용자 SIS ID를 볼 수 있습니다.
   to_view_the_list_of_users_in_the_course_users_view_96d03136: 과목의 사용자 목록을 보려면 사용자-목록보기도 활성화되어야합니다. SIS ID를 통해 사용자를 추가하려면 사용자 (강의에서 학생 추가 / 제거) 및 또는 사용자-강의에서 강의에서 교수, 강의 설계자 또는 TA 추가 / 제거도 활성화되어야합니다.
@@ -21103,7 +21103,7 @@ ko:
   allows_user_to_add_students_to_a_course_from_the_a_3b752dd2: 사용자가 계정 과목 페이지에서 과목에 학생을 추가 할 수 있습니다.
   allows_user_to_add_and_remove_students_allows_user_6b31aafc: 사용자가 학생을 추가 및 제거 할 수 있습니다. 사용자가 관찰자를 추가 및 제거 할 수 있습니다. 사용자가 학생의 로그인 ID 정보를 볼 수 있습니다. 사용자가 이전 등록을 볼 수 있습니다. 사용자가 사용자의 설정 메뉴 및 사용자 상세 정보에 액세스 할 수 있습니다. 사용자가 학생의 섹션 또는 역할을 편집 할 수 있습니다. 사용자가 과목 사용자 페이지에서 과목 초대를 다시 보낼 수 있습니다.
   if_the_open_registration_account_setting_is_enable_f3b9a75f: 등록 열기 계정 설정이 활성화 된 경우이 권한이있는 사용자는 학생 또는 관찰자에게 아직 Canvas 계정이없는 경우에도 이메일 주소 또는 로그인 ID를 통해 과목에 학생 또는 관찰자를 추가 할 수 있습니다.
-  to_access_the_account_courses_page_courses_view_li_e1da6165: 계정 과목 페이지에 액세스하려면 과목-목록보기를 활성화해야합니다.
+  to_access_the_account_courses_page_courses_view_li_e1da6165: 계정 과목 페이지에 액세스하려면 과목 목록보기를 활성화해야합니다.
   enrollments_may_be_added_by_your_institution_stude_791fc9ad: >-
     등록은 기관 학생 정보 시스템 (SIS)에 의해 추가 될 수 있습니다. SIS를 통해 등록이 생성 된 경우 관리자 만 과목에서 등록을 제거 할 수 있습니다.
             과목의 사용자 목록을 보려면 사용자-목록보기를 활성화해야합니다. SIS ID를 보려면 SIS 데이터-읽기를 활성화해야합니다. SIS ID를 통해 과목에 사용자를 추가하려면 SIS 데이터-관리도 활성화되어야합니다. 학생의 섹션 및 과목 역할을 편집하려면 사용자-목록보기 및 대화-개별 과목 구성원에게 메시지 보내기도 활성화되어야합니다. 사용자 등록을 취소하려면 사용자 상세 정보 페이지, 과목 목록보기 및 사용자 목록보기도 활성화되어야합니다. 사용자가 과목 사용자 페이지에서 과목 초대를 다시 보낼 수 있습니다. 등록 열기 계정 설정이 활성화 된 경우이 권한이있는 사용자는 사용자에게 아직 Canvas 계정이없는 경우 이메일 주소를 통해 과목 사용자 페이지에서 과목에 학생을 추가 할 수 있습니다. 관찰자를 학생에 연결하려면 사용자-로그인 상세 정보 및 대화 관리-개별 과목 구성원에게 보내기가 활성화되어 있어야합니다.
@@ -21400,12 +21400,12 @@ ko:
   full_name_23fdfb6d: 성명
   this_name_will_be_used_by_teachers_for_grading_9b6aa8a0: 교수들이 채점할 때 이 이름을 사용합니다.
   full_name_is_required_8efbdc84: 이름이 필요합니다.
-  display_name_b80c243e: 이름 표시하기
-  people_will_see_this_name_in_discussions_messages__fca9ebb2: 사람들은 토론, 메시지 및 댓글에서이 이름을 볼 수 있습니다.
-  sortable_name_73f707cf: 정렬 가능한 이름
-  this_name_appears_in_sorted_lists_dccbd84b: 이 이름은 정렬 된 목록에 표시됩니다.
+  display_name_b80c243e: 표시 이름
+  people_will_see_this_name_in_discussions_messages__fca9ebb2: 토론, 메시지 및 코멘트에서 표시되는 이름입니다.
+  sortable_name_73f707cf: 정렬용 이름
+  this_name_appears_in_sorted_lists_dccbd84b: 이 이름은 정렬 된 목록에 나타납니다.
   login_handle_is_required_90ab7fe0: '%{login_handle}이 필요합니다.'
-  email_the_user_about_this_account_creation_e63f8759: 이 계정 생성에 대해 사용자에게 이메일 보내기
+  email_the_user_about_this_account_creation_e63f8759: 이 계정 생성에 대해 사용자에게 이메일을 보내십시오.
   default_email_9efb7fbd: 기본 이메일
   time_zone_f56f5183: 시간대
   add_a_new_user_c440d053: 새 사용자 추가
@@ -22136,7 +22136,7 @@ ko:
     section_to_show_menu:
       showing_sections: '* %{currentSection} * 표시'
       choose_a_section_to_show: 표시 할 섹션을 선택하세요.
-      showing_course: 과목 표시
+      showing_course: 출처
     alerts:
       no_active_students: 죄송합니다. 과목에 활동 중인 학생이 없거나 평가할 수 있는 학생이 없습니다.
       no_students_in_groups_back: 할당된 사용자가 없기 때문에 이 과제에 대한 제출물은 Speedgrader에서 평가할 수 없습니다. 이 그룹 세트에 사용자를 할당하고 다시 시도하시기 바랍니다. 뒤로 돌아가려면 '확인'을 클릭하십시오.
