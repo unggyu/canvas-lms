@@ -1011,7 +1011,7 @@ ko:
       full: "%Y.%-m.%-d. %P %l:%M"
       full_with_weekday: "%Y.%-m.%-d. %a %P %l:%M"
   locales:
-    ko: 한국말
+    ko: 한국어
   time:
     event: "%{date} %{time}"
     formats:
