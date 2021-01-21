@@ -21395,6 +21395,7 @@ ko:
       buttons:
         publishing_quizzes: 퀴즈 공개 중...
       default_title: 제목없음
+      regrading_options_title: "재채점 옵션 선택"
     index_view:
       quizzes_title: 퀴즈
       search_for_quiz: 퀴즈 검색
