@@ -17,6 +17,7 @@
 //
 import DialogBaseView from '../DialogBaseView'
 import template from 'jst/quiz/regrade'
+import I18n from 'i18n!quizzes.index'
 
 export default class QuizRegradeView extends DialogBaseView {
   static initClass() {
@@ -53,7 +54,7 @@ export default class QuizRegradeView extends DialogBaseView {
 
   defaultOptions() {
     return {
-      title: 'Regrade Options',
+      title: I18n.t('regrading_options_title', 'Regrading Options'),
       width: '600px'
     }
   }
