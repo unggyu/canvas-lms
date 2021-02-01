@@ -9,7 +9,7 @@ production:
   # uncomment this option if your canvas install is over HTTPS, and the cookies
   # will be SSL-only
   #
-  # secure: true
+  secure: true
   #
   # change the time that "stay logged in" tokens are valid for, defaults to 1 month
   #
