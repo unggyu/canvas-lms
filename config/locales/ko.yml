@@ -1670,7 +1670,7 @@ ko:
           assignment_count:
             field: ''
           assignment_groups:
-            label: '포함할 과제 그룹:'
+            label: '포함할 평가 그룹:'
           assignments:
             check_box: 과제
           tests:
@@ -1765,7 +1765,7 @@ ko:
       account_reports:
         newark:
           assignment_groups:
-            label: '포함할 과제 그룹:'
+            label: '포함할 평가 그룹:'
           assignments:
             check_box: 과제
           tests:
@@ -2045,7 +2045,7 @@ ko:
       search_results_crumb: '"%{query}"에 대한 검색 결과'
       title: '"%{query}"에 대한 과목 검색 결과'
     courses_right_side:
-      all_terms: 모든 기간
+      all_terms: 모든 학기
       course_filtering: 과목 필터링
       enrollment_term_label: 학기의 과목 표시
       filter_label: 과목 검색
@@ -2239,8 +2239,8 @@ ko:
   assignment_groups:
     notices:
       deleted: 그룹이 삭제됨
-      created: 과제 그룹을 만들었습니다.
-      updated: 과제 그룹을 업데이트했습니다.
+      created: 평가 그룹을 만들었습니다.
+      updated: 평가 그룹을 업데이트했습니다.
     errors:
       cannot_delete_group: 잠긴 과제를 포함한 그룹을 삭제할 수 없습니다.
   assignment_does_not_exist_74178c34: 과제가 존재하지 않습니다
@@ -2496,7 +2496,7 @@ ko:
       page_title: '%{course}에 대한 수업 계획서'
     assignment_group_create_dialog:
       links:
-        add_assignment_group: 과제 그룹 추가
+        add_assignment_group: 평가 그룹 추가
       assignment_group:
         labels:
           name: 이름
@@ -2504,9 +2504,9 @@ ko:
         add_group: 그룹 추가
         cancel: 취소
     assignment_group_list:
-      no_assignment_groups: 과제 그룹을 찾을 수 없음
+      no_assignment_groups: 평가 그룹을 찾을 수 없음
     assignment_group_selector:
-      assignment_group: 과제 그룹
+      assignment_group: 평가 그룹
       assignment_group_options:
         new_group: 새 그룹
     assignment_list_item:
@@ -2621,8 +2621,8 @@ ko:
       search_for_assignment: 과제 검색
       title_add_quiz_lti: 퀴즈 / 테스트 추가
       add_quiz_lti: 퀴즈 / 테스트
-      title_add_group: 과제 그룹 추가
-      add_group: 과제 그룹
+      title_add_group: 평가 그룹 추가
+      add_group: 평가 그룹
       title_add_assignment: 과제 추가
       add_assignment: 과제
       assignments_settings: 과제 설정
@@ -2723,9 +2723,9 @@ ko:
       other: 과제 %{count}개
     assignment_group_list_item:
       add_assignment_to: '%{name}에 과제 추가'
-      assignment_group_delete: 과제 그룹 삭제
-      assignment_group_edit: 과제 그룹 편집
-      assignment_group_move: 과제 그룹 이동
+      assignment_group_delete: 평가 그룹 삭제
+      assignment_group_edit: 평가 그룹 편집
+      assignment_group_move: 평가 그룹 이동
       delete: 삭제
       edit: 편집
       group_weight: 전체 중 %{groupWeight}%
@@ -2737,18 +2737,18 @@ ko:
       cancel: 취소
       save: 저장
       validating: 저장 중...
-      weight_groups: 과제 그룹을 바탕으로 최종 평가를 가중
+      weight_groups: 평가 그룹을 바탕으로 최종 평가를 가중
     buttons:
       add_group: 그룹 추가
       delete_group: 그룹 삭제
       submit_assignment: 과제 제출
-    cannot_delete_group: 하나 이상의 과제 그룹이 있어야 합니다.
+    cannot_delete_group: 하나 이상의 평가 그룹이 있어야 합니다.
     cant_unpublish_when_students_submit: 학생 제출물이 있으면 공개를 취소할 수 없음
     complete: 완료
     confirm:
       delete_assignment: 이 과제를 삭제하시겠습니까?
       delete_group: 이 그룹을 삭제하시겠습니까?
-    confirm_delete_group: 이 과제 그룹을 삭제하시겠습니까?
+    confirm_delete_group: 이 평가 그룹을 삭제하시겠습니까?
     confirms:
       delete_assignment: 이 과제를 삭제하시겠습니까?
     create_new_crumb: 새로 만들기
@@ -2790,7 +2790,7 @@ ko:
         group_submission: 이 제출물은 %{group_type} 그룹에 있는 모든 사람에게 적용된다는 것을 염두에 두십시오.
     group_weights:
       headers:
-        assignment_group: 과제 그룹
+        assignment_group: 평가 그룹
         group_weight: 비중
         total: 합계
     higher_than_max: 과제 수 이상의 숫자를 사용할 수 없음
@@ -2806,7 +2806,7 @@ ko:
       previous: k
       show_assign: f
     labels:
-      assignment_group_move_label: 과제 그룹
+      assignment_group_move_label: 평가 그룹
     messages:
       adding_group: 그룹 추가 중...
       agree_to_pledge: 이 과제를 체출하기 전에 제출물 서약에 동의해야 합니다.
@@ -2849,7 +2849,7 @@ ko:
       links:
         edit_syllabus_description: 수업 계획서 설명 편집
     titles:
-      add_assignment_group: 과제 그룹 추가
+      add_assignment_group: 평가 그룹 추가
       uploading: 제출물 업로드
     toggle_message: 과제 표시 토글
     toggle_show_by:
@@ -3232,7 +3232,7 @@ ko:
         group: 모든 그룹 회원 초대
         course: 모든 과목 회원 초대
     new_conference:
-      in_progress: 진행 중
+      in_progress: 처리 중
       recordings: 녹음/녹화 %{recordingCount}개
       recording: 녹음/녹화 1개
       end_it_now: 끝
@@ -4138,7 +4138,7 @@ ko:
         inactive: 비활성
     sidebar_weighting:
       labels:
-        assignments_weighting: 과제 그룹별 성적 비중
+        assignments_weighting: 평가 그룹별 성적 비중
       headings:
         group: 그룹
         weight: 비중
@@ -4254,7 +4254,7 @@ ko:
       discussions: 토론
       discussion_posts: 토론 게시물
       assignments: 과제
-      assignment_groups: 과제 그룹
+      assignment_groups: 평가 그룹
       course_rubrics: 과목 루브릭
       all_rubrics: 모든 루브릭
       active_students: 활동 중인 학생
@@ -5332,7 +5332,7 @@ ko:
       muted: 성적 비공개
     gradebook2:
       arrange_columns_by_due_date: 마감일로 열 정렬
-      arrange_columns_by_group: 과제 그룹으로 열 정렬
+      arrange_columns_by_group: 평가 그룹으로 열 정렬
       export_current_gradebook: 현재
       filter_by_student: 학생 이름이나 보조 ID로 학생 필터링
       grades: 성적
@@ -6411,7 +6411,7 @@ ko:
         default_email_domain: 기본 이메일 도메인
         section_name_selection: 섹션 이름 선택
         map_sections_to_courses: IMS 섹션을 Canvas 과목에 매핑
-        course_short_name_selection: 과목 짧은 이름 선택
+        course_short_name_selection: 과목 과목 코드 선택
         course_long_name_selection: 과목 긴 이름 선택
         course_sourcedid_name_prefix: 과목 "sourcedid" 무시 접두어
         lms_delivery_name: LMS 배달 이름
@@ -7168,7 +7168,7 @@ ko:
       quiz_show_teacher:
         quiz_type: 문항 유형
         points: 배점
-        group: 과제 그룹
+        group: 평가 그룹
         shuffle_answers: 답변 섞기
         label:
           time_limit: 시간 제한
@@ -7327,7 +7327,7 @@ ko:
           one: '* %{student_name} * ** 시도 할 때마다 1 분 추가 **'
           other: '* %{student_name} * ** 시도 할 때마다 %{count} 분 추가 **'
         finished_in: '%{duration} 안에 마침'
-        in_progress: 진행 중
+        in_progress: 처리 중
         add_time: 시간 추가
         buttons:
           change_extensions_for_selected_students: 선택된 학생 %{n}명에 대한 연장 바꾸기
@@ -7370,7 +7370,7 @@ ko:
           save: 저장
           save_and_publish: 저장 & 공개
         cant_go_back: 답변 후에 문제 잠금
-        group: 과제 그룹
+        group: 평가 그룹
         hide_correct_answers_at: 정답 숨김 시간
         hints:
           question_detail_disabled: '참고: %{question_count} 이상일 때는 문제 상세 정보를 이용할 수 없습니다.'
@@ -7705,7 +7705,6 @@ ko:
       buttons:
         publishing_quizzes: 퀴즈 공개 중...
       default_title: 제목없음
-      regrading_options_title: 재채점 옵션 선택
     index_view:
       quizzes_title: 퀴즈
       search_for_quiz: 퀴즈 검색
@@ -8873,7 +8872,7 @@ ko:
     errors:
       cannot_save_att: 잠긴 속성 %{att_name}을(를) 편집할 권한이 없음
       upload_as_zip: 파일을 .zip으로 업로드하십시오.
-    assignment_group_must_have_group: 이 과제에 대한 과제 그룹을 선택하시기 바랍니다.
+    assignment_group_must_have_group: 이 과제에 대한 평가 그룹을 선택하시기 바랍니다.
     select_external_tool_dialog_title: 외부 도구 구성
     buttons:
       select_url: 선택
@@ -9331,7 +9330,7 @@ ko:
   the_title_of_the_following_question_bank_was_trunc_b6c86975: 다음 문제 은행의 제목이 잘 렸습니다. "%{title}"
   migration:
     quiz_question_type: 퀴즈 문제
-    assignment_group_type: 과제 그룹
+    assignment_group_type: 평가 그룹
     assignment_type: 과제
     file_type: 파일
     calendar_event_type: 일정
@@ -10394,7 +10393,7 @@ ko:
       start_a_new_course: 과목 추가
       labels:
         name: 과목 이름
-        course_code: 짧은 이름
+        course_code: 과목 코드
         license: 내용 라이선스
       new_course_name_placeholder: 과목 이름
       sample_course_code: 과목-101
@@ -10925,7 +10924,7 @@ ko:
     graph_title: 평균 %{mean}, 높음 %{high}, 낮음 %{low}
   due_date_822625d8: 마감
   title_ee03d132: 제목
-  assignment_group_1a781505: 과제 그룹
+  assignment_group_1a781505: 평가 그룹
   overrides:
     everyone_else: 다른 모든 사람
     everyone: 전체
@@ -10957,7 +10956,7 @@ ko:
   report_has_been_aborted_2b5763ed: 보고서가 중단되었습니다
   id_ac7afadf: 신분증
   sis_id_8c2029e1: sis id
-  short_name_ad9bf84f: 짧은 이름
+  short_name_ad9bf84f: 과목 코드
   name_badfe525: 이름
   account_id_2c3b4f15: 계정 ID
   account_sis_id_2e4a461: 계정 sis ID
@@ -10967,7 +10966,7 @@ ko:
   account_reports:
     report_header_id: ID
     report_header_sis_id: sis id
-    report_header_short_name: 짧은 이름
+    report_header_short_name: 과목 코드
     report_header_name: 이름
     report_header_start_date: 시작일
     report_header_end_date: 종료일
@@ -11308,7 +11307,7 @@ ko:
   scantron_quiz_4a97a17a: Scantron Quiz
   quiz_to_generate_scantron_report_for_8f0ecf19: Scantron 보고서를 생성하는 퀴즈
   section_id_8ec4f46f: 섹션 ID
-  letter_grade_report_d6772138: 편지 등급 보고서
+  letter_grade_report_d6772138: 편지 등급 보고서e
   include_deleted_enrollments_in_report_5ae96413: 보고서에 삭제 된 등록 포함
   embry_riddle_student_activity_tracking_8020dd95: Embry Riddle 학생 활동 추적
   excelsior_student_activity_tracking_7a1ba44d: Excelsior 학생 활동 추적
@@ -11347,9 +11346,9 @@ ko:
   safety_drill_scheduling_e8f980e1: 안전 훈련 일정
   the_assignment_group_named_tests_b2609160: 테스트라는 할당 그룹
   the_assignment_group_named_projects_960707ab: 프로젝트라는 할당 그룹
-  the_assignment_group_named_papers_e1cb6a34: 과제 그룹이라는 종이
+  the_assignment_group_named_papers_e1cb6a34: 평가 그룹이라는 종이
   the_assignment_group_named_reports_4a19f621: 보고서라는 할당 그룹
-  the_assignment_group_named_major_9d349037: 주요 과제 그룹
+  the_assignment_group_named_major_9d349037: 주요 평가 그룹
   report_end_date_bce94160: 종료일보고
   assignment_scheduling_e2a3eaf6: 할당 일정
   niles_student_activity_and_performance_eabf444d: Niles 학생 활동 및 성과
@@ -11385,8 +11384,8 @@ ko:
   student_submissions_910da1b3: 학생 제출물
   student_module_completion_c113d05f: 학생 모듈 완료
   student_course_completion_dates_cb89cd6c: 학생 과목 완료 날짜
-  assignment_group_export_fd77c394: 과제 그룹 내보내기
-  the_term_to_export_assignment_groups_from_3015fbf: 과제 그룹을 내보낼 학기
+  assignment_group_export_fd77c394: 평가 그룹 내보내기
+  the_term_to_export_assignment_groups_from_3015fbf: 평가 그룹을 내보낼 학기
   campusvue_grade_export_b8140422: CampusVue 성적 내보내기
   learning_outcome_and_assignment_type_b7e752fb: 학습 성과 및 과제 유형
   the_term_for_export_data_5aad7a0a: 내보내기 데이터의 학기
@@ -11406,7 +11405,7 @@ ko:
   lti_tool_report_slcc_c98a3902: LTI 도구 보고서-SLCC
   assignment_group_weight_data_report_449e1d1d: 발령 그룹 비중 데이터 보고서
   the_id_of_the_course_to_report_on_5911ebc5: 보고 할 과목의 ID
-  the_assignment_group_id_to_report_on_83880208: 보고 할 과제 그룹 ID
+  the_assignment_group_id_to_report_on_83880208: 보고 할 평가 그룹 ID
   user_access_report_ddbedbfe: 사용자 액세스 보고서
   google_doc_accounts_90204798: Google 문서 계정
   user_inactivity_report_70cae434: 사용자 비활성 보고서
@@ -11675,7 +11674,7 @@ ko:
   announcements_a4b8ed4a: 공지
   appointment_groups_bd225e60: 약속 그룹
   assignment_extensions_cac06daa: 할당 확장
-  assignment_groups_bc9cc3c9: 과제 그룹
+  assignment_groups_bc9cc3c9: 평가 그룹
   assignments_1e02582c: 과제
   authentication_providers_9e8e0e84: 인증 제공자
   authentications_log_ca16ce81: 인증 로그
@@ -12806,14 +12805,14 @@ ko:
       email:
         labels:
           subject: 성적 비중 변경됨
-          grades_based_on_percent: 평가는 각 과제 그룹에 대한 가중 합계를 바탕으로 함
+          grades_based_on_percent: 평가는 각 평가 그룹에 대한 가중 합계를 바탕으로 함
           now_see_here: 여기에서 상세 정보 보기
         grade_changed: '%{course_name} 과목의 평가 정책이 변경되었습니다.'
         grading_based_on_points: 평가는 모든 과제에 대한 합계 점수를 바탕으로 합니다.
         html:
           labels:
             subject: 성적 비중 변경됨
-            grades_based_on_percent: 평가는 각 과제 그룹에 대한 가중 합계를 바탕으로 함
+            grades_based_on_percent: 평가는 각 평가 그룹에 대한 가중 합계를 바탕으로 함
           see_details: 여기에서 상세 정보 보기
           grade_changed: '%{course_name} 과목에 대한 평가 정책이 변경되었습니다.'
           grading_based_on_points: 평가는 모든 과제에 대한 합계 점수를 바탕으로 합니다.
@@ -12823,7 +12822,7 @@ ko:
       summary:
         labels:
           subject: 성적 비중 변경됨
-          grades_based_on_percent: 평가는 각 과제 그룹에 대한 가중 합계를 바탕으로 함
+          grades_based_on_percent: 평가는 각 평가 그룹에 대한 가중 합계를 바탕으로 함
         grade_changed: '%{course_name} 과목에 대한 평가 정책이 변경되었습니다.'
         grading_based_on_points: 평가는 모든 과제에 대한 합계 점수를 바탕으로 합니다.
       twitter:
@@ -13689,7 +13688,7 @@ ko:
       course_settings: 과목 설정 내보내기 실패
       module_meta: 모듈 메타 데이터 내보내기 실패
       external_feeds: 외부 피드 내보내기 실패
-      assignment_groups: 과제 그룹 내보내기 실패
+      assignment_groups: 평가 그룹 내보내기 실패
       grading_standards: 평가 기준 내보내기 실패
       rubrics: 루브릭 내보내기 실패
       learning_outcomes: 학습 성과 내보내기 실패
@@ -14512,7 +14511,7 @@ ko:
   complete_all_items_e1779257: 모든 항목 완료
   completed_19711ce7: 완료
   module_completed_50c50762: 모듈 완료
-  in_progress_9d1ce8b9: 진행 중
+  in_progress_9d1ce8b9: 처리 중
   module_in_progress_fa600662: 진행중인 모듈
   locked_until_unlock_date_498ead5f: '%{unlock_date}까지 잠김'
   module_locked_f6a7ea9d: 모듈 잠김
@@ -14552,7 +14551,7 @@ ko:
   locked_until_item_name_is_graded_3b8d967f: '"%{item_name}"이 (가) 채점 될 때까지 잠김'
   content_choice_51f4ca0f: 콘텐츠 선택
   item_type_choice_aebcf2ef: '품목 유형 : 선택'
-  choose_assignment_group_9e7de13c: 과제 그룹 선택
+  choose_assignment_group_9e7de13c: 평가 그룹 선택
   count_options_190d6373:
     one: 1 옵션
     other: '%{count} 옵션'
@@ -15424,7 +15423,7 @@ ko:
     no_permissions: 사용자가 전체 성과를 편집하도록 허용되지 않음
     no_perms: 사용자가 전체 성과를 편집하도록 허용되지 않음
   these_credentials_are_for_academic_benchmark_api_v_a3845be7: 이 자격 증명은 Academic Benchmark API v3 용입니다.
-  this_report_shows_all_the_courses_for_a_given_term_3cdc11e5: 이 보고서는 주어진 학기에 대한 모든 과목을 보여줍니다. 성과 csv 파일에는 과목 당 하나의 행이 있으며 과목 ID, 과목 sis ID, 과목 짧은 이름, 과목 이름, 계정 ID, 계정 sis ID, 계정 이름, 사용 된 스토리지 (MB) 및 모든 파일의 합계 (MB)가 표시됩니다. . 사용 된 스토리지는 과목 할당량에 위배되는 모든 파일을 반영합니다. 과목에있는 모든 파일의 합계는 과목 할당량에 미치는 영향에 관계없이 과목에있는 모든 파일의 합계입니다.
+  this_report_shows_all_the_courses_for_a_given_term_3cdc11e5: 이 보고서는 주어진 학기에 대한 모든 과목을 보여줍니다. 성과 csv 파일에는 과목 당 하나의 행이 있으며 과목 ID, 과목 sis ID, 과목 과목 코드, 과목 이름, 계정 ID, 계정 sis ID, 계정 이름, 사용 된 스토리지 (MB) 및 모든 파일의 합계 (MB)가 표시됩니다. . 사용 된 스토리지는 과목 할당량에 위배되는 모든 파일을 반영합니다. 과목에있는 모든 파일의 합계는 과목 할당량에 미치는 영향에 관계없이 과목에있는 모든 파일의 합계입니다.
   example_84698b7d: 예
   configuration_location_ee0f6592: 구성 위치
   associated_account_course_id_d87a01c5: 관련 계정 / 과목 ID
@@ -17118,7 +17117,7 @@ ko:
     invalid_group_warning:
       one: '참고 : %{list_of_group_names} 그룹의 과제는 점수가 없기 때문에 점수에 포함되지 않습니다.'
       other: '참고 : %{list_of_group_names} 그룹의 과제는 점수가 없기 때문에 점수에 포함되지 않습니다.'
-    assignment_order_assignment_groups: 과제 그룹 및 제목 순
+    assignment_order_assignment_groups: 평가 그룹 및 제목 순
     assignment_order_alpha: 가나다순
     assignment_order_due_date: 마감일으로
     discussion_topic: 토론 주제
@@ -17761,7 +17760,7 @@ ko:
   not_a_valid_date_d3ac20ba: 유효한 날짜가 아닙니다.
   AssignmentGroupCreateDialog:
     titles:
-      add_assignment_group: 과제 그룹 추가
+      add_assignment_group: 평가 그룹 추가
   AssignmentGroupListItemView:
     toggle_message: 과제 표시 토글
     rules_text:
@@ -17817,12 +17816,12 @@ ko:
   you_cannot_use_a_number_greater_than_the_number_of_af33e220: 할당 수보다 큰 수를 사용할 수 없습니다.
   a_name_is_required_b5df38a9: 이름이 필요합니다
   name_is_too_long_48daa8db: 이름이 너무 깁니다.
-  assignment_group_was_saved_successfully_5caa27d3: 과제 그룹이 성공적으로 저장되었습니다.
-  delete_assignment_group_7c3b01c4: 과제 그룹 삭제
+  assignment_group_was_saved_successfully_5caa27d3: 평가 그룹이 성공적으로 저장되었습니다.
+  delete_assignment_group_7c3b01c4: 평가 그룹 삭제
   you_must_select_an_assignment_group_c16a2168: 할당 그룹을 선택해야합니다.
   DeleteGroupView:
-    confirm_delete_group: 이 과제 그룹을 삭제하시겠습니까?
-    cannot_delete_group: 하나 이상의 과제 그룹이 있어야 합니다.
+    confirm_delete_group: 이 평가 그룹을 삭제하시겠습니까?
+    cannot_delete_group: 하나 이상의 평가 그룹이 있어야 합니다.
   you_must_have_a_student_or_section_selected_a99e45df: 학생 또는 섹션을 선택해야합니다.
   you_cannot_assign_to_a_group_outside_of_the_assign_7869eb3b: 할당의 그룹 세트 외부에있는 그룹에는 할당 할 수 없습니다.
   anonymous_grading_cannot_be_enabled_for_group_assi_faa33494: 그룹 과제에 대해 익명 채점을 사용할 수 없습니다.
@@ -18447,7 +18446,7 @@ ko:
   assignment_options_1e5b7074: 할당 옵션
   edit_dates_ed31061: 날짜 편집
   edit_assignment_dates_6f8c72b: 학습요소 날짜 편집
-  assignment_groups_weight_2f1a5a7c: 과제 그룹 평가 비중
+  assignment_groups_weight_2f1a5a7c: 평가 그룹 평가 비중
   moderated_grading_cannot_be_enabled_for_group_assi_7e947ab7: 그룹 과제에는 중재 채점을 사용할 수 없습니다.
   moderated_grading_cannot_be_enabled_for_peer_revie_6b7eedc1: 피어 리뷰 과제에는 중재 채점을 사용할 수 없습니다.
   allow_moderator_to_review_multiple_independent_gra_c59d64f6: 제출물에 대하여 복수의 채점자가 채점한 결과를 중재자가 리뷰하여 최종 점수를 결정할 수 있도록 합니다.
@@ -18527,7 +18526,7 @@ ko:
   button_a1577211: 버튼
   complete_4f4efbc: 완전한
   incomplete_95612d72: 미완료
-  in_progress_13b9e26f: 진행 중
+  in_progress_13b9e26f: 처리 중
   unavailable_c04e4c93: 없는
   create_new_attempt_19c96c03: 새로운 시도 만들기
   missing_1a256b3b: "결석/불참/누락"
@@ -18824,22 +18823,22 @@ ko:
   an_error_occurred_while_starting_migration_8e6015e2: 마이그레이션을 시작하는 동안 오류가 발생했습니다.
   an_error_occurred_while_loading_courses_11d4571e: 과목을 로드하는 중에 오류가 발생했습니다.
   an_error_occurred_while_loading_associations_9699b3ee: 연결을로드하는 중에 오류가 발생했습니다.
-  associations_saved_successfully_48b9eae3: 연결이 성공적으로 저장되었습니다.
+  associations_saved_successfully_48b9eae3: 연결이 저장되었습니다.
   an_error_occurred_while_saving_associations_bd66f3f4: 연결을 저장하는 동안 오류가 발생했습니다.
-  an_error_ocurred_while_loading_unsynced_changes_aed0d04d: 동기화되지 않은 변경 사항을로드하는 중에 오류가 발생했습니다.
+  an_error_ocurred_while_loading_unsynced_changes_aed0d04d: 동기화되지 않은 변경 사항을 로드하는 중에 오류가 발생했습니다.
   there_was_a_problem_toggling_the_content_lock_2a5d678b: 콘텐츠 잠금을 전환하는 중에 문제가 발생했습니다.
   loading_associations_started_1f65d8d: 연결로드가 시작되었습니다.
   loading_associations_complete_b93a9c6e: 연결로드 완료
   removed_course_association_course_a233342c: 과목 연결 %{course} 제거됨
   restored_course_association_course_c9e16045: 복원 된 과목 연결 %{course}
-  short_name_42f454a1: 짧은 이름
+  short_name_42f454a1: 과목 코드
   teacher_s_fdefb2c: 교수
-  remove_association_1412eabf: 연관 제거
+  remove_association_1412eabf: 과목 연결 해제
   remove_course_association_name_b760c502: 과목 연결 %{name} 제거
   undo_remove_course_association_name_68eb4037: 과목 연결 %{name} 제거 실행 취소
   undo_a7be8fef: 실행 취소
   current_367624e9: 현재
-  to_be_added_2959cc72: 첨가되는
+  to_be_added_2959cc72: 추가되는 과목
   to_be_removed_d4b48586: 제거 될
   blueprint_course_associations_72c9609: 블루프린트 과목 협회
   loading_associations_9da66c4e: 연결로드
@@ -18850,15 +18849,15 @@ ko:
   you_have_unsynced_changes_that_will_sync_to_all_as_9028e711: 새 연결이 저장 될 때 모든 관련 과목에 동기화되는 동기화되지 않은 변경 사항이 있습니다.
   saving_associations_989bd4da: 저축 협회
   search_courses_7b5c4ab3: 과목 검색
-  associated_74756cc4: 연관
+  associated_74756cc4: 연결된 과목
   enable_course_as_a_blueprint_course_8515ffd5: 이 과목을 블루프린트 과목으로 사용함
   general_locked_objects_6a9adafb: 일반 잠금 설정
-  define_general_settings_for_locked_objects_in_this_20da2981: 이 과목에서 잠긴 개체에 대한 일반 설정을 정의합니다.
+  define_general_settings_for_locked_objects_in_this_20da2981: 잠금 대상에 대한 일반 설정을 정의합니다.
   define_settings_by_type_for_locked_objects_in_this_676197bf: 이 과목에서 잠긴 개체의 유형 별로 설정을 정의합니다.
-  locked_objects_cannot_be_edited_in_associated_cour_1af858c8: 잠긴 개체는 연결된 과목에서 편집 할 수 없습니다.
+  locked_objects_cannot_be_edited_in_associated_cour_1af858c8: 잠긴 대상은 연결된 과목에서 편집될 수 없습니다.
   locked_objects_by_type_ff376c6c: 유형별 잠금 설정
   blueprint_5cca2ef: 블루프린트
-  publish_upon_association_53cb0450: 연결시 게시
+  publish_upon_association_53cb0450: 연결 시 동기화
   open_sidebar_2852e8c8: 사이드 바 열기
   blueprint_settings_233e909a: 블루프린트 설정
   close_sidebar_10b0fbb4: 사이드 바 닫기
@@ -18866,11 +18865,11 @@ ko:
   learning_object_1f9e5dd8: 학습 대상
   object_type_e4f3bbeb: 개체 유형
   change_applied_89d1aa5a: 적용된 변경
-  applied_cc7be774: 적용된
+  applied_cc7be774: 적용 여부
   blueprint_course_information_term_course_10d5cf30: '블루프린트 과목 정보 : %{term}-%{course}'
-  any_term_d49af19f: 모든 기간
+  any_term_d49af19f: 모든 학기
   any_sub_account_ec7069f2: 모든 하위 계정
-  search_by_title_short_name_or_sis_id_fe84aa12: 제목, 짧은 이름 또는 SIS ID로 검색
+  search_by_title_short_name_or_sis_id_fe84aa12: 제목, 과목 코드 또는 SIS ID로 검색
   select_term_f8083fb0: 학기 선택
   select_sub_account_6704196a: 하위 계정 선택
   loading_courses_started_6e6d742c: 과목로드 시작
@@ -18888,13 +18887,13 @@ ko:
   select_all_count_courses_4fc63811:
     one: (%{count}) 과목 선택
     other: 모든 (%{count}) 과목 선택
-  associations_3fd4abe8: 협회
+  associations_3fd4abe8: 연결된 과목
   loading_associations_2b92bcf7: 연결로드 중 ...
   sync_history_3d46eb19: 동기화 기록
   loading_sync_history_3eb11baf: 동기화 기록 로드 중 ...
-  unsynced_changes_4ddaec76: 동기화되지 않은 변경
-  loading_unsynced_changes_1b52f725: 동기화되지 않은 변경 사항로드 중 ...
-  loading_unsynced_changes_b5d7b202: 동기화되지 않은 변경 사항로드
+  unsynced_changes_4ddaec76: 동기화되지 않은 변경 사항
+  loading_unsynced_changes_1b52f725: 동기화되지 않은 변경 사항 로드 중 ...
+  loading_unsynced_changes_b5d7b202: 동기화되지 않은 변경 사항 로드
   there_are_count_unsynced_changes_25ed3bed:
     one: 동기화되지 않은 변경 사항이 1 개 있습니다.
     other: 동기화되지 않은 변경 사항이 %{count} 개 있습니다.
@@ -18914,8 +18913,8 @@ ko:
   chars_written_max_character_length_len_fec9bd18: '%{chars} 작성, 최대 문자 길이 %{len}'
   len_maxlen_97f1c88d: '%{len} / %{maxLen}'
   message_text_5f692459: 메시지 텍스트
-  processing_2fcc9739: 진행
-  this_may_take_a_bit_48fe4235: 시간이 좀 걸릴 수 있습니다 ...
+  processing_2fcc9739: 처리 중
+  this_may_take_a_bit_48fe4235: 잠시만 기다려 주십시오 ...
   sync_in_progress_12ff1d3c: 동기화 진행 중
   you_can_leave_the_page_and_you_will_get_a_notifica_fefe11e8: 페이지에서 나갈 수 있으며 동기화 프로세스가 완료되면 알림을 받게됩니다.
   syncing_3061cc8d: 동기화 중 ...
@@ -18924,7 +18923,7 @@ ko:
   count_exceptions_1176c596:
     one: '%{count} 예외'
     other: '%{count} 예외'
-  loading_sync_history_9f342cbf: 동기화 기록로드
+  loading_sync_history_9f342cbf: 동기화 기록 로드 중
   count_pushed_changes_6fe7fba: '%{count} 푸시 된 변경 사항'
   there_are_no_unsynced_changes_4e8f0838: 동기화되지 않은 변경 사항이 없습니다.
   count_unsynced_changes_1fc147e5: '%{count} 동기화되지 않은 변경'
@@ -18936,7 +18935,7 @@ ko:
   folder_705fd2d7: 폴더
   settings_5aa0fd0c: 설정
   discussions_a5f96392: 토론
-  created_58b8a75a: 만들어진
+  created_58b8a75a: 생성
   updated_2c1e8615: 업데이트 됨
   deleted_1be5ed1: 삭제
   points_changed_exceptions_b0c771f7: '점수 변경 예외 :'
@@ -19006,7 +19005,7 @@ ko:
   you_are_here_54075d8c: '현재 위치 :'
   edit_pagetitle_cd8abab9: '%{pageTitle} 편집'
   delete_group_86c381ec: 그룹 삭제
-  edit_assignment_group_c04c4af0: 과제 그룹 편집
+  edit_assignment_group_c04c4af0: 평가 그룹 편집
   calendars_a756c286: 캘린더
   time_block_5a7cda5c: 시간 블록
   location_e17bd402: 위치
@@ -19059,7 +19058,7 @@ ko:
   conditional_release:
     and: ''
   or_ef4e808: 또는
-  splitting_disabled_reached_maximum_of_three_assign_716acb13: '분할 사용 안함 : 점수 범위에서 최대 3 개의 과제 그룹에 도달했습니다.'
+  splitting_disabled_reached_maximum_of_three_assign_716acb13: '분할 사용 안함 : 점수 범위에서 최대 3 개의 평가 그룹에 도달했습니다.'
   click_to_split_set_here_9c35462a: 여기를 클릭하여 분할 세트
   click_to_merge_sets_here_638fcac7: 여기를 클릭하여 세트를 병합하십시오.
   label_as_gradingtype_ae164bd9: '%{label}, %{gradingType}'
@@ -19987,9 +19986,11 @@ ko:
   module_last_to_first_8cdb7a8e: 주차 - 내림차순
   filters_92f2776f: 필터
   statuses_497dfa15: 상태…
+  view_options_f5503a84: 옵션
+  view_ungraded_as_0_1a9631a1: 미채점을 0점으로 처리
   columns_464bd055: 열
   unpublished_assignments_9cdbcc87: 공개되지 않은 과제
-  all_assignment_groups_a65e9e46: 모든 과제 그룹
+  all_assignment_groups_a65e9e46: 모든 평가 그룹
   assignment_group_filter_c03f8a1d: 할당 그룹 필터
   use_arrow_keys_to_navigate_options_2021cc50: 옵션을 탐색하려면 화살표 키를 사용하십시오.
   grading_period_filter_e1bf635a: 채점 기간 필터
@@ -20860,7 +20861,7 @@ ko:
   this_permission_only_affects_course_announcements__6bc2b0a5: 이 권한은 과목 공지에만 영향을줍니다. 전체 공지 사항을 관리하려면 전체 공지 사항-추가 / 편집 / 삭제를 활성화해야합니다.
   allows_user_to_access_the_announcements_link_in_co_2783579a: 사용자가 과목 메뉴 상의 공지 메뉴에 액세스 할 수 있습니다. 사용자가 과목 공지 사항을 볼 수 있습니다. 사용자가 과목 홈에서 최근 공지 사항을 볼 수 있습니다.
   to_add_announcements_discussions_moderate_must_als_2496cbd7: "공지 사항을 추가하려면 '토론 중재(검토')도 활성화 해야합니다. 과목 홈에서 최근 공지 사항을 보려면 과목 설정에서 과목 홈에 최근 공지 사항 표시 옵션을 활성화 해야 합니다."
-  allows_user_to_add_edit_delete_and_publish_and_unp_4f9c2fd4: 사용자가 과제를 추가, 편집, 삭제, 게시 및 게시 취소 할 수 있습니다. 사용자가 과제 설정을 관리 할 수 있습니다. 사용자가 과목에 과제 그룹을 추가 할 수 있습니다. 사용자가 과목에서 과제 그룹 비중을 활성화하고 편집 할 수 있습니다.
+  allows_user_to_add_edit_delete_and_publish_and_unp_4f9c2fd4: 사용자가 과제를 추가, 편집, 삭제, 게시 및 게시 취소 할 수 있습니다. 사용자가 과제 설정을 관리 할 수 있습니다. 사용자가 과목에 평가 그룹을 추가 할 수 있습니다. 사용자가 과목에서 평가 그룹 비중을 활성화하고 편집 할 수 있습니다.
   allows_user_to_edit_blueprint_lock_settings_on_the_a2534937: 사용자가 Blueprint 마스터 과목의 과제 및 퀴즈 색인 페이지에서 Blueprint 잠금 설정을 편집 할 수 있습니다.
   allows_user_to_share_a_quiz_to_commons_6746e0da: 사용자가 Commons에 퀴즈를 공유 할 수 있습니다.
   allows_user_to_edit_assignment_details_on_individu_ecf19e63: 사용자가 개별 토론에 대한 할당 상세 정보를 편집 할 수 있습니다.
@@ -21916,7 +21917,7 @@ ko:
   manage_name_7f55f792: '%{name} 관리'
   move_assignment_contents_245c61bb: 이동 과제 내용
   move_contents_29713356: 콘텐츠 이동…
-  move_assignment_group_46e09fc3: 과제 그룹 이동
+  move_assignment_group_46e09fc3: 평가 그룹 이동
   move_group_77ae285d: 그룹 이동…
   group_weight_for_d46c5db4: '그룹 비중 :'
   making_a_copy_of_originalassignmentname_b7268992: '"%{originalAssignmentName}"의 복사본 만들기'
@@ -21946,13 +21947,13 @@ ko:
   delete_assignment_name_deec56e3: 할당 %{name} 삭제
   send_assignment_name_to_another_user_e2ca494d: 다른 사용자에게 할당 %{name} 보내기
   copy_assignment_name_to_another_course_b62d0a54: 과제 %{name}을 다른 과목에 복사
-  assignment_group_weights_can_t_be_edited_because_t_b6b591ae: 마감일이 마감 된 그룹 중 하나에 과제가 있으므로 과제 그룹 비중을 편집 할 수 없습니다.
-  weight_final_grade_based_on_assignment_groups_3124161: 과제 그룹별 평가 비중을 최종 성적에 반영
+  assignment_group_weights_can_t_be_edited_because_t_b6b591ae: 마감일이 마감 된 그룹 중 하나에 과제가 있으므로 평가 그룹 비중을 편집 할 수 없습니다.
+  weight_final_grade_based_on_assignment_groups_3124161: 평가 그룹별 평가 비중을 최종 성적에 반영
   are_you_sure_you_want_to_disable_sync_to_sisname_f_f24245c1: 모든 과제에 대해 %{sisName}에 동기화를 비활성화 하시겠습니까?
   disabling_f594bda: 비활성화 중 ...
   due_at_5e18eeac: '마감일 :'
   sync_to_posttosisname_9837a8bf: '%{postToSISName}에 동기화 :'
-  assignment_group_weights_and_drop_rules_can_t_be_e_7b5f305d: 마감일이 마감 된 그룹 중 하나에 과제가 있으므로 과제 그룹 비중 및 삭제 규칙을 편집 할 수 없습니다.
+  assignment_group_weights_and_drop_rules_can_t_be_e_7b5f305d: 마감일이 마감 된 그룹 중 하나에 과제가 있으므로 평가 그룹 비중 및 삭제 규칙을 편집 할 수 없습니다.
   number_of_scores_to_ignore_for_each_student_fb94e818: 각 학생에 대해 무시할 점수
   new_assignment_2a984756: 새로운 과제
   manage_assignment_31a132fb: 과제 관리
@@ -22067,7 +22068,7 @@ ko:
   remove_user_from_section_5556f465: 섹션에서 사용자 제거
   id_id_4e148481: 'ID : %{id}'
   key_api_key_68bf80ae: '키 : * %{api_key} *'
-  created_6ee36dff: '만들어진:'
+  created_6ee36dff: '생성:'
   edit_key_name_5c7d2f46: '%{name} 키 수정'
   developer_key:
     edit_key: 이 키 편집
@@ -22460,7 +22461,7 @@ ko:
         empty_student_selection: 여기에서 추가 정보를 보려면 학생을 선택하십시오.
       assignment_groups:
         ag_group_grade: 성적
-        ag_group_name: 과제 그룹
+        ag_group_name: 평가 그룹
         ag_letter_grade: 알파벳 성적
   assignments_in_this_group_have_no_points_possible__ab0adb72: 이 그룹의 과제는 배점이 없으며 성적 계산에 포함될 수 없습니다.
   excuse_this_assignment_for_the_selected_student_af04e132: 선택한 학생에 대한 이 학습요소를 평가에서 제외합니다.
@@ -22605,7 +22606,7 @@ ko:
     buttons:
       save: 저장
     titles:
-      assignment_group_weights: 과제 그룹 평가 비중 관리
+      assignment_group_weights: 평가 그룹 평가 비중 관리
       total: 합계
     weight_final: 그룹을 바탕으로 최종 평가에 비중 적용
   assignments_2_e88d7a26: 과제 2
