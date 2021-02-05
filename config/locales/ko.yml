@@ -809,7 +809,7 @@ ko:
   assignments_2_teacher_view_3cd3aeda: 과제 2 교수보기
   use_the_new_assignments_teacher_page_8add7e46: 새 과제 교수 페이지 사용
   assignment_allowed_attempts_7e3d43ee: 과제 허용 시도
-  allow_a_teacher_to_set_the_number_of_allowed_attem_19deb51d: 교수가 UI를 통해 과제에 허용 된 재시도 횟수를 설정하도록 허용
+  allow_a_teacher_to_set_the_number_of_allowed_attem_19deb51d: 교수가 UI를 통해 과제에 허용 된 재응시 횟수를 설정하도록 허용
   assignment_bulk_editing_37248ca4: 과제 대량 편집
   allow_teachers_to_change_the_dates_on_a_set_of_ass_4d48baec: 교수가 한 번에 여러 과제의 날짜를 변경할 수 있도록 허용
   bookmarking_for_enrollments_index_api_840be156: 등록 색인 API 북마크
@@ -2186,7 +2186,7 @@ ko:
     site_admin: 사이트 관리자
     assignments: 과제
     syllabus: 수업 계획서
-    quizzes: 퀴즈
+    quizzes: 시험 및 설문
     calendar_events: 일정
     collaborations: 협업
     conferences: 회의
@@ -2575,7 +2575,7 @@ ko:
       assignment_name: 과제 이름
       description: 설명
       points_possible: 배점
-      submission_attempts: 재시도 허용
+      submission_attempts: 재응시 허용
       freeze_properties: 복사할 때 과제 속성 잠금
       notify_content_change: 내용이 변경되었음을 사용자에게 알림
       buttons:
@@ -3874,8 +3874,8 @@ ko:
       delete_message: 메시지 삭제
     course_options:
       course_options:
-        favorite: 다른 과목
-        more_courses: 다른 과목
+        favorite: 즐겨찾기 과목
+        more_courses: 기타 과목
         concluded: 종결됨
         groups: 그룹
     message_detail:
@@ -6850,7 +6850,7 @@ ko:
         new_bank_name: 새 문제 은행 이름
         keep_copy: 이 문제 은행에도 사본을 보관
       edit_warning: 문제를 변경하더라도 해당 문제를 사용해 이미 생성되어 있는 퀴즈에는 자동으로 업데이트되지 않습니다. 필요 시 생성되어 있는 퀴즈에서 직접 수정해야 합니다.
-      show_details: 문제 세부정보 표시
+      show_details: 문제 펼쳐보기
       move_copy: 이동/복사
       select_bank: '이동할 대상 문제 은행을 선택하십시오:'
       loading_banks: 문제 은행 로드 중...
@@ -7010,15 +7010,15 @@ ko:
         question_type:
           multiple_choice: 객관식(정답 하나)
           true_false: 참/거짓
-          short_answer: 빈칸 채우기
-          fill_in_multiple_blanks: 복수 빈칸 채우기
+          short_answer: 빈칸 채우기(단답형)
+          fill_in_multiple_blanks: 복수 빈칸 채우기(단답형)
           multiple_answers: 객관식 (정답 다수)
           multiple_dropdowns: 목록에서 선택
           matching: 짝짓기
           numerical: 숫자 답변
           calculated: 수식 
           missing_word: 빠진 단어
-          essay: 작문 
+          essay: 작문(서술형) 
           file_upload: 파일 업로드 
           text_only: 텍스트(문제 아님)
         labels:
@@ -8655,11 +8655,11 @@ ko:
   score_out_of_points_possible_88f370fd: '%{score} / %{points_possible}'
   preview_53003fd2: 미리보기
   take_the_survey_ada59508: 설문 참여
-  take_the_quiz_87214d7e: 퀴즈 참여
-  take_the_survey_again_24ce22c2: 설문 재시도
-  take_the_quiz_again_8ea51a6c: 퀴즈 재시도
+  take_the_quiz_87214d7e: 퀴즈 응시
+  take_the_survey_again_24ce22c2: 설문 재응시
+  take_the_quiz_again_8ea51a6c: 퀴즈 재응시
   resume_survey_58dce775: 설문 참여 재개
-  resume_quiz_afeceb87: 퀴즈 참여 재개
+  resume_quiz_afeceb87: 퀴즈 응시 재개
   will_keep_the_highest_of_all_your_scores_6ae5bbd1: 가장 높은 점수를 보관
   will_keep_the_latest_of_all_your_scores_431d23f9: 가장 마지막 점수를 보관
   will_keep_the_average_of_all_your_scores_d7e6b733: 모든 점수의 평균을 유지합니다.
@@ -10310,12 +10310,12 @@ ko:
       at_least_more_events_two_weeks_future: 다음 두 주에 최소 %{count_of_events}건 이상
       at_least_more_events: 최소 %{count_of_events}건 이상
       at_least_more_events_one_week: 지난주에 %{count_of_events} 이상 더
-      at_least_more_events_two_weeks: 지난 2 주 동안 %{count_of_events} 이상 증가
-      more_events_one_week_future: 다음 주에 %{count_of_events}건 이상
-      more_events_two_weeks_future: 다음 두 주에 %{count_of_events}건 이상
-      more_events: '%{count_of_events}건 이상'
-      more_events_one_week: 지난주에 %{count_of_events} 개 더
-      more_events_two_weeks: 지난 2 주 동안 %{count_of_events} 증가
+      at_least_more_events_two_weeks: "더 보기..."
+      more_events_one_week_future: "더 보기..."
+      more_events_two_weeks_future: "더 보기..."
+      more_events: "더 보기..."
+      more_events_one_week: "더 보기..."
+      more_events_two_weeks: "더 보기..."
     find_outcome:
       titles:
         select_and_add_criterion: 기준 선택 및 추가
@@ -15112,10 +15112,10 @@ ko:
   minutes_4aee5a41: 분
   disable_automatic_submission_8e1d8676: 자동 제출 비활성화
   keep_submissions_anonymous_5cbaf419: 제출물을 익명으로 유지
-  allow_multiple_attempts_e67a0a37: 재시도 허용
+  allow_multiple_attempts_e67a0a37: 재응시 허용
   quiz_score_to_keep_d1f7c4b1: 적용할 점수
-  allowed_attempts_4e229caa: 재시도 횟수 제한
-  number_of_allowed_attempts_3d10b740: 재시도 횟수 제한
+  allowed_attempts_4e229caa: 재응시 횟수 제한
+  number_of_allowed_attempts_3d10b740: 재응시 횟수 제한
   students_cannot_view_quiz_responses_after_course_c_88e929ed: 과목이 종료된 후 학생은 퀴즈 응답을 볼 수 없습니다.
   let_students_see_their_quiz_responses_incorrect_qu_f5c9cb70: 오답 여부 표시하기 (오답일 경우 오답 여부와 피드백이 표시됩니다)
   only_after_their_last_attempt_3593d101: 마지막 시도 후에만 정답 표시
@@ -15141,15 +15141,15 @@ ko:
   show_rubric_dca783f2: 루브릭 표시
   points_n_e0b20623: 점수 %{n}
   not_published_73f7079: 비공개
-  show_question_details_b059df00: 문제 세부정보 표시
+  show_question_details_b059df00: 문제 펼쳐보기
   note_question_details_not_available_when_more_than_93199f6d: '참고 : %{question_count}를 초과하면 문제 상세 정보를 사용할 수 없습니다.'
   new_question_9107c469: 새 문제
   new_question_group_d9306280: 새 문제 그룹
   find_questions_4930b38f: 문제 찾기
   instructions_2f88ee72: 지침
   options:
-    yes: 예
-    no: 아니오
+    'yes': '예'
+    'no': '아니오'
   logged_out_user_index_68a0edb2: 사용자 %{index} 로그아웃
   search_people_4782671a: 사용자 검색
   search_people_as_you_type_in_this_field_the_list_o_5755e8ad: 사람을 검색하십시오. 이 필드에 입력하면 입력 한 이름과 일치하는 사람 만 포함하도록 사람 목록이 자동으로 필터링됩니다.
@@ -18456,7 +18456,7 @@ ko:
   must_be_a_number_e1dfe68a: 숫자 여야합니다.
   unlimited_ff19e96d: 제한 없음
   limited_322546c5: 제한 있음
-  number_of_attempts_b0994c2f: 재시도 횟수
+  number_of_attempts_b0994c2f: 재응시 횟수
   assignment_dates_saved_successfully_78e0f355: 할당 날짜가 성공적으로 저장되었습니다.
   there_was_an_error_retrieving_assignment_dates_39320c15: 할당 날짜를 검색하는 중에 오류가 발생했습니다.
   error_starting_save_operation_81bcb99: '저장 작업 시작 오류 :'
@@ -18517,7 +18517,7 @@ ko:
   attached_d7423f41: 붙여진
   preview_filename_f1b58572: '%{filename} 미리보기'
   remove_filename_dab5c02e: '%{filename} 제거'
-  new_attempt_57eae3d9: 재시도
+  new_attempt_57eae3d9: 재응시
   not_graded_yet_82f63c67: 아직 채점되지 않음
   submitted_318fad53: 제출됨
   unavailable_46d2c344: 없는
@@ -18529,7 +18529,7 @@ ko:
   in_progress_13b9e26f: 처리 중
   unavailable_c04e4c93: 없는
   create_new_attempt_19c96c03: 새로운 시도 만들기
-  missing_1a256b3b: "결석/불참/누락"
+  missing_1a256b3b: "미완료"
   late_2be42b88: 지각
   due_5d7267be: '마감일:'
   count_attempts_d23c69a0:
@@ -19315,10 +19315,10 @@ ko:
   unpublished_courses_count_d35672f0: 비공개 과목 (%{count})
   color_a363e1b0: 색상
   dashboard_card_movement_menu_b65b98f5: 대시 보드 카드 이동 메뉴
-  move_to_top_e0d7d66e: 맨 위로 이동
-  move_up_2440f707: 이동
-  move_down_4a9c9b18: 아래로 이동
-  move_to_bottom_d0f71bf0: 맨 밑으로 이동
+  move_to_top_e0d7d66e: 맨 앞으로 이동
+  move_up_2440f707: 한 칸 앞으로 이동
+  move_down_4a9c9b18: 한 칸 뒤로 이동
+  move_to_bottom_d0f71bf0: 맨 뒤로 이동
   unfavorite_cd0c113e: 대시보드에서 제거
   dashboard_options_b240ed5a: 대시보드 옵션
   dashboard_view_d7d85969: 대시보드 보기
@@ -19903,7 +19903,7 @@ ko:
   unable_to_access_specific_student_go_to_assignment_585e05e9: 특정 학생에 액세스 할 수 없습니다. SpeedGrader에서 과제로 이동 하시겠습니까?
   open_speedgrader_11604608: SpeedGrader 열기
   anonymous_mode_on_2dd9b94a: 익명 모드 켜기
-  grade_out_of_points_d401b79d: '%{points} 중 채점'
+  grade_out_of_points_d401b79d: '점수(배점 %{points}점)'
   grade_out_of_percentage_1972bf52: '%{percentage} 중 성적'
   this_assignment_is_not_graded_576f1244: 이 과제는 채점되지 않았습니다.
   this_grade_has_negative_points_496400d4: 이 성적에는 마이너스 점수가 있습니다.
@@ -19994,7 +19994,7 @@ ko:
   assignment_group_filter_c03f8a1d: 할당 그룹 필터
   use_arrow_keys_to_navigate_options_2021cc50: 옵션을 탐색하려면 화살표 키를 사용하십시오.
   grading_period_filter_e1bf635a: 채점 기간 필터
-  all_modules_20c9a1c8: 모든 모듈
+  all_modules_20c9a1c8: 모든 주차
   module_filter_63b17d11: 모듈 필터
   all_student_groups_f74cd6c3: 모든 학생 그룹
   student_group_filter_185fb085: 학생 그룹 필터
@@ -20127,7 +20127,7 @@ ko:
   post_grades_tray_83f2fb2e: 포스트 성적 트레이
   search_grading_periods_e947a3e9: 채점 기간 검색 ...
   specific_sections_a38d8b0d: 특정 섹션
-  missing_d59852a7: "결석/불참/누락"
+  missing_d59852a7: "미완료"
   late_8bd684b6: 지각
   insert_row_below_name_a5b3bd41: '%{name} 아래에 행 삽입'
   remove_row_name_c053f5ae: '%{name} 행 제거'
@@ -21388,7 +21388,7 @@ ko:
   no_results_3cda4e72: 결과 없음
   enter_at_least_count_characters_1c7a0b36: '%{count} 자 이상 입력하세요.'
   send_to_a879095e: '보내기 :'
-  begin_typing_to_search_7daa7b1: 사용자 이름을 입력하세요
+  begin_typing_to_search_7daa7b1: 주차를 선택하세요
   filter_conversations_by_type_1ce8c064: 유형별로 대화 필터링
   username_saved_successfully_they_should_receive_an_877e31e: '* %{userName} *이 성공적으로 저장되었습니다! 곧 확인 이메일을 받게됩니다.'
   username_saved_successfully_9303974f: '* %{userName} *이 성공적으로 저장되었습니다!'
@@ -22039,8 +22039,8 @@ ko:
   change_ending_date_to_d2cebd54: 종료일을 다음으로 변경
   checked_883b93fd: 확인
   remove_recipient_name_a6b83cef: 수신자 %{name} 제거
-  favorite_courses_fbd356f0: 좋아하는 과목
-  more_courses_5ebbe998: 다른 과목
+  favorite_courses_fbd356f0: 즐겨찾기 과목
+  more_courses_5ebbe998: 기타 과목
   concluded_courses_94782e21: 종료 된 과목
   no_subject_970aad80: 제목 없음
   total_messages_af025be6: 총 메시지
@@ -22308,7 +22308,7 @@ ko:
   student_viewed_document_9065adb8: 학생이 본 문서
   submission_index_e960f9bf: 제출 %{index}
   late_bd436902: 지각
-  missing_eaddacbd: "결석/불참/누락"
+  missing_eaddacbd: "미완료"
   tinymce:
     insert_update_image_view:
       image_source: 이미지 원본
