@@ -954,7 +954,7 @@ ja:
       tiny_on_the_hour: "%k.%M"
 ko:
   bigeasy_locale: ko_KR
-  crowdsourced: true
+  crowdsourced: false
   date:
     datepicker:
       column_headings:
