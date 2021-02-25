@@ -3,23 +3,27 @@
 
 prawn_document(page_layout: :portrait, page_size: page_size) do |pdf|
   pdf.font_families.update('LatoWeb' => {
-    normal: "public/fonts/lato/latin/LatoLatin-Regular.ttf",
-    italic: "public/fonts/lato/latin/LatoLatin-Italic.ttf",
-    bold: "public/fonts/lato/latin/LatoLatin-Bold.ttf",
-    light: "public/fonts/lato/latin/LatoLatin-Light.ttf",
+    normal: "public/fonts/nanumgothic/NanumGothic.ttf",
+    italic: "public/fonts/nanumgothic/NanumGothic.ttf",
+    bold: "public/fonts/nanumgothic/NanumGothicBold.ttf",
+    light: "public/fonts/nanumgothic/NanumGothicLight.ttf",
   })
 
   pdf.font("LatoWeb") do
-    pdf.font_size 8
+    pdf.font_size 10
     pdf.font_size pdf.font_size() * 2.375  do
       pdf.text assignment_title
     end
+    pdf.move_down 20
     pdf.text course_name
+    pdf.move_down 5
     pdf.text student_name
+    pdf.move_down 5
     pdf.text score
+    pdf.move_down 5
     pdf.text account_name
 
-    pdf.move_down 5
+    pdf.move_down 10
 
     current_author = nil
     submission_comments.find_each do |comment|
