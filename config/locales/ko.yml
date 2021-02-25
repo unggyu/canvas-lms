@@ -1247,7 +1247,7 @@ ko:
         users_can_edit_name: 사용자 자신의 이름 수정 허용
         edit_institution_email: 사용자가 교육 기관에서 할당한 이메일 주소를 삭제할 수 있음
         author_email_in_notifications: 상호 작용 알림에 발신자의 이메일 주소 표시
-        enable_course_catalog: '"공개 과목 색인에이 과목 포함"플래그를 활성화하여이 루트 계정에서 검색 가능한 과목 목록을 표시합니다.'
+        enable_course_catalog: '"공개 과목 색인에 이 과목 포함" 플래그를 활성화하여이 루트 계정에서 검색 가능한 과목 목록을 표시합니다.'
         equella: Equella
         enable_turnitin: Turnitin
         equella_endpoint: Equella 끝점
@@ -7166,7 +7166,7 @@ ko:
           one: 1 개 더 시도 가능
           other: '%{count} 회 더 시도 가능'
       quiz_show_teacher:
-        quiz_type: 문항 유형
+        quiz_type: 퀴즈유형
         points: 배점
         group: 평가 그룹
         shuffle_answers: 답변 섞기
@@ -7176,9 +7176,9 @@ ko:
           one: 1 분
           other: '%{count} 분'
         no_time_limit: 시간 제한 없음
-        multiple_attempts: 여러 번 시도
+        multiple_attempts: 재응시 허용
         score_to_keep: 유지할 점수
-        attempts: 시도
+        attempts: 응시횟수
         unlimited: 무제한
         view_responses: 답변 보기
         show_correct_answers: 정답 공개
@@ -7191,7 +7191,7 @@ ko:
         cant_go_back: 답변 후에 문제 잠금
         anonymous_submissions: 익명 제출물
         due: 마감
-        for: 과제
+        for: 할당
         available_from: 이용 시작
         until: 이용 종료
       quiz_submission:
@@ -8567,7 +8567,7 @@ ko:
   no_due_date_44271c53: 마감일 없음
   re_submit_assignment_b3e2bd28: 과제 다시 제출
   submit_assignment_5799b4e3: 과제 제출
-  complete_fd828dea: 완전한
+  complete_fd828dea: 완료
   incomplete_da3c2ea2: 미완료
   it_s_not_allowed_to_redirect_to_html_files_that_ca_1dbdfb9d: Content-Security-Policy가 시행되는 동안 프록시 될 수없는 HTML 파일로 리디렉션 할 수 없습니다.
   announcement_fb4cb645: 공지 사항
@@ -8659,7 +8659,7 @@ ko:
   take_the_survey_again_24ce22c2: 설문 재응시
   take_the_quiz_again_8ea51a6c: 퀴즈 재응시
   resume_survey_58dce775: 설문 참여 재개
-  resume_quiz_afeceb87: 퀴즈 응시 재개
+  resume_quiz_afeceb87: 퀴즈 풀이 다시시작
   will_keep_the_highest_of_all_your_scores_6ae5bbd1: 가장 높은 점수를 보관
   will_keep_the_latest_of_all_your_scores_431d23f9: 가장 마지막 점수를 보관
   will_keep_the_average_of_all_your_scores_d7e6b733: 모든 점수의 평균을 유지합니다.
@@ -11716,7 +11716,7 @@ ko:
   liveassessments_92d9edc0: LiveAssessments
   logins_9aee0cbe: 로그인
   media_objects_c2fa37cd: 미디어 개체
-  modules_c4325335: 모듈
+  modules_c4325335: 주차
   names_and_role_ebff0149: 이름과 역할
   notification_preferences_cf47083d: 알림 기본 설정
   originality_reports_1e36b935: 독창성 보고서
@@ -15142,7 +15142,7 @@ ko:
   points_n_e0b20623: 점수 %{n}
   not_published_73f7079: 비공개
   show_question_details_b059df00: 문제 펼쳐보기
-  note_question_details_not_available_when_more_than_93199f6d: '참고 : %{question_count}를 초과하면 문제 상세 정보를 사용할 수 없습니다.'
+  note_question_details_not_available_when_more_than_93199f6d: '참고 : %{question_count}개를 초과하는 경우에는 문제 펼쳐보기를 사용할 수 없습니다.'
   new_question_9107c469: 새 문제
   new_question_group_d9306280: 새 문제 그룹
   find_questions_4930b38f: 문제 찾기
@@ -17928,8 +17928,8 @@ ko:
   RosterDialogMixin:
     updating: 업데이트 중...
   RosterUserView:
-    nobody: 아무도 없음
-    observing_user: '감독 중: %{user_name}'
+    nobody: ' '
+    observing_user: '청강생'
     flash:
       removeError: 사용자를 제거할 수 없습니다. 다시 시도하시기 바랍니다.
   are_you_sure_you_want_to_deactivate_this_user_they_3fdaab79: 이 사용자를 비활성화 하시겠습니까? 비활성 상태에서는 과목에 참여할 수 없습니다.
@@ -18524,7 +18524,7 @@ ko:
   upload_8b403d05: 업로드
   uploaded_285a2bfb: 업로드
   button_a1577211: 버튼
-  complete_4f4efbc: 완전한
+  complete_4f4efbc: 완료
   incomplete_95612d72: 미완료
   in_progress_13b9e26f: 처리 중
   unavailable_c04e4c93: 없는
@@ -19817,7 +19817,7 @@ ko:
   anonymously_graded_59149570: 익명으로 채점
   not_anonymously_graded_87574f91: 익명으로 채점되지 않음
   not_available_assignment_is_anonymous_94e77edf: 사용 불가; 할당은 익명입니다
-  not_available_487d3648: 사용 불가
+  not_available_487d3648: '-'
   name_error_fee4236: 이름 오류
   assignment_name_b2d87383: 과제 이름
   no_assignment_name_adbb215b: 할당 이름 없음
@@ -20040,7 +20040,7 @@ ko:
   grade_posting_policy_name_a6d6f178: '성적 공개 정책 : %{name}'
   all_grading_period_sets_must_have_a_title_799538f: 모든 채점 기간 세트에는 제목이 있어야합니다.
   save_grading_period_set_e029fa88: 채점 기간 세트 저장
-  set_name_f83b658: 이름 설정
+  set_name_f83b658: 채점 기간 세트 이름 설정
   set_name_d14182d7: 이름 설정 ...
   grading_period_set_title_880a6ec4: 채점 기간 세트 제목
   weighted_grading_periods_ae4edd70: 비중 적용 기간
@@ -20050,7 +20050,7 @@ ko:
   future_5416ea92: 미래
   past_14da759a: 과거
   no_unassigned_terms_deb7b76b: 할당되지 않은 학기 없음
-  attach_terms_2b8770a5: 용어 첨부
+  attach_terms_2b8770a5: 학기
   enter_a_what_if_score_668c91a3: What-If 점수를 입력합니다.
   this_is_a_what_if_score_cbdc04f9: What-If 점수입니다.
   click_to_test_a_different_score_2e0bb6f0: 다른 점수를 테스트하려면 클릭
@@ -20074,7 +20074,7 @@ ko:
   are_you_sure_you_want_to_delete_this_grading_perio_380b040d: 이 채점 기간 세트를 삭제 하시겠습니까?
   the_grading_period_set_was_deleted_cce5d8f6: 채점 기간 설정이 삭제되었습니다.
   an_error_occured_while_deleting_the_grading_period_81bb16e5: 채점 기간 설정을 삭제하는 중에 오류가 발생했습니다.
-  terms_35d91184: '자귀:'
+  terms_35d91184: '학기:'
   no_associated_terms_13bacefc: 관련 학기 없음
   all_changes_were_saved_f6f3ddcc: 모든 변경 사항이 저장되었습니다.
   there_was_a_problem_saving_the_grading_period_243bed6c: 채점 기간을 저장하는 데 문제가 있습니다.
@@ -23091,8 +23091,8 @@ ko:
       removed: 사용자를 성공적으로 제거했습니다.
     greater_than_three: 3자 이상으로 된 검색어를 입력하십시오.
     invitations_re_sent: 초대를 보냄
-    nobody: 아무도 없음
-    observing_user: '감독 중: %{user_name}'
+    nobody: ' '
+    observing_user: '청강생'
     unknown_error: 검색에 오류가 발생했습니다. 다시 시도하시기 바랍니다.
     updating: 업데이트 중...
   save_key_b4dede06: 키 저장
