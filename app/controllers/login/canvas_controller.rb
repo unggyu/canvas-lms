@@ -133,6 +133,9 @@ class Login::CanvasController < ApplicationController
       session[:login_aac] ||= pseudonym.authentication_provider_id ||
         pseudonym.ldap_authentication_provider_used&.id ||
         @domain_root_account.canvas_authentication_provider&.id
+      if !(params[:after_login_url].blank?)
+        session[:return_to] = params[:after_login_url]
+      end
       successful_login(user, pseudonym)
     else
       link_url = Setting.get('invalid_login_faq_url', nil)
