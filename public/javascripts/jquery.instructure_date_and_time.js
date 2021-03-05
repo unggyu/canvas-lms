@@ -199,9 +199,18 @@ $.fn.datepicker = function(options) {
     const min = $div.find('.ui-datepicker-time-minute').val() || $(this).data('time-minute')
     const ampm = $div.find('.ui-datepicker-time-ampm').val() || $(this).data('time-ampm')
     if (hr || min) {
-      text += ' ' + hr + ':' + (min || '00')
-      if (tz.useMeridian()) {
-        text += ' ' + (ampm || I18n.t('#time.pm'))
+      // KO인 경우에는 Meridian을 붙인 뒤 시간정보를 넣어준다.
+      const currentLocale = I18n.currentLocale()
+      if (currentLocale && currentLocale == 'ko') {
+        if (tz.useMeridian()) {
+          text += ' ' + (ampm || I18n.t('#time.pm'))
+        }
+        text += ' ' + hr + ':' + (min || '00')
+      } else {
+        text += ' ' + hr + ':' + (min || '00')
+        if (tz.useMeridian()) {
+          text += ' ' + (ampm || I18n.t('#time.pm'))
+        }
       }
     }
     picker.input.val(text).change()
