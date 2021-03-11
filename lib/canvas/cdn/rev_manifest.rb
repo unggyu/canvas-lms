@@ -98,6 +98,11 @@ module Canvas
           end
         end
 
+        def reset
+          remove_instance_variable(:@gulp_manifest) if instance_variable_defined?(:@gulp_manifest)
+          remove_instance_variable(:@webpack_manifest) if instance_variable_defined?(:@webpack_manifest)
+        end
+
         private
         def load_gulp_data_if_needed
           return if ActionController::Base.perform_caching && defined? @gulp_manifest
@@ -134,6 +139,8 @@ module Canvas
         end
 
       end
+
+      Canvas::Reloader.on_reload { reset }
     end
   end
 end
