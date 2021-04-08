@@ -4203,7 +4203,7 @@ ko:
       headers:
         course_status: 과목 상태
       links:
-        import: 기존 콘텐츠 가져 오기
+        import: 다른 과목 내용 가져오기
         view_course_stream: 과목 스트림 보기
         course_setup: 과목 설정 체크리스트
         new_announcement: 새 공지
