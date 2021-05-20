@@ -158,7 +158,7 @@ module Importers
       item.save!
 
       item_map = {}
-      item.item_migration_position ||= (item.content_tags.not_deleted.pluck(:position).compact + [item.content_tags.not_deleted.count]).max
+      @item_migration_position = item.content_tags.not_deleted.map(&:position).compact.max || 0
       items = hash[:items] || []
       items = items.map{|item| self.flatten_item(item, 0)}.flatten
 
@@ -205,8 +205,6 @@ module Importers
       existing_item = context_module.content_tags.where(id: hash[:id]).first if hash[:id].present?
       existing_item ||= context_module.content_tags.where(migration_id: hash[:migration_id]).first if hash[:migration_id]
       existing_item ||= ContentTag.new(:context_module => context_module, :context => context)
-
-      is_new_record = existing_item.new_record?
 
       existing_item.mark_as_importing!(migration)
       migration.add_imported_item(existing_item)
@@ -335,15 +333,7 @@ module Importers
         item_map[hash[:migration_id]] = item if hash[:migration_id]
         item.migration_id = hash[:migration_id]
         item.new_tab = hash[:new_tab]
-
-        if is_new_record && (!hash[:position] || context_module.item_migration_position) # we're adding new items to an existing module - append on the end
-          context_module.item_migration_position ||= 0
-          context_module.item_migration_position += 1
-          item.position = context_module.item_migration_position
-        elsif hash[:position]
-          item.position = hash[:position]
-        end
-
+        item.position = (context_module.item_migration_position ||= context_module.content_tags.not_deleted.map(&:position).compact.max || 0)
         item.mark_as_importing!(migration)
         if hash[:workflow_state]
           if item.sync_workflow_state_to_asset?
@@ -353,6 +343,7 @@ module Importers
           end
         end
 
+        context_module.item_migration_position += 1
         item.save!
         items << item
       end
