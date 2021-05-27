@@ -31,9 +31,6 @@ class GradebooksController < ApplicationController
 
   before_action :require_context
   before_action :require_user, only: [:speed_grader, :speed_grader_settings, :grade_summary, :grading_rubrics]
-  before_action only: [:speed_grader] do
-    $mobile_device = mobile_device?.freeze
-  end
 
   batch_jobs_in_actions :only => :update_submission, :batch => { :priority => Delayed::LOW_PRIORITY }
 
