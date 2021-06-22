@@ -2176,8 +2176,8 @@ ko:
   complete_registration_by_clicking_the_finish_the_r_6c1c958b: 이메일로 전송 된 "등록 프로세스 완료"링크를 클릭하여 등록을 완료하십시오.
   must_be_logged_in_and_registered_to_perform_that_a_7e3c8785: 해당 작업을 수행하려면 로그인하고 등록해야합니다.
   please_log_in_to_view_this_content_eec6cd0: 이 콘텐츠를 보려면 로그인하십시오
-  you_ll_need_to_accept_the_enrollment_invitation_be_441a617b: '%{date}부터이 과목에 완전히 참여하려면 * 등록 초대를 수락 *해야합니다.'
-  you_ll_need_to_accept_the_enrollment_invitation_be_1e962788: 이 과목에 완전히 참여하려면 * 등록 초대를 수락 *해야합니다.
+  you_ll_need_to_accept_the_enrollment_invitation_be_441a617b: '%{date}부터 이 과목에 완전히 참여하려면 * 초대를 수락 *해야합니다.'
+  you_ll_need_to_accept_the_enrollment_invitation_be_1e962788: 이 과목에 완전히 참여하려면 * 초대를 수락 *해야합니다.
   this_course_hasn_t_started_yet_you_will_not_be_abl_c828c423: 이 과목은 아직 시작되지 않았습니다. %{date}까지이 과목에 참여할 수 없습니다.
   lti_launch_error_41eac9a: LTI 실행 오류
   there_was_an_error_launching_to_the_configured_too_f8ed5767: 구성된 도구를 실행하는 중에 오류가 발생했습니다.
@@ -2396,7 +2396,7 @@ ko:
         uploaded_data: 파일
       links:
         add_another_file: 다른 파일 추가
-        find_file: 이미 업로드 한 파일을 검색하려면 여기를 클릭하십시오.
+        find_file: 기존에 업로드한 파일을 다시 불러 업로드 할 경우, 여기를 클릭하십시오.
       errors:
         unacceptable_file_type: '이 파일 형식은 허용되지 않습니다. 허용되는 파일 유형 : %{allowed_extensions_list}'
       comments_placeholder: 코멘트...
@@ -4606,7 +4606,7 @@ ko:
       use_for_grading: 성적 평가에 반영함
       allow_liking: 좋아요 허용
       only_graders_can_like: "교수님만 좋아요를 선택 가능(학생은 불가)"
-      sort_by_likes: 좋아요로 정렬
+      sort_by_likes: 좋아요순으로 정렬
       available_from: 이용 시작
       until: 이용 종료
       points_possible: 배점
@@ -5341,7 +5341,7 @@ ko:
       publish_to_sis: SIS에 성적 게시
       set_group_weights: 그룹 비중 설정
       show_attendance_columns: 출석 열 표시
-      show_concluded_enrollments: 종결된 등록 표시
+      show_concluded_enrollments: 종료된 등록 표시
       view_grading_history: 평가 기록 보기
     invalid_assignment_groups_warning:
       one: '%{groups}에 배점이 없어서 점수에 포함되지 않음'
@@ -5428,7 +5428,7 @@ ko:
         add_students: 과목에 학생 추가
       buttons:
         add_group: 새 그룹 세트 만들기
-      course_group_explanation: 학생 그룹은 그룹 프로젝트나 보고서를 위해 학생들을 구성하는 데 유용하게 활용할 수 있습니다. 모든 학생 그룹은 고유의 캘린더와 토론장 및 협업 도구를 사용할 수 있어 자율적인 구성 및 보다 효율적인 협업이 가능합니다.
+      course_group_explanation: 학생 그룹은 그룹 프로젝트나 보고서를 위해 학생들을 구성하는 데 유용하게 활용할 수 있습니다. 모든 학생 그룹은 고유의 캘린더와 토론을 사용할 수 있어 자율적인 구성 및 보다 효율적인 협업이 가능합니다.
       drag_and_drop_instructions: 학생을 다른 그룹으로 옮기려면 클릭해서 끌어다 놓으십시오.
       get_started_info: 시작하려면 오른쪽에 있는 "새 그룹 세트 만들기"를 클릭하십시오.
       group_assignment_instructions: 학생을 정해진 그룹에 무작위로 할당하거나 수동으로 그룹을 만들고 구성할 수 있습니다. 그룹을 만들면 과제를 "그룹 제출 과제"로 만들 수 있으며, 이 경우, 각 그룹은 그룹 당 하나의 과제를 제출하게 됩니다.
@@ -5501,7 +5501,7 @@ ko:
           course_groups: 학생 그룹
           account_groups: 계정 수준 학생 그룹
         group_set: 그룹 세트
-        course_group_explanation: 학생 그룹은 그룹 프로젝트나 보고서를 위해 학생들을 구성하는 데 유용하게 활용할 수 있습니다. 모든 학생 그룹은 고유의 캘린더와 토론장 및 협업 도구를 사용할 수 있어 자율적인 구성 및 보다 효율적인 협업이 가능합니다.
+        course_group_explanation: 학생 그룹은 그룹 프로젝트나 보고서를 위해 학생들을 구성하는 데 유용하게 활용할 수 있습니다. 모든 학생 그룹은 고유의 캘린더와 토론을 사용할 수 있어 자율적인 구성 및 보다 효율적인 협업이 가능합니다.
         group_assignment_instructions: 학생을 정해진 그룹에 무작위로 할당하거나 수동으로 그룹을 만들고 구성할 수 있습니다. 그룹을 만들면 과제를 "그룹 제출 과제"로 만들 수 있으며, 이 경우, 각 그룹은 그룹 당 하나의 과제를 제출하게 됩니다.
         account_group_explanation: 계정 수준 학생 그룹은 특정 과목에 묶이지 않은 학생을 묶는 좋은 방법입니다. 모든 학생 그룹은 자신의 캘린더, 토론장, 협업 도구를 가지고 있어서 스스로 구성하고 보다 효율적으로 함께 작업할 수 있습니다.
         tabs:
@@ -5522,6 +5522,7 @@ ko:
         split_into_groups: 학생을 %{num_groups} 개 그룹으로 나눔
         split_into_sized_groups: 학생을 그룹당 %{num_members} 명의 학생으로 그룹으로 나눕니다.
         create_groups_manually: 그룹을 수동으로 만듦
+        create_groups_later: 그룹을 수동으로 만듦
         create_groups: "%{num_groups} 개의 그룹 바로 생성하기"
         limit_group_size: "그룹 정원: %{group_limit}명"
         leave_group_limit_blank: (제한이 없는 경우에는 공백으로 남겨두세요)
@@ -6902,7 +6903,7 @@ ko:
           your_answer: 답변
           answer_with_margin: (오차 허용)
           answer_with_precision: 정밀하게
-        you_left_this_blank: (공란으로 둠)
+        you_left_this_blank: (답변 안 함)
         range_answer: '%{lower_bound}와 %{upper_bound} 사이'
         margin_of_error: 허용되는 오차
         plus_or_minus: +/-
@@ -6918,7 +6919,7 @@ ko:
           move_copy_question: 다른 문제 은행으로 문제 이동/복사
         labels:
           warning_icon: 경고
-          for_answer_number: 답변 %{answer_number}개
+          for_answer_number: 정답 %{answer_number}
           additional_comments: 추가 의견
         submission_was_regraded: 이 문제는 다시 평가되었습니다.
         default_question_answer: '[ 선택 ]'
@@ -6934,7 +6935,7 @@ ko:
           solution_answer: 답변
         show_ansers_for_variable: '%{variable}의 답변 표시'
         group_of_answer_choices: 답변 선택 그룹
-        you_left_this_blank: (공란으로 둠)
+        you_left_this_blank: (답변 안 함)
         titles:
           question_correct_comment: 학생이 문제를 맞히면 이 의견을 보게 됨
           question_incorrect_comment: 학생이 문제를 틀리면 이 의견을 보게 됨
@@ -14157,15 +14158,15 @@ ko:
         repetition: 반복
       criteria: 알림을 보낼 때
       buttons:
-        add_criterion: 트리거 추가
+        add_criterion: 조건 추가
         add_recipient: 수신인 추가
         save_alert: 알림 저장
       recipients: 알림을 보낼 대상
       no_repetition_description: 알림을 다시 보내지 않음
       repetition_description: 해결될 때까지 %{count}일마다 알림 다시 보내기
     alerts:
-      alerts_description_course: 알림은 모든 기준을 만족하는 각 학생에게 생성됩니다. 알림은 매일 체크해서 트리거한 문제가 해결될 때까지 학생, 교수에게 보냅니다.
-      alerts_description_account: 알림은 모든 기준을 만족하는 각 학생에게 생성됩니다. 알림은 매일 체크해서 트리거한 문제가 해결될 때까지 학생, 교수, 계정 관리자에게 보냅니다.
+      alerts_description_course: 알림 추가 시 설정한 조건에 해당하는 학생과 교수자에게 푸시 알림을 보내는 기능입니다. 조건으로 걸린 문제가 해결될 때까지 학생과 교수에게 알림이 갑니다.
+      alerts_description_account: 알림 추가 시 설정한 조건에 해당하는 학생과 교수자에게 푸시 알림을 보내는 기능입니다. 조건으로 걸린 문제가 해결될 때까지 학생과 교수에게 알림이 갑니다.
       remove: 이 항목 제거
       buttons:
         add_alert: 알림 추가
@@ -19467,10 +19468,10 @@ ko:
   subscribe_failed_2eb62de0: 구독 실패
   you_currently_have_no_pinned_discussions_6f0078b8: 고정된 토론이 없음
   to_pin_a_discussion_to_the_top_of_the_page_drag_a__bfe476c3: 토론을 페이지 상단에 고정하려면 여기로 토론을 드래그하거나 토론 설정 메뉴에서 고정을 선택합니다.
-  there_are_no_discussions_to_show_in_this_section_e8f04ebd: 이 섹션에 등록된 토론이 없습니다.
+  there_are_no_discussions_to_show_in_this_section_e8f04ebd: 등록된 토론이 없습니다.
   click_here_to_add_a_discussion_f17c4260: 토론을 추가하려면 여기를 클릭하십시오.
   you_currently_have_no_discussions_with_closed_comm_366a9dab: 댓글이 마감된 토론이 없습니다.
-  to_close_comments_on_a_discussion_drag_a_discussio_85b27448: 토론에 대한 댓글 등록을 종료하려면 여기로 토론을 드래그하거나 토론 설정 메뉴에서 댓글 닫기를 선택합니다.
+  to_close_comments_on_a_discussion_drag_a_discussio_85b27448: 토론에 대한 댓글 등록을 종료하려면 여기로 토론을 드래그하거나 토론 설정 메뉴에서 댓글 마감을 선택합니다.
   ordered_by_recent_activity_112d33d5: 최근 활동 순으로 정렬
   due_date_bf4eaf46: 'Due %{date} '
   last_post_at_date_bf77652f: '마지막 업데이트 일시 %{date}'
@@ -21473,8 +21474,8 @@ ko:
   canvas_failed_to_complete_the_upload_864a4c0f: Canvas가 업로드를 완료하지 못했습니다.
   unknown_event_7a0bcda3: 알 수없는 이벤트
   assignment_created_b3ee04d7: 과제가 생성되었습니다.
-  assignment_muted_4cb590a4: 과제 음소거
-  assignment_unmuted_2cffe4ca: 음소거 해제 된 과제
+  assignment_muted_4cb590a4: 과제 알림 해제
+  assignment_unmuted_2cffe4ca: 알림 해제된 과제
   assignment_updated_c7482598: 과제가 업데이트되었습니다.
   docviewer_area_created_37502a31: Docviewer 영역 생성
   docviewer_area_deleted_6e56d3ba: Docviewer 영역이 삭제되었습니다.
@@ -22029,7 +22030,7 @@ ko:
       update_assignment_points: 이 과제는 %{assignmentPoints}점이 가능하지만 이 루브릭과 일치하도록 %{rubricPoints}점이 가능하도록 바꾸시겠습니까?
   remove_all_course_observer_members_4622c70d: 모든 과목 관찰자 구성원 제거
   pick_the_date_and_time_for_the_following_conferenc_e9f91edd: 다음 회의 설정에 대한 날짜와 시간을 선택합니다.
-  content_import_files_cannot_be_downloaded_after_en_7e3a2099: '가져오기 한 콘텐츠 파일은  %{ENV.CONTENT_MIGRATIONS_EXPIRE_DA} 일이 경과한 후에는 다운로드할 수 없습니다.'
+  content_import_files_cannot_be_downloaded_after_en_7e3a2099: '가져오기 한 콘텐츠 파일은  %{ENV.CONTENT_MIGRATIONS_EXPIRE_DA} 일이 지나간 후에는 다운로드할 수 없습니다.'
   download_attachment_filename_8cc17629: '%{attachment.filename} 다운로드'
   file_not_available_1869c733: 파일을 사용할 수 없습니다
   importing_course_content_into_the_same_course_will_b09c69e: 동일한 과정에 과목 콘텐츠를 가져오면 최초에는 내용이 복제되고, 반복된 경우 복제된 내용이 덮어쓰기 됩니다.
@@ -22382,7 +22383,7 @@ ko:
         no_points: 배점 없음
       index:
         assignment_info: 학습요소 정보
-        assignment_in_speedgrader: speedgrader에서이 과제보기
+        assignment_in_speedgrader: speedgrader에서 이 과제보기
         empty_assignment_selection: 여기에서 추가 정보를 보려면 과제를 선택하세요.
         warning: 경고
     components:
@@ -22403,7 +22404,7 @@ ko:
       is_dropped: 현재이 학생에 대한 성적이 취소되었습니다.
       was_resubmitted: 이 과제는 마지막으로 채점 된 이후 다시 제출되었습니다.
       submission_details: 제출물 세부정보
-      empty_submission_selection: 성적을보고 수정할 학생과 과제를 선택합니다.
+      empty_submission_selection: 성적을 보고 수정할 학생과 과제를 선택합니다.
     learning_mastery:
       select_a_section: 섹션 선택
       hide_student_names_label: 학생 이름 숨기기
@@ -22428,7 +22429,7 @@ ko:
       assignment_toggles_and_actions:
         include_ungraded_assignments: 미 채점을 0으로 취급
         hide_student_names_label: 학생 이름 숨기기
-        show_concluded_enrollments_label: 종결된 등록 표시
+        show_concluded_enrollments_label: 종료된 등록 표시
         show_notes: 학생 정보에 메모 표시
         show_total_as_points: 학생 성적 페이지에 총점을 점수로 표시
         download_current_scores: 현재 점수 (.csv) 다운로드
