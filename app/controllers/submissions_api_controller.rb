@@ -192,6 +192,10 @@
 #
 class SubmissionsApiController < ApplicationController
   before_action :get_course_from_section, :require_context, :require_user
+  before_action only: [:index] do
+    mobile_app = !!(request.user_agent.to_s =~ /iosTeacher|LearningX( |%20)Teacher|iCanvas|LearningX( |%20)Student|androidTeacher|candroid/i)
+    $mobile_app = mobile_app if mobile_app
+  end
   batch_jobs_in_actions :only => [:update], :batch => { :priority => Delayed::LOW_PRIORITY }
 
   include Api::V1::Progress
