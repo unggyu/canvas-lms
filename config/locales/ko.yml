@@ -2689,7 +2689,7 @@ ko:
       no_submission_for_assignment_screenreader: 이 과제에 대한 제출물이 없습니다. %{pointsPossible}점이 가능합니다.
       not_yet_graded: '*평가 안 됨*'
     available_date_description:
-      not_available_until: 까지 사용할 수 없음
+      not_available_until: 시작
       available_until: 열람 종료일
       closed: 닫힘
     submission_types_form:
