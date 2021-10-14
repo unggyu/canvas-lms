@@ -24,6 +24,9 @@ import MarkAsDone from 'compiled/util/markAsDone'
 import ToolLaunchResizer from './lti/tool_launch_resizer'
 import {monitorLtiMessages} from './lti/messages'
 
+// EXPRJ-1292 chrome 94.0.4606.81 LTI invalid request fix
+$(function() {
+
 const $toolForm = $('#tool_form')
 
 const launchToolManually = function() {
@@ -148,3 +151,5 @@ $(function() {
 })
 
 monitorLtiMessages()
+
+}) // end of topmost "$(function() {"
