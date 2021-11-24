@@ -384,6 +384,8 @@ class GradebooksController < ApplicationController
     graded_late_submissions_exist = @context.submissions.graded.late.exists?
     visible_sections = @context.sections_visible_to(@current_user)
 
+    gradebook_settings = gradebook_settings(@context.global_id)
+
     gradebook_options = {
       active_grading_periods: active_grading_periods_json,
       allow_view_ungraded_as_zero: allow_view_ungraded_as_zero?,
@@ -465,7 +467,7 @@ class GradebooksController < ApplicationController
       reorder_custom_columns_url: api_v1_custom_gradebook_columns_reorder_url(@context),
       sections: sections_json(visible_sections, @current_user, session, [], allow_sis_ids: true),
       setting_update_url: api_v1_course_settings_url(@context),
-      settings: gradebook_settings(@context.global_id),
+      settings: get_default_gradebook_settings(gradebook_settings),
       settings_update_url: api_v1_course_gradebook_settings_update_url(@context),
       show_similarity_score: @context.root_account.feature_enabled?(:new_gradebook_plagiarism_indicator),
       show_total_grade_as_points: @context.show_total_grade_as_points?,
@@ -490,6 +492,16 @@ class GradebooksController < ApplicationController
         active_request_limit: Setting.get('gradebook.active_request_limit', '12').to_i,
       }
     })
+  end
+
+  # PTT1-66 성적 화면 기본 설정값을 Xinics 기준에 맞게 변경하였다.
+  def get_default_gradebook_settings(gradebook_settings)
+    default_settings = {
+      "selected_view_options_filters": ["modules", "assignmentGroups"],
+      "view_ungraded_as_zero": "true"
+    }
+    
+    gradebook_settings.deep_merge(default_settings)
   end
 
   def set_individual_gradebook_env
