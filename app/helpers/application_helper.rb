@@ -266,7 +266,7 @@ module ApplicationHelper
   def defer_js_bundle?(bundle)
     # https://xinics.atlassian.net/browse/PTT2-74
     # deferred_js_bundles 대상을 무조건 모든 js 파일에 대해 적용하도록 한다. 이유는 이슈 링크에...
-    @deferred_js_bundles ||= "*".split(",")
+    @deferred_js_bundles ||= ["*"]
     @deferred_js_bundles.include?(bundle.to_s) ||
       (@deferred_js_bundles.include?("*") && @deferred_js_bundles.exclude?("!#{bundle}"))
   end
