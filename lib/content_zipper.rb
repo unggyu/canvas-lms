@@ -307,24 +307,56 @@ class ContentZipper
   def add_attachment_to_zip(attachment, zipfile, filename = nil)
     filename ||= attachment.filename
 
+    # PTTLIW-282
+    @logger.info("add_attachment_to_zip filename: #{filename}")
+    safe_zipname = ziptmp_filename_nfc_and_not_long(filename)
+    @logger.info("add_attachment_to_zip safe_zipname: #{safe_zipname}")
+    filename = safe_zipname
+
     # we allow duplicate filenames in the same folder. it's a bit silly, but we
     # have to handle it here or people might not get all their files zipped up.
     @files_in_zip ||= Set.new
     filename = Attachment.make_unique_filename(filename, @files_in_zip)
     @files_in_zip << filename
 
+    # 에러 위치 구분을 위해서 attachment.open 과 get_output_stream 에러 기록 로직 분리
     handle = nil
     begin
       handle = attachment.open(:need_local_file => true)
-      zipfile.get_output_stream(filename){|zos| Zip::IOExtras.copy_stream(zos, handle)}
     rescue => e
       @logger.error("  skipping #{attachment.full_filename} with error: #{e.message}")
+      handle.close if handle
+      return false
+    end
+
+    begin
+      @logger.info("zipfile.get_output_stream filename: #{filename}")
+      zipfile.get_output_stream(filename){|zos| Zip::IOExtras.copy_stream(zos, handle)}
+    rescue => e
+      @logger.error("  skipping2 #{attachment.full_filename} with error: #{e.message}")
       return false
     ensure
       handle.close if handle
     end
 
     true
+  end
+
+  def ziptmp_filename_nfc_and_not_long(filename)
+    name = filename.encode('utf-8').unicode_normalize(:nfc)
+
+    # Attachment.make_unique_filename 참조 (동일 내용 가져옴)
+    dir = File.dirname(name)
+    dir = dir == "." ? "" : "#{dir}/"
+    extname = name[/(\.[A-Za-z][A-Za-z0-9]*)*(\.[A-Za-z0-9]*)$/]
+    basename = File.basename(name, extname)
+
+    newbase = basename
+    until newbase.bytes.length <= 200
+      newbase = newbase[0..-2]
+    end
+
+    newfilename = "#{dir}#{newbase}#{extname}"
   end
 
   def update_progress(zip_attachment, index, count)
