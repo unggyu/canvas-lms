@@ -154,7 +154,7 @@ export default class ToggleShowByView extends Backbone.View {
   }
 
   showByDate() {
-    if (!this.cache) return true
+    if (!this.cache) return false
     return this.cache.get(this.cacheKey())
   }
 
