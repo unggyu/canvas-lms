@@ -107,13 +107,6 @@ export default class MigrationOptions extends React.Component {
           size="small"
           disabled={isDisabled}
         />
-        <Checkbox
-          label={I18n.t('Send Notification')}
-          checked={this.props.willSendNotification}
-          onChange={this.handleSendNotificationChange}
-          size="small"
-          disabled={isDisabled}
-        />
         {this.props.willSendNotification ? (
           <div className="bcs__history-notification__add-message">
             <Checkbox
