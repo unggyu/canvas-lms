@@ -41,7 +41,7 @@ export default class ToggleShowByView extends Backbone.View {
     if (this.course.get('id') == null) return
     $.extend(true, this, Cache)
     if (ENV.current_user_id != null) this.cache.use('localStorage')
-    if (this.cache.get(this.cacheKey()) == null) this.cache.set(this.cacheKey(), true)
+    if (this.cache.get(this.cacheKey()) == null) this.cache.set(this.cacheKey(), false)
     return this.initialized.resolve()
   }
 
