@@ -2527,8 +2527,8 @@ ko:
       discussion_type: 토론
       quiz_type: 퀴즈
       external_tool_type: 외부 도구
-      not_graded_type: "제출/평가없음"
-      assignment_name: '이름:'
+      not_graded_type: "평가 없음(제출물 받지 않음)"
+      assignment_name: '과제명:'
       assignment_due_at: '마감:'
       multiple_due_dates: '마감일: 여러 마감일'
       differentiated_due_dates: 차별화 된 마감일
@@ -2575,7 +2575,7 @@ ko:
       assignment_name: 과제 이름
       description: 설명
       points_possible: 배점
-      submission_attempts: 재응시 허용
+      submission_attempts: 제출 허용 횟수
       freeze_properties: 복사할 때 과제 속성 잠금
       notify_content_change: 내용이 변경되었음을 사용자에게 알림
       buttons:
@@ -2605,14 +2605,14 @@ ko:
       gpa_scale_recommendation: 학교에서 등급을 매기기 위해 4.0 척도 (또는 5.0 / 6.0)를 사용하지 않는 한 Canvas는 성적을 Letter Grade로 표시 할 것을 권장합니다.
       grading_type_options:
         letter_grade: 알파벳 성적
-        not_graded: "제출/평가없음"
+        not_graded: "평가 없음(제출물 받지 않음)"
         pass_fail: 완료/미완료
         percent: 퍼센트
         points: 배점
     group_category_selector:
-      group_assignment_header: 그룹 지정
-      is_group_assignment: 그룹 과제임
-      grade_group_students_individually: 각 학생에게 개별적으로 성적 할당
+      group_assignment_header: 그룹 과제
+      is_group_assignment: 그룹 과제로 출제
+      grade_group_students_individually: 그룹 구성원에게 개별 성적 부여
       group_set: 그룹 세트
       group_category_locked_explanation: 학생들이 이미 이 과제에 제출물을 제출했으므로 그룹 설정을 변경할 수 없습니다.
       group_category_options: 새 그룹 범주
@@ -2636,13 +2636,13 @@ ko:
     peer_reviews_selector:
       peer_reviews_header: 피어 리뷰
       labels:
-        require_peer_reviews: 피어 리뷰 필요
+        require_peer_reviews: 피어 리뷰 진행
         manually_assign_peer_reviews: 수동으로 피어 리뷰 할당
         automatically_assign_peer_reviews: 자동으로 피어 리뷰 할당
-        anonymous_peer_reviews: 피어 리뷰는 익명으로 표시됩니다.
-      how_to_peer_review: 피어 리뷰를 할당하는 방법
-      reviews_per_user: 사용자별 검토
-      locked_until: 리뷰 할당
+        anonymous_peer_reviews: 피어 리뷰 내용을 익명으로 표시
+      how_to_peer_review: 피어 리뷰 대상 할당 방법
+      reviews_per_user: 학생별 피어 리뷰 할당 수
+      locked_until: 피어 리뷰 할당 일시
       peer_reviews_assign_at_explanation: 마감일 이후의 날짜여야 합니다. 공란으로 두면 마감일을 사용합니다.
       anonymous_peer_reviews: 익명
     turnitin_settings_dialog:
@@ -2699,7 +2699,7 @@ ko:
         online: 온라인 제출
         on_paper: 오프라인 제출
         external_tool: 외부 도구
-      online_entry_options: 온라인 입력 옵션
+      online_entry_options: 온라인 제출 옵션
       labels:
         allow_text_entry: 텍스트 항목
         allow_url: 웹 사이트 URL
@@ -3327,7 +3327,7 @@ ko:
     external_tool_content:
       content: 내용
     migration_converter:
-      header: "과목 콘텐츠 가져오기"
+      header: "기존 학기 콘텐츠 가져오기"
       import_from_label: 콘텐츠 유형
       default_option: 유형 선택...
       cancel_migration: 취소
@@ -4123,7 +4123,7 @@ ko:
         conclude: 과목 종료
         delete: 과목 영구 삭제
         copy: 이 과목 복사
-        import: 과목 콘텐츠 가져오기
+        import: 기존 학기 콘텐츠 가져오기
         export_content: 과목 콘텐츠 내보내기
         reset: 과목 콘텐츠 리셋
         new_badge: 새 항목
@@ -4203,7 +4203,7 @@ ko:
       headers:
         course_status: 과목 상태
       links:
-        import: 다른 과목 내용 가져오기
+        import: 기존 학기 콘텐츠 가져오기
         view_course_stream: 과목 스트림 보기
         course_setup: 과목 설정 체크리스트
         new_announcement: 새 공지
@@ -4545,7 +4545,7 @@ ko:
       manage_discussion: 토론 관리
       mark_all_as_read: 모두 읽음으로 표시
       mark_all_as_unread: 모두 읽지 않음으로 표시
-      confirm_delete_discussion: 이 토론을 삭제하시겠습니까?
+      confirm_delete_discussion: 이 게시물을 삭제하시겠습니까?
       delete: 삭제
       speed_grader: SpeedGrader™
       links:
@@ -4589,7 +4589,7 @@ ko:
       one: 댓글 1 개.
       other: '%{count} 개의 응답.'
     group_discussion_title: 그룹 토론
-    this_is_a_group_discussion: 그룹 토론입니다
+    this_is_a_group_discussion: 그룹 토론으로 출제
     group_discussion_locked: 학생이 이미이 토론에 제출 했으므로 그룹 설정을 변경할 수 없습니다.
     default_discussion_title: 제목 없음
     points_possible_number: 배점은 숫자이어야 함
@@ -5935,7 +5935,7 @@ ko:
       mastery: 숙달 점수
       calculation_method: 계산 방법
       criterion_dialog: 특정 과제에 정렬된 성과 숙달도를 평가하는 손쉬운 방법으로 학습 성과를 과제 루브릭에 포함할 수 있습니다. 학습 성과를 정의할 때 과제 루브릭을 작성할 때 사용하는 기준도 정의해야 합니다. 필요한 만큼의 루브릭 열을 정의하고 이 성과의 숙달도를 정의하는 데 사용하는 점수 임계값을 지정하십시오.
-      criterion_info_link: 기준 등급에 대해서 알아보려면 클릭
+      criterion_info_link: '기준 등급에 대해서 알아보려면 클릭'
       points: '%{points_possible}점'
       total_points: 총점
     outcome_group:
@@ -5962,9 +5962,9 @@ ko:
       import_group: '"%{group}" 그룹을 "%{target}" 그룹으로 가져오시겠습니까?'
       import_outcome: '"%{outcome}" 성과를 "%{target}" 그룹으로 가져오시겠습니까?'
     criteria:
-      does_not_meet_expectations: 기대치에 미치지 못함
-      exceeds_expectations: 기대를 초과함
-      meets_expectations: 기대를 만족함
+      does_not_meet_expectations: 미흡
+      exceeds_expectations: 탁월
+      meets_expectations: 우수
     dont_import: 이 그룹은 가져올 수 없습니다.
     flash:
       addSuccess: 성공적으로 만듦
@@ -6986,13 +6986,13 @@ ko:
         possible_answer: 가능한 답변
         numerical_answer: 숫자로 된 답변
         labels:
-          exact_answer: 정확한 답변
-          answer_in_range: 범위 내의 답변
-          answer_with_precision: 정확한 답변
+          exact_answer: 정확한 답변(오차범위 내 정답 설정)
+          answer_in_range: 범위 내의 답변(정답 범위 설정)
+          answer_with_precision: 정확도로 답변
           answer_comments: 이 답변을 선택한 경우의 의견
         exact_answer_with_error_margin_accessible: '오차 범위가 #error margin#인 *정답*'
         answer_in_range_accessible: '*범위 시작*과 #범위 끝# 사이'
-        answer_with_precision_accessible: '* 정확한 답변 *'
+        answer_with_precision_accessible: '* 정확한 답변 *' 
         answer_text: 답변 내용
         answer_weight: 답변 비중
         matching_left: 왼쪽 일치
@@ -7046,7 +7046,7 @@ ko:
           file_upload: 학생이 답변에 대한 파일을 업로드할 수 있습니다.
           text_only: 이 "문제"는 점수를 매기지는 않지만 관련된 문제를 소개하는 데 유용합니다.
           equations: 대괄호로 둘러 싼 변수 이름을 입력하는 방법으로 변수를 정의할 수 있음
-          multi_answer_sets: 아래 상자 안에서 답변 상자를 표시하려는 모든 곳에 대괄호로 둘러 싼 참조 단어(공백 없음)를 입력하십시오.
+          multi_answer_sets: 드롭다운 박스의 항목으로 추가하려는 모든 곳에 대괄호로 둘러싼 단어(공백 없는 영어와 숫자 조합)를 입력하십시오.
           variable_definitions: 위 변수를 입력하고 나면 여기에 나열되는 것을 볼 수 있습니다. 아래에세 각 변수에 대해 가능한 값의 범위를 지정할 수 있습니다.
           formula_definition: 다음으로 정답을 계산하는 데 사용되는 공식을 작성해야합니다. 위에 나열된 것과 동일한 변수 이름을 사용하십시오.
         equation_example: 즉 "5 더하기 [x]는 무엇입니까"
@@ -7088,7 +7088,7 @@ ko:
         move_to: 다음으로 이동...
       move_question:
         move_item: 항목 이동
-        where_to_move: '%{quiz_item}을 어디로 옮기시겠습니까?'
+        where_to_move: '%{quiz_item}을(를) 어디로 옮기시겠습니까?'
         question_group: '문제 그룹으로 :'
         place: '장소:'
         cancel: 취소
@@ -7097,8 +7097,8 @@ ko:
       multi_answer:
         choose_answer: 선택
       muted:
-        muted_quiz_header: 퀴즈가 성적 비공개 상태임
-        muted_quiz_description: 교수가 평가를 마치지 않았기 때문에 퀴즈 점수를 표시할 수 없습니다. 교수가 이 퀴즈의 평가를 마치면 이 페이지에 점수가 표시됩니다.
+        muted_quiz_header: 퀴즈 성적 안내
+        muted_quiz_description: 아직 평가 중이거나, 성적 비공개 상태일 경우 퀴즈 점수를 표시할 수 없습니다. 평가가 완료되거나 성적이 공개될 경우 점수가 표시됩니다.
       question_group:
         default_group_name: 그룹
         labels:
@@ -7226,8 +7226,8 @@ ko:
       single_answer:
         upload: 업로드
       submission_version:
-        kept: 보관
-        latest: 최근
+        kept: 최종 점수에 반영
+        latest: 시도 이력
         attempt_number: 시도 %{att_no}
       take_quiz_right_side:
         links:
@@ -7305,7 +7305,7 @@ ko:
       moderate:
         page_title: 퀴즈 살펴보기
         moderate_page_title: '%{title} : 보통'
-        outstanding_quiz_submissions_found: 뛰어난 퀴즈 제출물이 있습니다.
+        outstanding_quiz_submissions_found: 자동 제출된 퀴즈가 있습니다.
         autosubmit_link_description: 미결 퀴즈 제출물 확인
         titles:
           select_deselect_all: 모두 선택/해제
@@ -7348,7 +7348,7 @@ ko:
         maximum_of_1440_minutes: 최대 1440 분 (24 시간)
         global_extra_attempts: 모두 이미 %{n} 을/를 받았습니다.
         attempts: 시도
-        extra_time_on_every_attempt: '모든 시도에 대한 시간 연장 :'
+        extra_time_on_every_attempt: '남은 시도에 대한 시간 연장 :'
         global_extra_attempt_time: 모든 사람이 이미 %{count} 분을 받았습니다.
         minutes: 분
         outstanding_autosubmission_description: 이러한 퀴즈 제출물은 학생이 제출하기 전에 퀴즈 페이지를 떠났기 때문에 미해결 상태입니다. 채점을 원하시면 아래의 '제출'을 누르십시오.
@@ -7380,12 +7380,12 @@ ko:
           time_limit: 시간 제한
         labels:
           allow_multiple_attempts: 여러 번 시도 허용
-          ip_filter: IP 주소 필터링
+          ip_filter: 접근 가능한 IP 주소 설정
           quiz_instructions: 설명
           quiz_notify: 이 퀴즈가 변경되었음을 사용자에게 알리기
           quiz_score: 점수
-          require_access_code: 접근 코드 요구
-          restrict_quiz: 퀴즈 제한
+          require_access_code: 액세스 코드 설정
+          restrict_quiz: 퀴즈 접근 제한
           show_question_details: 퀴즈 상세 정보 표시
         limited_attempts: 허용 횟수
         links:
@@ -7592,7 +7592,7 @@ ko:
       titles:
         student_extensions: 학생 연장
         extend_quiz_time: 퀴즈 시간 연장
-        autosubmit_dialog: 뛰어난 퀴즈 제출
+        autosubmit_dialog: 자동 제출
       extensions_for_student: '%{student}에 대한 연장'
       buttons:
         saving: 저장 중...
@@ -7706,6 +7706,7 @@ ko:
       buttons:
         publishing_quizzes: 퀴즈 공개 중...
       default_title: 제목없음
+      regrading_options_title: 재채점 옵션 선택
     index_view:
       quizzes_title: 퀴즈
       search_for_quiz: 퀴즈 검색
@@ -8567,7 +8568,7 @@ ko:
       more_message: '%{count}개 더…'
   no_due_date_44271c53: 마감일 없음
   re_submit_assignment_b3e2bd28: 과제 다시 제출
-  submit_assignment_5799b4e3: 과제 제출
+  submit_assignment_5799b4e3: 과제 제출 시작
   complete_fd828dea: 완료
   incomplete_da3c2ea2: 미완료
   it_s_not_allowed_to_redirect_to_html_files_that_ca_1dbdfb9d: Content-Security-Policy가 시행되는 동안 프록시 될 수없는 HTML 파일로 리디렉션 할 수 없습니다.
@@ -8724,7 +8725,7 @@ ko:
     ask_canvas_network: Canvas Network 커뮤니티에 묻기
     tab_users: 사용자
     turnitin_pledge: 이 과제 제출물은 자신의 원작임
-  this_assignment_submission_is_my_own_original_work_e820ce4b: 이 과제 제출은 내 자신의 독창적 인 작업입니다.
+  this_assignment_submission_is_my_own_original_work_e820ce4b: 이 과제 제출은 내 자신의 독창적인 작업입니다.
   people_b4ebb13c: 사용자
   eportfolio_moderation_feb0ffd3: ePortfolio 중재
   terms_of_service_attributes_not_valid_f3f9fca9: 서비스 약관 속성이 유효하지 않습니다.
@@ -8892,7 +8893,7 @@ ko:
       points: 점수
       letter_grade: 알파벳 성적
       gpa_scale: GPA 등급
-      not_graded: "제출/평가없음"
+      not_graded: "평가 없음(제출물 받지 않음)"
     group_assignment_must_have_group_set: 이 과제의 그룹 세트를 선택하십시오.
   complete_title_7482ddcf: '%{title} 완료'
   anonymous_moderated_assignments_cannot_be_unmuted__8f7b09e7: 익명의 검토 된 과제는 성적이 공개 될 때까지 음소거를 해제 할 수 없습니다.
@@ -9407,9 +9408,9 @@ ko:
   a_calculation_value_is_not_used_with_this_calculat_b1e854b4: 이 계산 방법에는 계산 값이 사용되지 않습니다.
   calculation_int_is_not_a_valid_value_for_this_calc_1de6e060: "'%{calculation_int}'은 (는)이 계산 방법에 유효한 값이 아닙니다. 값은 '%{valid_calculation_ints_min}'에서 '%{valid_calculation_ints_max}'사이 여야합니다."
   no_description_c2554c25: 설명 없음
-  exceeds_expectations_5910fc3a: 기대를 초과함
-  meets_expectations_bb179565: 기대를 만족함
-  does_not_meet_expectations_b0736d20: 기대치에 미치지 못함
+  exceeds_expectations_5910fc3a: 탁월
+  meets_expectations_bb179565: 우수
+  does_not_meet_expectations_b0736d20: 미흡
   learning_outcome:
     no_description: 설명 없음
     no_comment: 의견 없음
@@ -9760,9 +9761,9 @@ ko:
   id_already_in_use_for_this_account_and_authenticat_dc3a7d65: 이 계정 및 인증 제공 업체에 이미 사용중인 ID
   integration_id_integration_id_is_already_in_use_bd1bbb09: 통합 ID "%{integration_id}"이 (가) 이미 사용 중입니다.
   quizzes/quiz:
-    submission_action_take_quiz: '%{title} 가져 오기'
+    submission_action_take_quiz: '%{title} 보기'
   exact_value_margin_eae7e67e: '%{exact_value} /-%{margin}'
-  approximate_value_with_precision_precision_6b7cc6ef: '%{precision} 정밀도의 %{precision}'
+  approximate_value_with_precision_precision_6b7cc6ef: '%{approximate_value}, 정확도: %{precision}'
   lower_bound_to_upper_bound_48d093c2: '%{lower_bound}-%{upper_bound}'
   default_question_name: 문제
   default_question_text: 문제 텍스트
@@ -12247,7 +12248,7 @@ ko:
         assignment_created: 알림 생성됨 - %{assignment_name}, %{course_name}
         due_at: '마감일: %{assignment_due_date_time}'
         html:
-          assignment_created: 과제 생성됨 - %{assignment_name}, %{course_name}
+          assignment_created: 학습요소 생성됨 - %{assignment_name}, %{course_name}
           due_at: '마감일: %{assignment_due_date_time}'
           link_text: 과제 보기
           multiple_due_dates: '마감일: 여러 날짜'
@@ -12263,7 +12264,7 @@ ko:
         new_assignment: '%{course_name}의 새 과제'
         no_due_date: '마감일: 마감일 없음'
       summary:
-        assignment_created: 과제 생성됨 - %{assignment_name}, %{course_name}
+        assignment_created: 학습요소 생성됨 - %{assignment_name}, %{course_name}
         due_at: '마감일: %{assignment_due_date_time}'
         multiple_due_dates: '마감일: 여러 날짜'
         no_due_date: '마감일: 마감일 없음'
@@ -13857,7 +13858,7 @@ ko:
   join_the_conversation_using_the_link_below_54ab1f0e: 아래 링크를 사용하여 대화에 참여하십시오.
   new_comment_on_announcement_discussion_topic_cours_7905b782: 공지 사항 %{discussion_topic}, %{course}에 대한 새 댓글
   signup_type_8b4506f3: 가입 유형
-  assignment_created_assignment_name_course_name_324a5639: 과제 생성됨-%{assignment_name}, %{course_name}
+  assignment_created_assignment_name_course_name_324a5639: 학습요소 생성됨-%{assignment_name}, %{course_name}
   a_new_assignment_has_been_created_for_your_course__12b72639: 과목 %{course_name}에 대한 새 과제가 생성되었습니다.
   due_multiple_dates_ea8a95e1: '마감일 : 여러 날짜'
   due_no_due_date_3c1d1651: '마감일: 마감일 없음'
@@ -14259,7 +14260,7 @@ ko:
   edit_assignment_ebf22a72: 과제 편집
   this_assignment_does_not_count_toward_the_final_gr_a5c238e2: 이 과제는 최종 성적에 포함되지 않습니다.
   add_rubric_3636d9a6: 루브릭 추가
-  allow_intra_group_peer_reviews_53f1e455: 그룹 내 동료 검토 허용
+  allow_intra_group_peer_reviews_53f1e455: 동일 그룹 구성원 간 피어 리뷰 허용
   send_to_b940900a: 보내기 ...
   copy_to_64f8456b: 다른 과목에 복사하기
   you_can_log_in_directly_with_this_provider_by_goin_467d7f66: '%{url}로 이동하여이 제공 업체에 직접 로그인 할 수 있습니다.'
@@ -14612,7 +14613,7 @@ ko:
   you_are_not_enrolled_in_any_courses_a5c63286: 귀하는 어떤 과목에도 등록되어 있지 않습니다.
   nickname_1e6da3ad: 별명
   enrolled_as_272da3b9: 역할
-  published_4bb5209e: 공개 여부
+  published_4bb5209e: 공개
   group_a8f5ed9c: 그룹
   the_course_link_validator_searches_course_content__563fa215: 콘텐츠 링크 검사 도구는 과목 내 전 콘텐츠를 검사하여 무효하거나 응답이 없는 링크를 찾아냅니다. 응답 없음으로 표시되는 링크들 중 일부는 본 서버로부터는 접근이 불가하지만 여전히 학생들은 사용할 수 있는 상태일 수도 있습니다.
   grade_syncing_e78475e8: 성적 동기화
@@ -14787,7 +14788,7 @@ ko:
     one: (1) 파일이 무시되었습니다.
     other: (%{count}) 파일이 무시되었습니다.
   there_were_some_files_we_didn_t_know_what_to_do_wi_6156913f: 우리가 무엇을 해야할지 모르는 파일이 있었습니다. 다른 사람의 제출 페이지에 추가되지 않았습니다.
-  graded_25cd3fcd: 성적
+  graded_25cd3fcd: 채점 현황
   previous_bd2ac015: 이전
   next_40e12421: 다음
   notice_inactive_student_bcc4248a: '알림 : 비활성 학생'
@@ -14795,7 +14796,7 @@ ko:
   notice_the_grading_period_is_closed_for_this_stude_6c3ce0f9: 알림 :이 학생의 채점 기간은 마감되었습니다.
   your_comment_was_auto_saved_as_a_draft_c49d3510: 댓글이 초안으로 자동 저장되었습니다.
   this_submission_has_already_been_graded_and_is_rea_8ec61c52: 이 제출물은 이미 채점되었으며 검토 할 준비가되었습니다.
-  submitted_files_82dd3009: 제출 된 파일
+  submitted_files_82dd3009: 제출된 파일
   click_to_load_a020891b: (클릭하여 미리보기)
   download_this_file_669f9174: 이 파일 다운로드
   resubmit_to_the_associated_tool_for_plagiarism_ana_8d84d913: 표절 분석을 위해 관련 도구에 다시 제출하십시오.
@@ -14805,7 +14806,7 @@ ko:
   comments_for_this_attempt_a5fae61f: 과제 코멘트
   assignment_comments_e43ed898: 과제 코멘트
   draft_comment_b2376ea4: 초안 주석
-  submit_a3cc6859: 제출
+  submit_a3cc6859: 등록
   delete_comment_a71040c3: 댓글 삭제
   click_here_to_view_ec8cb2fd: 보려면 여기를 클릭하십시오
   all_comments_are_sent_to_the_whole_group_284591e7: 모든 댓글은 전체 그룹에 전송됩니다.
@@ -15071,7 +15072,7 @@ ko:
   delete_this_question_8f955ceb: 이 문제 삭제
   once_you_have_submitted_an_answer_you_will_not_be__840df9e9: 답변을 제출하면 나중에 변경할 수 없습니다. 이전 문제를 볼 수 없습니다.
   question_9121487: 문제
-  your_answer_8dad6ea4: '제출한 답안:'
+  your_answer_8dad6ea4: '----- < 학생이 제출한 답안 > -----'
   other_incorrect_match_options_c1418af5: '기타 잘못된 일치 옵션 :'
   correct_answer_comments_34ca671f: 정답 의견
   wrong_answer_comments_14963a24: 오답 의견
@@ -15107,7 +15108,7 @@ ko:
   students_will_automatically_receive_full_credit_on_cc61df39: 학생들은 설문 조사에 응시하면 자동으로 전체 학점을 받습니다
   options_3ab0ea65: 옵션
   sync_to_name_6f04716d: '%{name}에 동기화'
-  shuffle_answers_edb602b7: 답변 순서 섞기
+  shuffle_answers_edb602b7: 문제 내 답변 순서 섞기
   time_limit_a6f1a51e: 시간 제한
   how_many_minutes_ecca5ee7: 몇 분?
   minutes_4aee5a41: 분
@@ -15115,12 +15116,12 @@ ko:
   keep_submissions_anonymous_5cbaf419: 제출물을 익명으로 유지
   allow_multiple_attempts_e67a0a37: 재응시 허용
   quiz_score_to_keep_d1f7c4b1: 적용할 점수
-  allowed_attempts_4e229caa: 재응시 횟수 제한
+  allowed_attempts_4e229caa: 제출 횟수 제한
   number_of_allowed_attempts_3d10b740: 재응시 횟수 제한
   students_cannot_view_quiz_responses_after_course_c_88e929ed: 과목이 종료된 후 학생은 퀴즈 응답을 볼 수 없습니다.
   let_students_see_their_quiz_responses_incorrect_qu_f5c9cb70: 오답 여부 표시하기 (오답일 경우 오답 여부와 피드백이 표시됩니다)
   only_after_their_last_attempt_3593d101: 마지막 시도 후에만 정답 표시
-  only_once_after_each_attempt_cc842738: 각 시도마다 한번씩
+  only_once_after_each_attempt_cc842738: 응시 직후에만 1회 표시 (재방문 시 표시되지 않음)
   let_students_see_the_correct_answers_dacc2faf: 정답 공개하기
   show_correct_answers_at_30c37e01: 정답 공개 시작
   show_correct_answers_at_a5475aa3: 정답 공개 시작
@@ -15128,10 +15129,10 @@ ko:
   hide_correct_answers_at_b1a59408: 정답 공개 마감
   show_one_question_at_a_time_271e346d: 한 번에 한 문제만 표시
   lock_questions_after_answering_5aecef9d: "답변 후 문제 잠금(이전 문제 이동 불가)"
-  quiz_restrictions_5db831c5: 퀴즈 제한
-  require_an_access_code_600e06e8: 접근 코드 요구
+  quiz_restrictions_5db831c5: 퀴즈 접근 제한
+  require_an_access_code_600e06e8: 액세스 코드 설정
   required_access_code_592902d7: 필수 액세스 코드
-  filter_ip_addresses_2f296bd2: IP 주소 필터링
+  filter_ip_addresses_2f296bd2: 접근 가능한 IP 주소 설정
   filter_by_ip_address_40965f66: IP 주소로 필터링
   find_ip_address_filter_96ec70bb: IP 주소 필터 찾기
   require_respondus_lockdown_browser_31425b3a: Respondus LockDown 브라우저 필요
@@ -15846,8 +15847,8 @@ ko:
         other: 다음 문제를 보거나 읽었습니다.
       page_blurred: Canvas 퀴즈 풀기 페이지보기 중지 ...
       page_focused: 재개되었습니다.
-      question_flagged: '신고 된 문제 :'
-      question_unflagged: '신고되지 않은 문제 :'
+      question_flagged: '플래그를 설정한 문제 :'
+      question_unflagged: '플래그를 설정하지 않은 문제 :'
       headers:
         action_log: 활동 로그
       notices:
@@ -16590,7 +16591,7 @@ ko:
     submissions_dropdown:
       submitted: '* 제출 : * %{submittedAt}'
       submission_to_view: "볼 수있는 제출 :"
-      grade: '(등급 : %{grade})'
+      grade: '(점수 : %{grade})'
       see_all_quiz_attempts: 모든 퀴즈 시도보기
       loud_late: 지연
     cancel_button: 취소
@@ -16737,7 +16738,7 @@ ko:
     calendar_title: '캘린더:'
     agenda_view_displaying_start_end: 이제 %{start}부터 %{end}까지 표시함
     prompts:
-      delete_assignment: 이 과제를 삭제하시겠습니까?
+      delete_assignment: '*[주의] 이 항목을 삭제하면 연결되어 있는 학습요소도 함께 삭제되어 더 이상 해당 과목에서 학습하거나, 학습 내역을 확인할 수 없습니다. 이 학습요소를 정말 삭제하시겠습니까?*'
       delete_override: 이 과제 재정의를 삭제하시겠습니까?
       delete_event: 이 이벤트를 삭제하시겠습니까?
       unreserve_event: 이 이벤트에 대한 예약을 삭제하시겠습니까?
@@ -16975,7 +16976,7 @@ ko:
   and_more_1c35b232: 그리고 더...
   are_you_sure_you_want_to_delete_this_to_do_item_497016ea: 이 할 일 항목을 삭제 하시겠습니까?
   are_you_sure_you_want_to_delete_this_page_2185844: 이 페이지를 삭제 하시겠습니까?
-  are_you_sure_you_want_to_delete_this_discussion_334554e0: 이 토론을 삭제하시겠습니까?
+  are_you_sure_you_want_to_delete_this_discussion_334554e0: 이 게시물을 삭제하시겠습니까?
   event_fe9ba3fe: 일정
   to_do_1d554f36: 할 일
   hide_course_sections_for_course_name_bd1911af: 과목 %{name}에 대한 과목 섹션 숨기기
@@ -17334,9 +17335,9 @@ ko:
   could_not_duplicate_discussion_953ed67f: 토론을 복제 할 수 없습니다.
   modelsOutcome:
     criteria:
-      exceeds_expectations: 기대를 초과함
-      meets_expectations: 기대를 만족함
-      does_not_meet_expectations: 기대치에 미치지 못함
+      exceeds_expectations: 탁월
+      meets_expectations: 우수
+      does_not_meet_expectations: 미흡
   modelsPageView:
     browsers:
       unrecognized: 인식할 수 없는 브라우저
@@ -17402,24 +17403,24 @@ ko:
       sort_descending: '%{title}, 내림차순 정렬'
     reload_viewing_page: 이 페이지는 여러분이 페이지를 보기 시작한 이후에 변경되었습니다. *다시 로드*하십시오.
   recentint_remainderint_decaying_average_79bc09fb: '%{recentInt} / %{remainderInt} 감소 평균'
-  decaying_average_8bf6a0dd: 쇠퇴 평균
+  decaying_average_8bf6a0dd: 감소 평균
   last_item_79583712: '마지막 항목 :'
   between_1_and_99_d421a4c0: 1 % ~ 99 %
-  most_recent_result_counts_as_calculation_int_of_ma_d2fc1d19: 가장 최근 결과는 숙달 비중의 %{calculation_int}로 계산되고 다른 모든 결과의 평균은 비중의 %{remainder}로 계산됩니다. 결과가 하나만있는 경우 단일 점수가 반환됩니다.
+  most_recent_result_counts_as_calculation_int_of_ma_d2fc1d19: 가장 최근의 점수에 가중치 %{calculation_int}를 적용한 값과, 이전 점수들의 평균에 가중치 %{remainder}를 적용한 값을 합산하여 최종 점수를 계산합니다. 하나의 결과만 있는 경우에는 해당 점수만 반영됩니다.
   achieve_mastery_count_times_8c9bbcec:
-    one: 한 번 마스터리 달성
-    other: 마스터리 %{count} 회 달성
-  n_number_of_times_c2e78b72: n 횟수
+    one: 숙달 한 번 달성
+    other: 숙달 %{count} 회 달성
+  n_number_of_times_c2e78b72: 시도 횟수
   items_299a7626: '항목 :'
   between_1_and_5_f2a74bcf: 1과 5 사이
   must_achieve_mastery_at_least_count_times_scores_a_628db168:
-    one: 숙달을 한 번 이상 달성해야합니다. 숙련도 이상의 점수는 평균을내어 최종 점수를 계산합니다.
-    other: 숙련도를 %{count} 회 이상 달성해야합니다. 숙련도 이상의 점수는 평균을내어 최종 점수를 계산합니다.
-  latest_score_905aa87b: 최종 점수
+    one: 한 번 이상 숙달 기준을 달성해야합니다. 숙달 기준 이상의 점수들은 평균값으로 최종 점수에 반영됩니다.
+    other: 최소한 %{count} 회 이상의 숙달 기준을 달성해야 합니다. 숙달 기준 이상의 점수들은 평균값으로 최종 점수에 반영됩니다.
+  latest_score_905aa87b: 최근 점수
   most_recent_score_13a87e8c: 가장 최근 점수
-  mastery_score_reflects_the_most_recent_graded_assi_921f138f: 숙련도 점수는 가장 최근에 채점 된 과제 또는 퀴즈를 반영합니다.
+  mastery_score_reflects_the_most_recent_graded_assi_921f138f: 숙련도 점수는 가장 최근의 성적 또는 퀴즈 점수를 반영합니다.
   highest_score_e080551e: 최고 점수
-  mastery_score_reflects_the_highest_score_of_a_grad_fd426d1e: 숙련도 점수는 채점 된 과제 또는 퀴즈의 최고 점수를 반영합니다.
+  mastery_score_reflects_the_highest_score_of_a_grad_fd426d1e: 숙련도 점수는 점수가 매겨진 과제 또는 퀴즈 중 가장 높은 점수를 나타냅니다.
   unstarted_932f2990: 시작되지 않음
   content_migration_queued_46c27790: 콘텐츠 마이그레이션 대기 중
   notification_preferences:
@@ -17470,7 +17471,7 @@ ko:
     modified_by: 수정한 사용자
     size: 크기
     move_question:
-      one: '%{item}을 어디로 옮기시겠습니까?'
+      one: '%{item}을(를) 어디로 옮기시겠습니까?'
       other: 이 %{count} 항목을 어디로 이동 하시겠습니까?
     results_count: '%{num_results} 개의 검색 결과 표시'
     confirm_delete_with_contents:
@@ -18067,7 +18068,7 @@ ko:
         prerequisites: 필수 조건
         published: 공개
   no_directory_is_selected_please_select_a_directory_46ded46: 디렉토리를 선택하지 않았습니다. '이동'을 클릭하기 전에 디렉토리를 선택하십시오.
-  where_would_you_like_to_move_title_fabd6e8f: '%{title}을 어디로 옮기시겠습니까?'
+  where_would_you_like_to_move_title_fabd6e8f: '%{title}을(를) 어디로 옮기시겠습니까?'
   you_have_no_outcomes_click_here_to_go_to_the_outco_574bd0af: 결과가 없습니다. 결과 페이지로 이동하려면 여기를 클릭하십시오.
   outcomesFindDialog:
     dont_import: 이 그룹은 가져올 수 없습니다.
@@ -18288,7 +18289,7 @@ ko:
   login_info_d1d9f11e: 로그인 정보
   proceed_f3d33864: 계속
   you_do_not_have_permission_to_invite_users_that_do_b7142404: 아직 존재하지 않는 사용자를 초대 할 권한이 없습니다.
-  back_2900f52a: 뒤
+  back_2900f52a: 이전으로
   loading_725811ca: 로딩
   user_search_panel_18f80511: 사용자 검색 패널
   use_this_panel_to_search_for_people_you_wish_to_ad_a3d726a7: 이 패널을 사용하여 이 과목에 추가 할 사람을 검색합니다.
@@ -18457,7 +18458,7 @@ ko:
   must_be_a_number_e1dfe68a: 숫자 여야합니다.
   unlimited_ff19e96d: 제한 없음
   limited_322546c5: 제한 있음
-  number_of_attempts_b0994c2f: 재응시 횟수
+  number_of_attempts_b0994c2f: 제출 허용 횟수
   assignment_dates_saved_successfully_78e0f355: 할당 날짜가 성공적으로 저장되었습니다.
   there_was_an_error_retrieving_assignment_dates_39320c15: 할당 날짜를 검색하는 중에 오류가 발생했습니다.
   error_starting_save_operation_81bcb99: '저장 작업 시작 오류 :'
@@ -19219,7 +19220,7 @@ ko:
   now_that_your_course_is_set_up_and_available_you_p_c0c8635c: 지금부터는 과목이 설정되고 이용 가능하므로 이 체크리스트가 더 이상 필요하지 않을 것입니다. 그러나 새로운 기능을 확인하거나 과목 콘텐츠를 변경하고자 할 때 추가적인 도움이 필요한 경우를 대비하고자 준비되어 있습니다.
   you_do_not_have_permission_to_publish_this_course_ff361c82: 이 과목을 게시 할 권한이 없습니다.
   next_steps_ce0f0d0c: 다음 단계
-  import_content_b2fd6620: 과목 콘텐츠 가져오기
+  import_content_b2fd6620: 기존 학기 콘텐츠 가져오기
   if_you_ve_been_using_another_course_management_sys_67edfab1: 다른 LMS에서 사용한 수업 자료를 Canvas로 옮기고 싶을 경우, 손쉽게 이전할 수 있는 기능입니다.
   add_course_assignments_628ed6d0: 과목 과제 추가
   add_your_assignments_you_can_just_make_a_long_list_8a7862dd: 과제를 추가할 수 있습니다. 그룹으로도 나눌 수 있으며 각 과제그룹에 대한 평가 비중을 지정할 수도 있습니다.
@@ -19858,7 +19859,7 @@ ko:
     other: '%{groups}은 배점이 없기 때문에 점수에 포함되지 않습니다.'
   can_t_compute_score_until_an_assignment_has_points_f34dd600: 과제에 배점이 있을 때까지 점수를 계산할 수 없습니다.
   out_of_pointspossible_3fb5ee20: "점 / 배점 %{pointsPossible}점"
-  manual_8c2665de: 설명서
+  manual_8c2665de: 성적 수동 공개
   muted_3ff94739: 알림 끄기
   post_grades_3e692d46: 성적 공개
   all_grades_posted_616a85ab: 모든 성적이 공개되었습니다.
@@ -19879,6 +19880,7 @@ ko:
   re_upload_submissions_125e415d: 제출물 다시 업로드
   grade_posting_policy_42c8a94b: 성적 공개 정책
   weight_of_grade_dff535d9: 성적의 %{weight}
+  ungraded_as_0_bb864f07: 미채점을 0점으로 처리
   order_301c3ac1: 정렬
   a_z_243c3301: 오름차순
   z_a_be2ab67c: 내림차순
@@ -20597,21 +20599,21 @@ ko:
   you_ve_updated_the_scoring_criteria_this_will_affe_ec852671: 점수 기준을 업데이트했습니다. 이 성과를 사용하여 이전에 평가 된 모든 학생에게 영향을 미칩니다.
   learning_outcomes_can_be_included_in_assignment_ru_a48bb903: >2
   
-    학습 성과는 평가를 위한 쉬운 방법으로 과제 루브릭에 포함될 수 있습니다.
+    특정 과제의 숙달도를 평가하기 위해, 학습 성과를 과제 루브릭에 포함할 수 있습니다. 
   
-    특정 과제에 맞춘 성과의 숙달. 학습을 정의 할 때
+    학습 성과를 정의할 때, 루브릭 작성 시 사용할 수 있는 기준도 정의해야합니다. 
   
-    성과를 구축 할 때 사용할 수있는 기준도 정의해야합니다.
+    필요한 만큼의 루브릭 평가 항목을 생성하고 정의한 후, 
   
-    과제 루브릭. 필요한만큼 루브릭 열을 정의하고
+    이 성과의 숙달도를 정의하는데 사용할 기준값(점수)을 입력하십시오.
   
-    이 성과의 숙달을 정의하는 데 사용될 점수 임계 값.
+    
   criterion_ratings_3eed22e2: 기준 등급
   more_information_about_ratings_57cdd446: 등급에 대한 추가 정보
   import_outcomes_7dda186b: 성과 가져 오기
   upload_your_outcomes_bceeadbe: 성과를 업로드하십시오!
-  drag_and_drop_or_click_to_browse_your_computer_2b46a2b6: 드래그 앤 드롭 또는 클릭하여 컴퓨터 탐색
-  csv_or_json_formats_only_d8ba36d: CSV 또는 JSON 형식 만
+  drag_and_drop_or_click_to_browse_your_computer_2b46a2b6: 끌어서 놓기 또는 클릭하여 컴퓨터 탐색
+  csv_or_json_formats_only_d8ba36d: CSV 또는 JSON 형식만 가능
   outcomes_csv_format_9005acfb: 성과 CSV 형식
   your_score_a1fc2fcf: 너의 점수
   your_score_score_fb785381: '점수 : %{score}'
@@ -21389,7 +21391,7 @@ ko:
   no_results_3cda4e72: 결과 없음
   enter_at_least_count_characters_1c7a0b36: '%{count} 자 이상 입력하세요.'
   send_to_a879095e: '보내기 :'
-  begin_typing_to_search_7daa7b1: 주차를 선택하세요
+  begin_typing_to_search_7daa7b1: 검색어를 입력하세요
   filter_conversations_by_type_1ce8c064: 유형별로 대화 필터링
   username_saved_successfully_they_should_receive_an_877e31e: '* %{userName} *이 성공적으로 저장되었습니다! 곧 확인 이메일을 받게됩니다.'
   username_saved_successfully_9303974f: '* %{userName} *이 성공적으로 저장되었습니다!'
@@ -22164,7 +22166,7 @@ ko:
     group: 그룹
     mute_assignment: 과제 성적 비공개
     no_submission_time: 제출 시간 없음
-    not_graded: "제출/평가없음"
+    not_graded: "평가 없음(제출물 받지 않음)"
     not_submitted: 제출 안 됨
     nth_student: '%{n}번째 학생'
     portion_graded: '%{x} / %{y} 평가됨'
@@ -22221,9 +22223,9 @@ ko:
   add_a_new_outcome_group_e3fab2fc: 새 성과 그룹 추가
   import_a_set_of_outcomes_6b782192: 성과 세트 가져 오기
   find_an_outcome_919328e6: 성과 검색
-  outcomes_are_created_here_to_track_mastery_in_a_co_2f487549: "성과들의 목적은 학생들의 과목에 대한 숙달 정도를 추적하기 위함입니다. [+ 성과] 버튼으로 새로운 성과를 만들거나 [+ 그룹] 버튼으로 성과 그룹을 만들어 성과를 관리할 수 있으며, [검색] 버튼으로 성과를 검색할 수 있습니다. 왼쪽의 패널을 이용하여 원하는 성과를 조회할 수 있고, 성과 항목을 드래그 드롭 하여 다단계 구조로 구성할 수 있습니다."
-  in_order_to_import_a_large_quantity_of_outcomes_at_c0d587e3: 한번에 많은 양의 성과 데이터를 가져오거나, 기존의 성과를 업데이트하려면 * CSV 형식 *을 이용하십시오.
-  more_importantly_canvas_allows_you_to_add_outcomes_78822cf: 더욱 중요한 점은, 성적 루브릭에 성과들을 추가함으로써 과제 평가 시 숙달 정도를 측정할 수 있다는 것입니다. 성과들을 설정한 후 루브릭 관리를 통해 성적 평가에 성과를 이용할 수 있습니다.
+  outcomes_are_created_here_to_track_mastery_in_a_co_2f487549: "성과 설정의 목적은 학생들의 과목 숙달 정도를 추적하기 위함입니다. [+ 성과] 버튼으로 새로운 성과 항목을 만들거나 [+ 그룹] 버튼으로 성과 그룹을 만들어 체계적으로 성과 관리를 할 수 있으며, [검색] 버튼으로 성과를 검색할 수 있습니다. 검색 시에는 왼쪽의 패널을 이용하여 원하는 성과를 조회할 수 있고, 성과 항목을 끌어오기하여 다단계 구조로 구성할 수도 있습니다."
+  in_order_to_import_a_large_quantity_of_outcomes_at_c0d587e3: 한번에 많은 양의 성과 데이터를 가져오거나, 기존의 성과를 업데이트하려면 [가져오기] 버튼으로 * CSV 형식 *의 파일을 등록하십시오.
+  more_importantly_canvas_allows_you_to_add_outcomes_78822cf: 더욱 중요한 점은 [루브릭] 메뉴를 통해 루브릭 채점 기준에 설정된 성과들을 추가하여 성적 평가에 반영되도록 적용시킴으로써, 학습자의 과제 숙달 정도를 측정할 수 있다는 것입니다.
   you_have_no_outcomes_click_here_to_create_one_ebf262a3: 검색된 성과가 없습니다. * 여기를 클릭하십시오. *
   total_points_44d76792: 총점
   n_points_precision_2_strip_insig_points_60ad6f21: '%{n_points_precision_2_strip_insig} 점'
@@ -22270,11 +22272,11 @@ ko:
       choose_a_picture: 사진 선택하기
   quiz:
     regrade:
-      regrade_options: 이미 퀴즈를 치른 학생을위한 재학 점 옵션을 선택하십시오. 퀴즈를 저장하면 Canvas에서 모든 제출물을 다시 채점합니다 (학생의 점수가 영향을받을 수 있음).
-      regrade_disabled: 답변이 제거되었거나 학생이 제출을 완료 한 후 문제 유형이 변경 되었기 때문에이 문제에 대해 재 채점 할 수 없습니다.
-      no_scores_reduced: 정답과 이전 정답에 모두 점수 주기 (*낮아지는 점수가 없음*)
+      regrade_options: 이미 답안을 제출한 학생들에 대한 재채점 옵션을 선택하십시오. 퀴즈 저장시 일괄 재채점 됩니다.(학생 점수에 영향이 있을 수 있습니다.)
+      regrade_disabled: 학생이 제출을 완료한 후에 응답이 제거되었거나 문제 유형이 변경 되었기 때문에이 문제에 대한 재평가는 허용되지 않습니다.
+      no_scores_reduced: 수정된 정답과 이전 정답에 모두 점수 주기 (*낮아지는 점수가 없음*)
       some_scores_reduced: 정답에만 점수 주기 (*일부 학생*의 점수가 낮아질 수도 있음)
-      give_everyone_full_credit: 이 문제에 대해 모두에게 전적인 크레딧을 제공
+      give_everyone_full_credit: 이 문제에 대해 모두에게 만점 주기
       update_question_without_regrading: 다시 평가하지 않고 문제를 업데이트
   add_quiz_cebfa28b: 퀴즈 추가
   quiz_settings_4e17f005: 퀴즈 설정
@@ -22362,7 +22364,7 @@ ko:
   edited_c4fcbdbf: '편집 :'
   by_b90c6b6f: 으로
   to_do_date_2cb4bf7b: '할일 :'
-  remove_as_front_page_2698aa12: 첫 페이지로 제거
+  remove_as_front_page_2698aa12: 첫 페이지 설정 해제
   use_as_front_page_274a488b: 첫 페이지로 사용
   send_page_to_another_user_6ef5a7c1: 다른 사용자에게 페이지 보내기
   copy_page_to_another_course_405cc07c: 다른 과목로 페이지 복사
