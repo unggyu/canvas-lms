@@ -1674,11 +1674,11 @@ class Attachment < ActiveRecord::Base
 
   def pdf_comment_editorable?(opts = {})
     return !$mobile_app &&
-        opts[:course_id].present? &&
-        opts[:request_fullpath].present? &&
-        pdf_comment_editor_base_url.present? &&
-        pdf_comment_editor_mime_types.include?(content_type) &&
-        pdf_comment_editor_use_paths.any? { |url_reg_exp| opts[:request_fullpath].match(url_reg_exp) }
+      opts[:course_id].present? &&
+      opts[:request_fullpath].present? &&
+      pdf_comment_editor_base_url.present? &&
+      pdf_comment_editor_mime_types.include?(content_type) &&
+      pdf_comment_editor_use_paths.any? { |url_reg_exp| opts[:request_fullpath].match(url_reg_exp) }
   end
 
   def pdf_comment_editor_mime_types
@@ -1691,16 +1691,16 @@ class Attachment < ActiveRecord::Base
 
   def pdf_comment_editor_launch_token(user, opts={})
     payload = {
-        iat: Time.now.to_i,
-        locale: pdf_comment_editor_locale,
-        course_id: opts[:course_id],
-        attachment_id: id,
-        file_url: public_download_url,
-        file_name: display_name,
-        user_name: user.name,
-        user_email: user.email,
-        user_role: enrollment_type_to_pdf_comment_editor_role(opts[:enrollment_type]),
-        readonly: opts[:enable_annotations].nil? || opts[:enable_annotations] === false
+      iat: Time.now.to_i,
+      locale: pdf_comment_editor_locale,
+      course_id: opts[:course_id],
+      attachment_id: id,
+      file_url: public_download_url,
+      file_name: display_name,
+      user_name: user.name,
+      user_email: user.email,
+      user_role: enrollment_type_to_pdf_comment_editor_role(opts[:enrollment_type]),
+      readonly: opts[:enable_annotations].nil? || opts[:enable_annotations] === false
     }
     token = JWT.encode(payload, pdf_comment_editor_jwt_secret, 'HS256', { typ: 'JWT' })
     return token
@@ -1709,30 +1709,30 @@ class Attachment < ActiveRecord::Base
   def pdf_comment_editor_locale
     case I18n.locale
     when :ko
-        return 'ko-KR'
+      return 'ko-KR'
     when :en
-        return 'en-US'
+      return 'en-US'
     when :ja
-        return 'ja-JP'
+      return 'ja-JP'
     else
-        return 'en-US'
+      return 'en-US'
     end
   end
 
   def enrollment_type_to_pdf_comment_editor_role(enrollment_type)
     case enrollment_type
     when 'student'
-        return 0
+      return 0
     when 'teacher'
-        return 1
+      return 1
     when 'ta'
-        return 2
+      return 2
     when 'designer'
-        return 3
+      return 3
     when 'observer'
-        return 4
+      return 4
     else
-        return 0
+      return 0
     end
   end
 
