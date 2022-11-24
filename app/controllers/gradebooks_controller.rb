@@ -983,7 +983,7 @@ class GradebooksController < ApplicationController
           @current_user,
           avatars: service_enabled?(:avatars),
           grading_role: grading_role(assignment: @assignment)
-        ).json(request_fullpath: request.fullpath, request_referer: request.referer)
+        ).json(request_fullpath: request.fullpath)
       end
     end
   end

@@ -37,8 +37,7 @@ class FilePreviewsController < ApplicationController
       url_opts = {
         enable_annotations: false,
         course_id: params[:course_id],
-        request_fullpath: request.fullpath,
-        request_referer: request.referer
+        request_fullpath: request.fullpath
       }
       if url_opts[:enable_annotations]
         course = Course.find_by(id: params[:course_id].to_i)

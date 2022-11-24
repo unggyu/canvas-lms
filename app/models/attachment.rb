@@ -1672,14 +1672,12 @@ class Attachment < ActiveRecord::Base
     custom_preview_base_url + ERB::Util.url_encode(public_download_url)
   end
 
-  def pdf_comment_editorable?(request_fullpath, request_referer)
+  def pdf_comment_editorable?(request_fullpath)
     return !$mobile_app &&
         request_fullpath.present? &&
-        request_referer.present? &&
         pdf_comment_editor_base_url.present? &&
         pdf_comment_editor_mime_types.include?(content_type) &&
-        pdf_comment_editor_use_paths.any? { |url_reg_exp| request_fullpath.match(url_reg_exp) } &&
-        pdf_comment_editor_use_referers.any? { |url_reg_exp| request_referer.match(url_reg_exp) }
+        pdf_comment_editor_use_paths.any? { |url_reg_exp| request_fullpath.match(url_reg_exp) }
   end
 
   def pdf_comment_editor_mime_types
@@ -1688,10 +1686,6 @@ class Attachment < ActiveRecord::Base
 
   def pdf_comment_editor_use_paths
     JSON.parse Setting.get('xn_pdf_comment_editor_use_paths', '[]')
-  end
-
-  def pdf_comment_editor_use_referers
-    JSON.parse Setting.get('xn_pdf_comment_editor_use_referers', '[]')
   end
 
   def pdf_comment_editor_launch_token(user, opts={})
@@ -2087,7 +2081,7 @@ class Attachment < ActiveRecord::Base
   end
 
   def canvadoc_url(user, opts={})
-    return pdf_comment_editor_url(user, opts) if pdf_comment_editorable?(opts[:request_fullpath], opts[:request_referer])
+    return pdf_comment_editor_url(user, opts) if pdf_comment_editorable?(opts[:request_fullpath])
     return custom_preview_url if custom_previewable?
     return unless canvadocable?
     "/api/v1/canvadoc_session?#{preview_params(user, 'canvadoc', opts)}"
