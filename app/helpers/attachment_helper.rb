@@ -26,7 +26,7 @@ module AttachmentHelper
       enable_annotations: attrs.delete(:enable_annotations),
       moderated_grading_allow_list: attrs[:moderated_grading_allow_list],
       submission_id: attrs.delete(:submission_id),
-      course_id: Course.find_by(id: params[:course_id].to_i).id,
+      course_id: params[:course_id].to_i,
       request_fullpath: request.fullpath
     }
     url_opts[:enrollment_type] = attrs.delete(:enrollment_type) if url_opts[:enable_annotations]
