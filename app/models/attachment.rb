@@ -1668,7 +1668,6 @@ class Attachment < ActiveRecord::Base
   end
 
   def custom_preview_url
-    return unless custom_previewable?
     custom_preview_base_url + ERB::Util.url_encode(public_download_url)
   end
 
