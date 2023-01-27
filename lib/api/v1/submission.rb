@@ -29,9 +29,9 @@ module Api::V1::Submission
   include Api::V1::RubricAssessment
   include CoursesHelper
 
-  def submission_json(submission, assignment, current_user, session, context = nil, includes = [], params = {}, avatars = false)
+  def submission_json(submission, assignment, current_user, session, context = nil, includes = [], params = {}, avatars = false, opts: {})
     context ||= assignment.context
-    hash = submission_attempt_json(submission, assignment, current_user, session, context, params)
+    hash = submission_attempt_json(submission, assignment, current_user, session, context, params, opts: opts)
 
     # The "body" attribute is intended to store the contents of text-entry
     # submissions, but for quizzes it contains a string that includes grading
@@ -54,7 +54,7 @@ module Api::V1::Submission
         end
         hash['submission_history'] = histories.map do |ver|
           ver.without_versioned_attachments do
-            submission_attempt_json(ver, assignment, current_user, session, context, params)
+            submission_attempt_json(ver, assignment, current_user, session, context, params, opts: opts)
           end
         end
       end
@@ -135,7 +135,7 @@ module Api::V1::Submission
   SUBMISSION_JSON_METHODS = %w(late missing seconds_late entered_grade entered_score).freeze
   SUBMISSION_OTHER_FIELDS = %w(attachments discussion_entries).freeze
 
-  def submission_attempt_json(attempt, assignment, user, session, context = nil, params = {}, quiz_submission_version = nil)
+  def submission_attempt_json(attempt, assignment, user, session, context = nil, params = {}, quiz_submission_version = nil, opts: {})
     context ||= assignment.context
     includes = Array.wrap(params[:include])
 
@@ -206,6 +206,7 @@ module Api::V1::Submission
           moderated_grading_allow_list: attempt.moderated_grading_allow_list(user),
           skip_permission_checks: true,
           submission_id: attempt.id
+          mobile_app: opts[:mobile_app]
         }
 
         attachment_json(attachment, user, {}, options)
