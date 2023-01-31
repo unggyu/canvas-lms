@@ -205,7 +205,7 @@ module Api::V1::Submission
           include: includes,
           moderated_grading_allow_list: attempt.moderated_grading_allow_list(user),
           skip_permission_checks: true,
-          submission_id: attempt.id
+          submission_id: attempt.id,
           mobile_app: opts[:mobile_app]
         }
 
