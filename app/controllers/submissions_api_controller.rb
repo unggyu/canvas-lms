@@ -263,7 +263,7 @@ class SubmissionsApiController < ApplicationController
         }
         submissions.map do |s|
           s.visible_to_user = true
-          submission_json(s, @assignment, @current_user, session, @context, includes, params, opts: opts)
+          submission_json(s, @assignment, @current_user, session, @context, includes, params, false, opts)
         end
       end
 
